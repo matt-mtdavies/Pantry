@@ -1,0 +1,15 @@
+name = "pantry"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pantry-db"
+database_id = "208a86b9-e06b-4886-bbb1-5ce8cc7e3b05"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "pantry-images"
+
+[vars]
+ENVIRONMENT = "production"
