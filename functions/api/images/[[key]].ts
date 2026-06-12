@@ -1,8 +1,9 @@
 import type { Env } from '../../env'
 
-// Serve images from R2 — public endpoint (no auth needed for recipe images)
+// Catch-all route: handles keys with slashes like screenshot/recipeId/rand.jpg
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
-  const key = (ctx.params as { key: string }).key
+  const keyParts = ctx.params['key'] as string | string[]
+  const key = Array.isArray(keyParts) ? keyParts.join('/') : keyParts
 
   if (!ctx.env.R2) {
     return new Response('Image storage not configured', { status: 503 })
