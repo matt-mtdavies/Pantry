@@ -11,10 +11,10 @@ export default function AuthCompletePage() {
       navigate('/auth?error=missing_token', { replace: true })
       return
     }
-    // Store in localStorage — cookies from cross-app links are quarantined
-    // by Safari ITP. localStorage is not subject to the same restriction.
     localStorage.setItem('pantry_session', sessionId)
-    navigate('/', { replace: true })
+    // Full reload so AuthProvider's initial fetchMe runs after localStorage is set,
+    // avoiding the race where fetchMe fires before we save the session.
+    window.location.replace('/')
   }, [navigate])
 
   return (
