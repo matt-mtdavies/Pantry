@@ -5,6 +5,7 @@ export interface Env {
   RESEND_API_KEY: string
   RESEND_FROM_EMAIL: string
   APP_URL: string
+  UNSPLASH_ACCESS_KEY?: string
 }
 
 export interface SessionData {

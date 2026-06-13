@@ -52,6 +52,7 @@ export interface ExtractedRecipe {
   steps: string[];
   tags: string[];
   source_guess: string | null;
+  source_image_url?: string | null;
 }
 
 export type FilterMode = 'all' | 'favourites' | 'needs-attention';

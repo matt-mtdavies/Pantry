@@ -34,6 +34,12 @@ interface ClaudeMessage {
   content: Array<{ text: string }>
 }
 
+function extractOgImage(html: string): string | null {
+  const m = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+    ?? html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
+  return m ? m[1] : null
+}
+
 function cleanHtml(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -75,6 +81,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   }
 
   let pageText: string
+  let sourceImageUrl: string | null = null
   try {
     const pageRes = await fetch(parsedUrl.toString(), {
       headers: {
@@ -91,6 +98,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
       return json({ error: "That URL doesn't look like a webpage with a recipe." }, 422)
     }
     const html = await pageRes.text()
+    sourceImageUrl = extractOgImage(html)
     pageText = cleanHtml(html)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -154,6 +162,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     steps: Array.isArray(extracted.steps) ? extracted.steps.map(String) : [],
     tags: Array.isArray(extracted.tags) ? extracted.tags.map(String) : [],
     source_guess: extracted.source_guess ? String(extracted.source_guess) : null,
+    source_image_url: sourceImageUrl,
   })
 }
 

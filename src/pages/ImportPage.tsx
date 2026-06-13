@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
-import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage } from '../lib/api'
+import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import type { ExtractedRecipe, Ingredient } from '../types'
 import styles from './ImportPage.module.css'
 
@@ -253,6 +253,25 @@ function ReviewScreen({
   const [saving, setSaving] = useState(false)
   const [newTag, setNewTag] = useState('')
 
+  // Image picker state
+  const [selectedImage, setSelectedImage] = useState<string | null>(initial.source_image_url ?? null)
+  const [imageOptions, setImageOptions] = useState<{ url: string; thumb: string }[]>([])
+  const [searchingImages, setSearchingImages] = useState(!initial.source_image_url)
+
+  // For screenshot imports: auto-search Unsplash on mount
+  useEffect(() => {
+    if (initial.source_image_url) return
+    const title = initial.title.trim()
+    if (!title) { setSearchingImages(false); return }
+    searchImages(title)
+      .then(imgs => {
+        setImageOptions(imgs)
+        if (imgs.length) setSelectedImage(imgs[0].url)
+      })
+      .catch(() => {})
+      .finally(() => setSearchingImages(false))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const updateIng = (i: number, field: keyof Ingredient, val: string) => {
     setRecipe(r => {
       const ings = [...r.ingredients]
@@ -316,6 +335,13 @@ function ReviewScreen({
         } catch { /* non-fatal */ }
       }
 
+      // Store selected hero image (from og:image or Unsplash)
+      if (selectedImage) {
+        try {
+          await fetchRecipeImage(created.id, selectedImage)
+        } catch { /* non-fatal */ }
+      }
+
       navigate(`/recipe/${created.id}`)
     } catch (err) {
       setSaving(false)
@@ -337,6 +363,54 @@ function ReviewScreen({
           </div>
 
           <div className={styles.reviewForm}>
+            {/* Photo picker */}
+            {(searchingImages || selectedImage || imageOptions.length > 0) && (
+              <div className={styles.field}>
+                <label className={styles.label}>Recipe photo</label>
+
+                {searchingImages && (
+                  <p className={styles.imgSearching}>Finding photos…</p>
+                )}
+
+                {!searchingImages && selectedImage && (
+                  <div className={styles.imgSelected}>
+                    <img src={selectedImage} alt="Recipe" className={styles.imgPreview} />
+                    <div className={styles.imgThumbs}>
+                      {imageOptions.map((opt, i) => (
+                        <button
+                          key={i}
+                          className={`${styles.imgThumb} ${selectedImage === opt.url ? styles.imgThumbActive : ''}`}
+                          onClick={() => setSelectedImage(opt.url)}
+                        >
+                          <img src={opt.thumb} alt="" />
+                        </button>
+                      ))}
+                      <button
+                        className={styles.imgThumbNone}
+                        onClick={() => setSelectedImage(null)}
+                      >
+                        No photo
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {!searchingImages && !selectedImage && imageOptions.length > 0 && (
+                  <div className={styles.imgPicker}>
+                    {imageOptions.map((opt, i) => (
+                      <button
+                        key={i}
+                        className={styles.imgThumb}
+                        onClick={() => setSelectedImage(opt.url)}
+                      >
+                        <img src={opt.thumb} alt={`Photo option ${i + 1}`} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Title */}
             <div className={styles.field}>
               <label className={styles.label}>Recipe title</label>

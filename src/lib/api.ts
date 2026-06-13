@@ -65,6 +65,24 @@ export async function extractFromUrl(url: string): Promise<ExtractedRecipe> {
   })
 }
 
+// Image search (Unsplash proxy — returns empty array if UNSPLASH_ACCESS_KEY not set)
+
+export async function searchImages(query: string): Promise<{ url: string; thumb: string }[]> {
+  return request<{ url: string; thumb: string }[]>(
+    `/api/image-search?q=${encodeURIComponent(query)}`
+  )
+}
+
+// Fetch an external image URL and store it in R2 as the recipe hero
+
+export async function fetchRecipeImage(recipeId: string, imageUrl: string): Promise<{ key: string }> {
+  return request<{ key: string }>('/api/fetch-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: imageUrl, recipeId }),
+  })
+}
+
 // Upload image
 
 export async function uploadImage(file: File, recipeId: string, role: 'hero' | 'screenshot'): Promise<{ key: string }> {
