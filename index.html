@@ -33,7 +33,8 @@
       setTimeout(function() {
         var root = document.getElementById('root');
         if (root && !root.hasChildNodes()) {
-          window.__diag('App did not load — tap to retry');
+          var modRan = !!(window.__pantryModuleRan);
+          window.__diag('App did not load — module ' + (modRan ? 'RAN but React failed' : 'did NOT execute') + ' — tap to retry');
           root.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:100vh';
           var btn = document.createElement('a');
           btn.href = '/'; btn.textContent = 'Tap to retry';

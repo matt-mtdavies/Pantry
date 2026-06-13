@@ -18,6 +18,9 @@ if ('serviceWorker' in navigator) {
   }
 }
 
+// Diagnostic marker — tells the timeout in index.html whether this module ran
+;(window as unknown as Record<string, unknown>).__pantryModuleRan = true
+
 const rootEl = document.getElementById('root')
 if (!rootEl) {
   document.body.innerHTML = '<div style="padding:2rem;font-family:system-ui">Root element missing — please reload.</div>'
