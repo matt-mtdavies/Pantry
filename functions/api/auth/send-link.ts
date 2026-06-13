@@ -21,7 +21,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     'INSERT INTO magic_tokens (token, email, expires_at) VALUES (?, ?, ?)'
   ).bind(token, email, expiresAt).run()
 
-  const appUrl = ctx.env.APP_URL ?? `https://${new URL(ctx.request.url).host}`
+  const appUrl = (ctx.env.APP_URL ?? `https://${new URL(ctx.request.url).host}`).replace(/\/$/, '')
   // Link goes directly to the Pages Function which verifies the token,
   // sets the session cookie, and redirects to / — no JS needed for auth.
   const magicLink = `${appUrl}/api/auth/verify?token=${token}`
