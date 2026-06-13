@@ -9,10 +9,9 @@ function generateId(): string {
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const url = new URL(ctx.request.url)
   const token = url.searchParams.get('token')
-  const origin = url.origin
 
   if (!token) {
-    return Response.redirect(`${origin}/auth?error=missing_token`, 302)
+    return htmlRedirect('/', 'auth?error=missing_token')
   }
 
   const now = Math.floor(Date.now() / 1000)
@@ -22,13 +21,11 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   ).bind(token, now).first<{ token: string; email: string }>()
 
   if (!magicToken) {
-    return Response.redirect(`${origin}/auth?error=expired`, 302)
+    return htmlRedirect('/auth?error=expired')
   }
 
-  // Mark token as used
   await ctx.env.DB.prepare('UPDATE magic_tokens SET used = 1 WHERE token = ?').bind(token).run()
 
-  // Find or create user
   let user = await ctx.env.DB.prepare('SELECT * FROM users WHERE email = ?')
     .bind(magicToken.email).first<{ id: string }>()
 
@@ -40,7 +37,6 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     user = { id: userId }
   }
 
-  // Create session (30 days)
   const sessionId = generateId()
   const sessionExpiry = now + 60 * 60 * 24 * 30
 
@@ -48,16 +44,46 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)'
   ).bind(sessionId, user.id, sessionExpiry).run()
 
-  const cookieFlags = `Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 30}`
+  const cookie = `pantry_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 30}`
 
-  // Server-side redirect — browser follows it with the cookie already set.
-  // This is far more reliable than client-side verification, especially
-  // for iOS Mail which opens links in a sandboxed in-app browser.
-  return new Response(null, {
-    status: 302,
+  // Return a 200 HTML page rather than a 302 redirect.
+  // Some CDN/proxy layers (and iOS in-app browsers) strip Set-Cookie from
+  // redirect responses. Sending a 200 with both the cookie and a JS redirect
+  // ensures the cookie is definitely set before the browser navigates.
+  return new Response(buildRedirectPage('/'), {
+    status: 200,
     headers: {
-      'Location': `${origin}/`,
-      'Set-Cookie': `pantry_session=${sessionId}; ${cookieFlags}`,
+      'Content-Type': 'text/html; charset=utf-8',
+      'Set-Cookie': cookie,
+      'Cache-Control': 'no-store',
     },
   })
+}
+
+function htmlRedirect(dest: string): Response {
+  return new Response(buildRedirectPage(dest), {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
+  })
+}
+
+function buildRedirectPage(dest: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="color-scheme" content="light"/>
+  <meta http-equiv="refresh" content="0;url=${dest}"/>
+  <title>Signing you in…</title>
+  <style>
+    body{margin:0;min-height:100vh;display:flex;align-items:center;
+         justify-content:center;background:#FAF7F2;font-family:Georgia,serif;}
+    p{color:#6B6459;font-size:1.125rem;}
+  </style>
+</head>
+<body>
+  <p>Signing you in…</p>
+  <script>window.location.replace(${JSON.stringify(dest)});</script>
+</body>
+</html>`
 }
