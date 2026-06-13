@@ -60,10 +60,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     customMetadata: { recipeId, userId, role: 'hero' },
   })
 
-  const now = Math.floor(Date.now() / 1000)
   await ctx.env.DB.prepare(
-    'UPDATE recipes SET hero_image_key = ?, updated_at = ? WHERE id = ?'
-  ).bind(key, now, recipeId).run()
+    'UPDATE recipes SET hero_image_key = ? WHERE id = ?'
+  ).bind(key, recipeId).run()
 
   return json({ key })
 }

@@ -249,7 +249,8 @@ function ReviewScreen({
   const [recipe, setRecipe] = useState<ExtractedRecipe>({ ...initial })
   const [saving, setSaving] = useState(false)
   const [newTag, setNewTag] = useState('')
-  const [editMode, setEditMode] = useState(false)
+  const isEmptyExtraction = initial.ingredients.length === 0 && initial.steps.length === 0
+  const [editMode, setEditMode] = useState(isEmptyExtraction)
 
   // Image picker state
   const [selectedImage, setSelectedImage] = useState<string | null>(initial.source_image_url ?? null)
