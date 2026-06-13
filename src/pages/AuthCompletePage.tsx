@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styles from './AuthPage.module.css'
 
 export default function AuthCompletePage() {
   const navigate = useNavigate()
@@ -10,23 +11,19 @@ export default function AuthCompletePage() {
       navigate('/auth?error=missing_token', { replace: true })
       return
     }
-
-    fetch('/api/auth/set-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ sessionId }),
-    })
-      .then(r => r.json() as Promise<{ ok?: boolean; error?: string }>)
-      .then(data => {
-        if (data.ok) {
-          navigate('/', { replace: true })
-        } else {
-          navigate('/auth?error=server_error', { replace: true })
-        }
-      })
-      .catch(() => navigate('/auth?error=server_error', { replace: true }))
+    // Store in localStorage — cookies from cross-app links are quarantined
+    // by Safari ITP. localStorage is not subject to the same restriction.
+    localStorage.setItem('pantry_session', sessionId)
+    navigate('/', { replace: true })
   }, [navigate])
 
-  return null
+  return (
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <div className={styles.brand}>Pantry</div>
+        <h1 className={styles.heading}>Signing you in…</h1>
+        <p className={styles.sub}>Just a moment.</p>
+      </div>
+    </div>
+  )
 }

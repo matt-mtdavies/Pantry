@@ -15,13 +15,21 @@ const AuthContext = createContext<AuthContextValue>({
   logout: async () => {},
 })
 
+function authHeaders(): Record<string, string> {
+  const session = localStorage.getItem('pantry_session')
+  return session ? { Authorization: `Bearer ${session}` } : {}
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchMe = useCallback(async () => {
     try {
-      const res = await fetch('/api/me', { credentials: 'include' })
+      const res = await fetch('/api/me', {
+        credentials: 'include',
+        headers: authHeaders(),
+      })
       if (res.ok) {
         const data = await res.json() as User
         setUser(data)
@@ -38,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => { fetchMe() }, [fetchMe])
 
   const logout = useCallback(async () => {
+    localStorage.removeItem('pantry_session')
     await fetch('/api/logout', { method: 'POST', credentials: 'include' })
     setUser(null)
   }, [])

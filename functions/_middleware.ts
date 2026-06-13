@@ -25,7 +25,14 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   }
 
   const cookieHeader = ctx.request.headers.get('Cookie') ?? ''
-  const sessionId = getCookie(cookieHeader, 'pantry_session')
+  let sessionId = getCookie(cookieHeader, 'pantry_session')
+
+  // Fallback: accept session via Authorization header (used when Safari ITP
+  // quarantines cookies set during cross-app link navigation).
+  if (!sessionId) {
+    const auth = ctx.request.headers.get('Authorization') ?? ''
+    if (auth.startsWith('Bearer ')) sessionId = auth.slice(7).trim()
+  }
 
   if (!sessionId) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
