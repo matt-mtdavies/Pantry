@@ -4,10 +4,12 @@ import './index.css'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 
-// Unregister any stale service workers. Wrapped in try/catch because some
-// iOS in-app browser contexts expose navigator.serviceWorker but throw
-// synchronously when getRegistrations() is called, which would crash the
-// entire module and prevent React from mounting.
+type DiagWindow = { __diag?: (m: string) => void; __pantryStep?: string }
+
+function step(s: string) {
+  (window as unknown as DiagWindow).__pantryStep = s
+}
+
 if ('serviceWorker' in navigator) {
   try {
     navigator.serviceWorker.getRegistrations().then(regs => {
@@ -18,18 +20,26 @@ if ('serviceWorker' in navigator) {
   }
 }
 
-// Diagnostic marker — tells the timeout in index.html whether this module ran
-;(window as unknown as Record<string, unknown>).__pantryModuleRan = true
+step('sw-done')
 
 const rootEl = document.getElementById('root')
 if (!rootEl) {
+  step('no-root')
   document.body.innerHTML = '<div style="padding:2rem;font-family:system-ui">Root element missing — please reload.</div>'
 } else {
-  createRoot(rootEl).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </StrictMode>,
-  )
+  step('root-found')
+  try {
+    createRoot(rootEl).render(
+      <StrictMode>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </StrictMode>,
+    )
+    step('render-called')
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    step('render-threw')
+    ;(window as unknown as DiagWindow).__diag?.('createRoot error: ' + msg)
+  }
 }
