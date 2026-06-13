@@ -21,9 +21,8 @@ export default function ImportPage() {
   const handleFiles = useCallback((selected: File[]) => {
     const valid = selected.filter(f => f.type.startsWith('image/'))
     if (!valid.length) return
-    setFiles(valid)
-    const urls = valid.map(f => URL.createObjectURL(f))
-    setPreviews(urls)
+    setFiles(prev => [...prev, ...valid])
+    setPreviews(prev => [...prev, ...valid.map(f => URL.createObjectURL(f))])
   }, [])
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,7 +161,7 @@ export default function ImportPage() {
                 <div className={styles.dropIcon}>📸</div>
                 <p className={styles.dropTitle}>Tap to choose a screenshot</p>
                 <p className={styles.dropHint}>
-                  Long recipes? You can add multiple screenshots — we'll combine them.
+                  Add up to 10 screenshots — we'll combine them into one recipe.
                 </p>
               </div>
             ) : (
@@ -171,7 +170,7 @@ export default function ImportPage() {
                   <img key={i} src={src} alt={`Screenshot ${i + 1}`} className={styles.preview} />
                 ))}
                 <div className={styles.previewAdd}>
-                  <span>+ Add more</span>
+                  <span>+ Add more ({files.length} added)</span>
                 </div>
               </div>
             )}

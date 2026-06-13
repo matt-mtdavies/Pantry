@@ -36,6 +36,15 @@ interface ClaudeMessage {
   content: Array<{ text: string }>
 }
 
+function toBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 8192))
+  }
+  return btoa(binary)
+}
+
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const formData = await ctx.request.formData()
   const screenshots = formData.getAll('screenshots') as File[]
@@ -48,11 +57,11 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return json({ error: 'AI extraction not configured' }, 503)
   }
 
-  // Convert images to base64 for Claude
+  // Convert images to base64 for Claude (max 10 screenshots)
   const imageContents: unknown[] = []
-  for (const file of screenshots.slice(0, 4)) { // max 4 screenshots
+  for (const file of screenshots.slice(0, 10)) {
     const buffer = await file.arrayBuffer()
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    const base64 = toBase64(buffer)
     const mediaType = (file.type || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
     imageContents.push({
       type: 'image',
