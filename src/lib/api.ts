@@ -55,6 +55,16 @@ export async function extractFromScreenshots(files: File[]): Promise<ExtractedRe
   return request<ExtractedRecipe>('/api/extract', { method: 'POST', body: form })
 }
 
+// Extract from URL
+
+export async function extractFromUrl(url: string): Promise<ExtractedRecipe> {
+  return request<ExtractedRecipe>('/api/extract-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  })
+}
+
 // Upload image
 
 export async function uploadImage(file: File, recipeId: string, role: 'hero' | 'screenshot'): Promise<{ key: string }> {

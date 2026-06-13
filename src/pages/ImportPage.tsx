@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
-import { extractFromScreenshots, createRecipe, uploadImage } from '../lib/api'
+import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage } from '../lib/api'
 import type { ExtractedRecipe, Ingredient } from '../types'
 import styles from './ImportPage.module.css'
 
@@ -16,6 +16,7 @@ export default function ImportPage() {
   const [extracted, setExtracted] = useState<ExtractedRecipe | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [dragOver, setDragOver] = useState(false)
+  const [urlInput, setUrlInput] = useState('')
 
   const handleFiles = useCallback((selected: File[]) => {
     const valid = selected.filter(f => f.type.startsWith('image/'))
@@ -44,6 +45,20 @@ export default function ImportPage() {
       setStage('review')
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Extraction failed')
+      setStage('error')
+    }
+  }
+
+  const handleExtractUrl = async () => {
+    const url = urlInput.trim()
+    if (!url) return
+    setStage('extracting')
+    try {
+      const result = await extractFromUrl(url)
+      setExtracted(result)
+      setStage('review')
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Could not import from that URL')
       setStage('error')
     }
   }
@@ -77,7 +92,7 @@ export default function ImportPage() {
             <div className={styles.spinner} />
             <h2 className={styles.extractingTitle}>Reading your recipe…</h2>
             <p className={styles.extractingText}>
-              Claude is looking at your screenshot and pulling out all the details.
+              Claude is pulling out all the ingredients and steps.
               This takes about 10–15 seconds.
             </p>
           </div>
@@ -100,16 +115,16 @@ export default function ImportPage() {
       <main className="page-main">
         <div className="content-col">
           <div className={styles.header}>
-            <h1 className={styles.title}>Add from screenshot</h1>
+            <h1 className={styles.title}>Import recipe</h1>
             <p className={styles.sub}>
-              Got a photo of a recipe? Drop it here and we'll pull out all the
-              ingredients and steps automatically.
+              Paste a link from any recipe site, or drop in a screenshot — Claude will
+              pull out all the ingredients and steps automatically.
             </p>
           </div>
 
           {stage === 'error' && (
             <div className={styles.errorBox} role="alert">
-              <p className={styles.errorTitle}>Couldn't read that screenshot</p>
+              <p className={styles.errorTitle}>Couldn't import that recipe</p>
               <p className={styles.errorText}>{errorMsg}</p>
               <div className={styles.errorActions}>
                 <button className={styles.retryBtn} onClick={() => setStage('upload')}>Try again</button>
@@ -175,6 +190,33 @@ export default function ImportPage() {
               </button>
             </div>
           )}
+
+          <div className={styles.divider}>
+            <span className={styles.dividerText}>or</span>
+          </div>
+
+          {/* URL import */}
+          <div className={styles.urlSection}>
+            <p className={styles.urlLabel}>Paste a recipe link</p>
+            <div className={styles.urlRow}>
+              <input
+                className={styles.urlInput}
+                type="url"
+                placeholder="https://www.example.com/recipes/pasta"
+                value={urlInput}
+                onChange={e => setUrlInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleExtractUrl() }}
+                aria-label="Recipe URL"
+              />
+              <button
+                className={styles.urlBtn}
+                onClick={handleExtractUrl}
+                disabled={!urlInput.trim()}
+              >
+                Import →
+              </button>
+            </div>
+          </div>
 
           <div className={styles.divider}>
             <span className={styles.dividerText}>or</span>
