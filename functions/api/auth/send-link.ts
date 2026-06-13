@@ -22,9 +22,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   ).bind(token, email, expiresAt).run()
 
   const appUrl = ctx.env.APP_URL ?? `https://${new URL(ctx.request.url).host}`
-  // Link goes to the SPA which calls /api/auth/verify via fetch.
-  // Client-side flow avoids server-redirect/service-worker issues.
-  const magicLink = `${appUrl}/auth/verify?token=${token}`
+  // Link goes directly to the Pages Function which verifies the token,
+  // sets the session cookie, and redirects to / — no JS needed for auth.
+  const magicLink = `${appUrl}/api/auth/verify?token=${token}`
 
   const fromEmail = ctx.env.RESEND_FROM_EMAIL ?? 'Pantry <noreply@pantry.app>'
 

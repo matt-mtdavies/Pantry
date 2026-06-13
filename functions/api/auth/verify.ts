@@ -6,16 +6,16 @@ function generateId(): string {
   return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// Called as a same-origin fetch from AuthPage.tsx.
-// Returns JSON + Set-Cookie on success so the client can navigate without
-// a server-side redirect (which was being intercepted by the SW / CDN).
+// Server-side verification: processes the token on the edge, sets the session
+// cookie in the 302 response, then redirects to /. This means auth is complete
+// before any client JS runs — no blank-page race condition.
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   try {
     const url = new URL(ctx.request.url)
     const token = url.searchParams.get('token')
 
     if (!token) {
-      return json({ error: 'missing_token' }, 400)
+      return redirect('/auth?error=missing_token')
     }
 
     const now = Math.floor(Date.now() / 1000)
@@ -25,7 +25,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     ).bind(token).first<{ token: string; email: string; expires_at: number; used: number }>()
 
     if (!magicToken || magicToken.used || magicToken.expires_at <= now) {
-      return json({ error: 'expired' }, 401)
+      return redirect('/auth?error=expired')
     }
 
     await ctx.env.DB.prepare(
@@ -53,10 +53,10 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
     const cookie = `pantry_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 30}`
 
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
+    return new Response(null, {
+      status: 302,
       headers: {
-        'Content-Type': 'application/json',
+        'Location': '/',
         'Set-Cookie': cookie,
         'Cache-Control': 'no-store',
       },
@@ -64,13 +64,13 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[verify] error:', message)
-    return json({ error: 'server_error', detail: message }, 500)
+    return redirect('/auth?error=server_error')
   }
 }
 
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+function redirect(location: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: { 'Location': location, 'Cache-Control': 'no-store' },
   })
 }
