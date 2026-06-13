@@ -12,6 +12,8 @@ export default function RecipePage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [sharePanel, setSharePanel] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -30,17 +32,24 @@ export default function RecipePage() {
     try {
       const { url } = await getShareLink(recipe.id)
       setShareUrl(url)
+      setSharePanel(true)
       if (navigator.share) {
-        await navigator.share({ title: recipe.title, url })
-      } else {
-        await navigator.clipboard.writeText(url)
-        alert('Link copied to clipboard!')
+        await navigator.share({ title: recipe.title, url }).catch(() => {})
       }
     } catch {
-      // User cancelled or error
+      // ignore
     } finally {
       setSharing(false)
     }
+  }
+
+  const handleCopy = async () => {
+    if (!shareUrl) return
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* ignore */ }
   }
 
   const handleDelete = async () => {
@@ -177,6 +186,34 @@ export default function RecipePage() {
                 ✎
               </Link>
             </div>
+
+            {sharePanel && shareUrl && (
+              <div className={styles.sharePanel}>
+                <div className={styles.sharePanelHeader}>
+                  <span className={styles.sharePanelTitle}>Share link</span>
+                  <button className={styles.sharePanelClose} onClick={() => setSharePanel(false)} aria-label="Close">✕</button>
+                </div>
+                <div className={styles.sharePanelRow}>
+                  <input
+                    className={styles.sharePanelInput}
+                    value={shareUrl}
+                    readOnly
+                    onFocus={e => (e.target as HTMLInputElement).select()}
+                  />
+                  <button className={styles.copyBtn} onClick={handleCopy}>
+                    {copied ? '✓ Copied' : 'Copy'}
+                  </button>
+                </div>
+                {navigator.share && (
+                  <button
+                    className={styles.nativeShareBtn}
+                    onClick={() => navigator.share!({ title: recipe.title, url: shareUrl }).catch(() => {})}
+                  >
+                    Share via…
+                  </button>
+                )}
+              </div>
+            )}
 
             {recipe.source_guess && (
               <p className={styles.source}>From {recipe.source_guess}</p>

@@ -21,6 +21,8 @@ export default function ProfilePage() {
   const [defaultServings, setDefaultServings] = useState(user?.default_servings ?? 2)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   if (!user) return null
 
@@ -45,6 +47,17 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout()
     navigate('/auth')
+  }
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true)
+    try {
+      await fetch('/api/me', { method: 'DELETE', credentials: 'include' })
+      try { localStorage.removeItem('pantry_session') } catch { /* ignore */ }
+      navigate('/auth')
+    } catch {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -108,11 +121,7 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.saveRow}>
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-                disabled={saving}
-              >
+              <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save changes'}
               </button>
             </div>
@@ -122,6 +131,33 @@ export default function ProfilePage() {
             <button className={styles.signOutBtn} onClick={handleLogout}>
               Sign out of Pantry
             </button>
+          </div>
+
+          <div className={styles.dangerZone}>
+            <h2 className={styles.dangerTitle}>Danger zone</h2>
+            {!confirmDelete ? (
+              <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>
+                Delete my account
+              </button>
+            ) : (
+              <div className={styles.deleteConfirm}>
+                <p className={styles.deleteWarning}>
+                  This permanently deletes your account and all your recipes. It can't be undone.
+                </p>
+                <div className={styles.deleteActions}>
+                  <button
+                    className={styles.deleteConfirmBtn}
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Deleting…' : 'Yes, delete everything'}
+                  </button>
+                  <button className={styles.deleteCancelBtn} onClick={() => setConfirmDelete(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

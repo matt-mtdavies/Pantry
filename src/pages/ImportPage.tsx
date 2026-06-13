@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
+import { formatTime } from '../lib/utils'
 import type { ExtractedRecipe, Ingredient } from '../types'
 import styles from './ImportPage.module.css'
 
@@ -70,11 +71,8 @@ export default function ImportPage() {
         needs_attention: true,
         screenshot_keys: [],
       } as Parameters<typeof createRecipe>[0])
-      // Upload screenshots and attach
       for (const file of files) {
-        try {
-          await uploadImage(file, recipe.id, 'screenshot')
-        } catch { /* non-fatal */ }
+        try { await uploadImage(file, recipe.id, 'screenshot') } catch { /* non-fatal */ }
       }
       navigate('/needs-attention')
     } catch {
@@ -251,13 +249,13 @@ function ReviewScreen({
   const [recipe, setRecipe] = useState<ExtractedRecipe>({ ...initial })
   const [saving, setSaving] = useState(false)
   const [newTag, setNewTag] = useState('')
+  const [editMode, setEditMode] = useState(false)
 
   // Image picker state
   const [selectedImage, setSelectedImage] = useState<string | null>(initial.source_image_url ?? null)
   const [imageOptions, setImageOptions] = useState<{ url: string; thumb: string }[]>([])
   const [searchingImages, setSearchingImages] = useState(!initial.source_image_url)
 
-  // For screenshot imports: auto-search Unsplash on mount
   useEffect(() => {
     if (initial.source_image_url) return
     const title = initial.title.trim()
@@ -278,36 +276,14 @@ function ReviewScreen({
       return { ...r, ingredients: ings }
     })
   }
-
-  const removeIng = (i: number) => {
-    setRecipe(r => ({ ...r, ingredients: r.ingredients.filter((_, idx) => idx !== i) }))
-  }
-
-  const addIng = () => {
-    setRecipe(r => ({ ...r, ingredients: [...r.ingredients, { amount: '', unit: '', name: '' }] }))
-  }
-
-  const updateStep = (i: number, val: string) => {
-    setRecipe(r => {
-      const steps = [...r.steps]
-      steps[i] = val
-      return { ...r, steps }
-    })
-  }
-
-  const removeStep = (i: number) => {
-    setRecipe(r => ({ ...r, steps: r.steps.filter((_, idx) => idx !== i) }))
-  }
-
-  const addStep = () => {
-    setRecipe(r => ({ ...r, steps: [...r.steps, ''] }))
-  }
-
+  const removeIng = (i: number) => setRecipe(r => ({ ...r, ingredients: r.ingredients.filter((_, idx) => idx !== i) }))
+  const addIng = () => setRecipe(r => ({ ...r, ingredients: [...r.ingredients, { amount: '', unit: '', name: '' }] }))
+  const updateStep = (i: number, val: string) => setRecipe(r => { const s = [...r.steps]; s[i] = val; return { ...r, steps: s } })
+  const removeStep = (i: number) => setRecipe(r => ({ ...r, steps: r.steps.filter((_, idx) => idx !== i) }))
+  const addStep = () => setRecipe(r => ({ ...r, steps: [...r.steps, ''] }))
   const addTag = () => {
     const t = newTag.trim().toLowerCase()
-    if (t && !recipe.tags.includes(t)) {
-      setRecipe(r => ({ ...r, tags: [...r.tags, t] }))
-    }
+    if (t && !recipe.tags.includes(t)) setRecipe(r => ({ ...r, tags: [...r.tags, t] }))
     setNewTag('')
   }
 
@@ -327,18 +303,11 @@ function ReviewScreen({
         screenshot_keys: [],
       } as Parameters<typeof createRecipe>[0])
 
-      // Upload screenshots
       for (const file of files) {
-        try {
-          await uploadImage(file, created.id, 'screenshot')
-        } catch { /* non-fatal */ }
+        try { await uploadImage(file, created.id, 'screenshot') } catch { /* non-fatal */ }
       }
-
-      // Store selected hero image (from og:image or Unsplash)
       if (selectedImage) {
-        try {
-          await fetchRecipeImage(created.id, selectedImage)
-        } catch { /* non-fatal */ }
+        try { await fetchRecipeImage(created.id, selectedImage) } catch { /* non-fatal */ }
       }
 
       navigate(`/recipe/${created.id}`)
@@ -348,17 +317,121 @@ function ReviewScreen({
     }
   }
 
+  const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0)
+
+  // ── Preview mode (default) ────────────────────────────────────────────────
+  if (!editMode) {
+    return (
+      <div className="page-shell">
+        <Navigation />
+        <main className="page-main">
+          {(selectedImage || searchingImages) && (
+            <div className={styles.previewHero}>
+              {searchingImages
+                ? <div className={styles.previewHeroPlaceholder} />
+                : <img src={selectedImage!} alt={recipe.title} className={styles.previewHeroImg} />
+              }
+            </div>
+          )}
+
+          <div className="content-col">
+            <button className={styles.backBtn} onClick={onBack}>← Start over</button>
+
+            {recipe.tags.length > 0 && (
+              <div className={styles.previewTags}>
+                {recipe.tags.map(tag => <span key={tag} className={styles.previewTag}>{tag}</span>)}
+              </div>
+            )}
+
+            <h1 className={styles.previewTitle}>{recipe.title}</h1>
+
+            {recipe.description && <p className={styles.previewDesc}>{recipe.description}</p>}
+
+            {(recipe.prep_time != null || recipe.cook_time != null || recipe.servings != null) && (
+              <div className={styles.previewMeta}>
+                {recipe.prep_time != null && (
+                  <div className={styles.previewMetaItem}>
+                    <span className={styles.previewMetaLabel}>Prep</span>
+                    <span className={styles.previewMetaValue}>{formatTime(recipe.prep_time)}</span>
+                  </div>
+                )}
+                {recipe.cook_time != null && (
+                  <div className={styles.previewMetaItem}>
+                    <span className={styles.previewMetaLabel}>Cook</span>
+                    <span className={styles.previewMetaValue}>{formatTime(recipe.cook_time)}</span>
+                  </div>
+                )}
+                {totalTime > 0 && recipe.prep_time != null && recipe.cook_time != null && (
+                  <div className={styles.previewMetaItem}>
+                    <span className={styles.previewMetaLabel}>Total</span>
+                    <span className={styles.previewMetaValue}>{formatTime(totalTime)}</span>
+                  </div>
+                )}
+                {recipe.servings != null && (
+                  <div className={styles.previewMetaItem}>
+                    <span className={styles.previewMetaLabel}>Serves</span>
+                    <span className={styles.previewMetaValue}>{recipe.servings}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <hr className={styles.previewDivider} />
+
+            <section>
+              <h2 className={styles.previewSectionTitle}>Ingredients</h2>
+              <ul className={styles.previewIngredients}>
+                {recipe.ingredients.map((ing, i) => (
+                  <li key={i} className={styles.previewIng}>
+                    <span className={styles.previewIngAmount}>{ing.amount}{ing.unit ? ` ${ing.unit}` : ''}</span>
+                    <span className={styles.previewIngName}>{ing.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <hr className={styles.previewDivider} />
+
+            <section>
+              <h2 className={styles.previewSectionTitle}>Method</h2>
+              <ol className={styles.previewSteps}>
+                {recipe.steps.map((step, i) => (
+                  <li key={i} className={styles.previewStep}>
+                    <span className={styles.previewStepNum}>{i + 1}</span>
+                    <p className={styles.previewStepText}>{step}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <div className={styles.previewActions}>
+              <button
+                className={styles.saveBtn}
+                onClick={handleSave}
+                disabled={saving || !recipe.title.trim()}
+              >
+                {saving ? 'Saving…' : 'Save recipe →'}
+              </button>
+              <button className={styles.editDetailsBtn} onClick={() => setEditMode(true)}>
+                Something look off? Edit details
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // ── Edit mode ─────────────────────────────────────────────────────────────
   return (
     <div className="page-shell">
       <Navigation />
       <main className="page-main">
         <div className="content-col">
           <div className={styles.reviewHeader}>
-            <button className={styles.backBtn} onClick={onBack}>← Back</button>
-            <h1 className={styles.reviewTitle}>Review & fix</h1>
-            <p className={styles.reviewSub}>
-              Claude did its best — check the details and fix anything that looks off before saving.
-            </p>
+            <button className={styles.backBtn} onClick={() => setEditMode(false)}>← Back to preview</button>
+            <h1 className={styles.reviewTitle}>Edit details</h1>
+            <p className={styles.reviewSub}>Fix anything before saving.</p>
           </div>
 
           <div className={styles.reviewForm}>
@@ -367,9 +440,7 @@ function ReviewScreen({
               <div className={styles.field}>
                 <label className={styles.label}>Recipe photo</label>
 
-                {searchingImages && (
-                  <p className={styles.imgSearching}>Finding photos…</p>
-                )}
+                {searchingImages && <p className={styles.imgSearching}>Finding photos…</p>}
 
                 {!searchingImages && selectedImage && (
                   <div className={styles.imgSelected}>
@@ -384,10 +455,7 @@ function ReviewScreen({
                           <img src={opt.thumb} alt="" />
                         </button>
                       ))}
-                      <button
-                        className={styles.imgThumbNone}
-                        onClick={() => setSelectedImage(null)}
-                      >
+                      <button className={styles.imgThumbNone} onClick={() => setSelectedImage(null)}>
                         No photo
                       </button>
                     </div>
@@ -397,11 +465,7 @@ function ReviewScreen({
                 {!searchingImages && !selectedImage && imageOptions.length > 0 && (
                   <div className={styles.imgPicker}>
                     {imageOptions.map((opt, i) => (
-                      <button
-                        key={i}
-                        className={styles.imgThumb}
-                        onClick={() => setSelectedImage(opt.url)}
-                      >
+                      <button key={i} className={styles.imgThumb} onClick={() => setSelectedImage(opt.url)}>
                         <img src={opt.thumb} alt={`Photo option ${i + 1}`} />
                       </button>
                     ))}
@@ -471,29 +535,10 @@ function ReviewScreen({
               <div className={styles.ingredientsList}>
                 {recipe.ingredients.map((ing, i) => (
                   <div key={i} className={styles.ingRow}>
-                    <input
-                      className={styles.ingAmount}
-                      placeholder="Amount"
-                      value={ing.amount}
-                      onChange={e => updateIng(i, 'amount', e.target.value)}
-                    />
-                    <input
-                      className={styles.ingUnit}
-                      placeholder="Unit"
-                      value={ing.unit}
-                      onChange={e => updateIng(i, 'unit', e.target.value)}
-                    />
-                    <input
-                      className={`${styles.ingName} ${styles.inputFlex}`}
-                      placeholder="Ingredient"
-                      value={ing.name}
-                      onChange={e => updateIng(i, 'name', e.target.value)}
-                    />
-                    <button
-                      className={styles.removeBtn}
-                      onClick={() => removeIng(i)}
-                      aria-label={`Remove ${ing.name}`}
-                    >✕</button>
+                    <input className={styles.ingAmount} placeholder="Amount" value={ing.amount} onChange={e => updateIng(i, 'amount', e.target.value)} />
+                    <input className={styles.ingUnit} placeholder="Unit" value={ing.unit} onChange={e => updateIng(i, 'unit', e.target.value)} />
+                    <input className={`${styles.ingName} ${styles.inputFlex}`} placeholder="Ingredient" value={ing.name} onChange={e => updateIng(i, 'name', e.target.value)} />
+                    <button className={styles.removeBtn} onClick={() => removeIng(i)} aria-label={`Remove ${ing.name}`}>✕</button>
                   </div>
                 ))}
                 <button className={styles.addRowBtn} onClick={addIng}>+ Add ingredient</button>
@@ -513,11 +558,7 @@ function ReviewScreen({
                       onChange={e => updateStep(i, e.target.value)}
                       rows={3}
                     />
-                    <button
-                      className={styles.removeBtn}
-                      onClick={() => removeStep(i)}
-                      aria-label={`Remove step ${i + 1}`}
-                    >✕</button>
+                    <button className={styles.removeBtn} onClick={() => removeStep(i)} aria-label={`Remove step ${i + 1}`}>✕</button>
                   </li>
                 ))}
               </ol>
@@ -531,11 +572,7 @@ function ReviewScreen({
                 {recipe.tags.map(tag => (
                   <span key={tag} className={styles.tagChip}>
                     {tag}
-                    <button
-                      className={styles.tagRemove}
-                      onClick={() => setRecipe(r => ({ ...r, tags: r.tags.filter(t => t !== tag) }))}
-                      aria-label={`Remove tag ${tag}`}
-                    >✕</button>
+                    <button className={styles.tagRemove} onClick={() => setRecipe(r => ({ ...r, tags: r.tags.filter(t => t !== tag) }))} aria-label={`Remove tag ${tag}`}>✕</button>
                   </span>
                 ))}
                 <input
@@ -549,11 +586,7 @@ function ReviewScreen({
             </div>
 
             <div className={styles.saveRow}>
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-                disabled={saving || !recipe.title.trim()}
-              >
+              <button className={styles.saveBtn} onClick={handleSave} disabled={saving || !recipe.title.trim()}>
                 {saving ? 'Saving…' : 'Save recipe'}
               </button>
             </div>

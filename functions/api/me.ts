@@ -37,4 +37,18 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
   return new Response(JSON.stringify(parseRow(user as Record<string, unknown>)), { headers: json })
 }
 
+export const onRequestDelete: PagesFunction<Env> = async (ctx) => {
+  const userId = ctx.data.userId as string
+  await ctx.env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run()
+  await ctx.env.DB.prepare(
+    'DELETE FROM magic_tokens WHERE email = (SELECT email FROM users WHERE id = ?)'
+  ).bind(userId).run()
+  await ctx.env.DB.prepare('DELETE FROM recipes WHERE user_id = ?').bind(userId).run()
+  await ctx.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+  return new Response(null, {
+    status: 204,
+    headers: { 'Set-Cookie': 'pantry_session=; Path=/; Max-Age=0; HttpOnly; Secure' },
+  })
+}
+
 const json = { 'Content-Type': 'application/json' }
