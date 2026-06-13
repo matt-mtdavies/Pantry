@@ -53,14 +53,23 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
     const cookie = `pantry_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 30}`
 
-    return new Response(null, {
-      status: 302,
-      headers: {
-        'Location': '/',
-        'Set-Cookie': cookie,
-        'Cache-Control': 'no-store',
+    // Return an HTML page rather than a bare 302 redirect so that WebKit/ITP
+    // processes the Set-Cookie on a 200 response (not a redirect response).
+    // Safari may discard Set-Cookie on 3xx redirects that arrive via cross-app
+    // link clicks (treating the token query param as "link decoration").
+    return new Response(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<script>window.location.replace('/');</script>
+</head><body></body></html>`,
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html;charset=UTF-8',
+          'Set-Cookie': cookie,
+          'Cache-Control': 'no-store',
+        },
       },
-    })
+    )
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[verify] error:', message)
