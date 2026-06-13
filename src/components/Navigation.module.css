@@ -71,6 +71,19 @@
   margin-left: auto;
 }
 
+.profileLink {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-1);
+  transition: background-color 150ms ease;
+}
+
+.profileLink:hover { background-color: #F3EFE8; }
+.profileLink:hover .avatar { border-color: #C4633E; }
+
 .avatar {
   font-size: 1.5rem;
   display: flex;
@@ -81,13 +94,19 @@
   border-radius: var(--radius-full);
   background-color: #F3EFE8;
   border: 1.5px solid #E8E0D4;
-  text-decoration: none;
+  flex-shrink: 0;
   transition: border-color 150ms ease;
 }
 
-.avatar:hover {
-  border-color: #C4633E;
-  text-decoration: none;
+.userName {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #1F1B16;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .signOut {
@@ -106,4 +125,5 @@
 @media (max-width: 600px) {
   .signOut { display: none; }
   .links { gap: var(--sp-1); }
+  .userName { display: none; }
 }

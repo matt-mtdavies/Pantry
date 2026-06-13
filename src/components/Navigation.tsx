@@ -36,8 +36,11 @@ export default function Navigation() {
 
         {user && (
           <div className={styles.user}>
-            <Link to="/profile" className={styles.avatar} aria-label="My profile">
-              {AVATARS[user.avatar_id] ?? '🌿'}
+            <Link to="/profile" className={styles.profileLink} aria-label="My profile">
+              <span className={styles.avatar}>{AVATARS[user.avatar_id] ?? '🌿'}</span>
+              <span className={styles.userName}>
+                {user.display_name || user.email.split('@')[0]}
+              </span>
             </Link>
             <button onClick={handleLogout} className={styles.signOut}>
               Sign out
