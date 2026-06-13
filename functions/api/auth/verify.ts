@@ -51,21 +51,19 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)'
     ).bind(sessionId, user.id, sessionExpiry).run()
 
-    const cookie = `pantry_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 30}`
-
-    // Return an HTML page rather than a bare 302 redirect so that WebKit/ITP
-    // processes the Set-Cookie on a 200 response (not a redirect response).
-    // Safari may discard Set-Cookie on 3xx redirects that arrive via cross-app
-    // link clicks (treating the token query param as "link decoration").
+    // Pass session ID via URL fragment — fragment is never sent to the server
+    // and is not subject to ITP's link-decoration cookie restrictions.
+    // The SPA reads it and calls /api/auth/set-session (a same-origin fetch)
+    // which sets the cookie. ITP doesn't quarantine cookies from same-origin
+    // XHR/fetch responses, only from cross-app link navigation Set-Cookie.
     return new Response(
       `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<script>window.location.replace('/');</script>
+<script>window.location.replace('/auth/complete#${sessionId}');</script>
 </head><body></body></html>`,
       {
         status: 200,
         headers: {
           'Content-Type': 'text/html;charset=UTF-8',
-          'Set-Cookie': cookie,
           'Cache-Control': 'no-store',
         },
       },
