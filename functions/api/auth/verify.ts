@@ -7,11 +7,9 @@ function generateId(): string {
 }
 
 // GET: validate the token exists but DO NOT consume it.
-// Email security scanners (Gmail, Apple, etc.) pre-fetch every link in
-// incoming emails as a GET request. If we consumed the token here, it
-// would be marked used before the user ever clicks. Instead the GET just
-// shows a landing page that auto-submits a POST via JavaScript. Scanners
-// don't execute JS or submit forms.
+// Email security scanners pre-fetch every link in incoming emails as a GET
+// request. The GET just shows a landing page with an auto-submit form.
+// Scanners don't execute JavaScript or submit HTML forms.
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const url = new URL(ctx.request.url)
   const token = url.searchParams.get('token')
@@ -27,29 +25,21 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     return redirect('/auth?error=expired')
   }
 
-  // Auto-submitting form — email scanners won't execute this JS
   const escaped = token.replace(/[^a-f0-9]/g, '')
   return new Response(
     `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('f').submit();
-});
-</script>
+<script>document.addEventListener('DOMContentLoaded',function(){document.getElementById('f').submit();});</script>
 </head><body>
+<p style="font-family:system-ui;padding:2rem;color:#6B6459">Signing you in&hellip;</p>
 <form id="f" method="POST" action="/api/auth/verify">
   <input type="hidden" name="token" value="${escaped}">
 </form>
 </body></html>`,
-    {
-      status: 200,
-      headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'no-store' },
-    },
+    { status: 200, headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'no-store' } },
   )
 }
 
-// POST: actually consume the token and create the session.
-// Only reachable by a real browser executing the auto-submit form.
+// POST: consume the token, create the session, hand off to the SPA.
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   try {
     const formData = await ctx.request.formData()
@@ -81,23 +71,30 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     }
 
     const sessionId = generateId()
+    const maxAge = 60 * 60 * 24 * 30
     await ctx.env.DB.prepare(
       'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)'
-    ).bind(sessionId, user.id, now + 60 * 60 * 24 * 30).run()
+    ).bind(sessionId, user.id, now + maxAge).run()
 
-    // Pass session via URL fragment to /auth/complete — fragment is never sent
-    // to the server and bypasses Safari ITP link-decoration restrictions.
+    // Set cookie (works in non-ITP browsers / Brave) AND pass via query param
+    // so the SPA can store it in localStorage (works in Safari ITP contexts).
+    const cookie = `pantry_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`
+
     return new Response(
       `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<script>window.location.replace('/auth/complete#${sessionId}');</script>
+<script>window.location.replace('/auth/complete?s=${sessionId}');</script>
 </head><body></body></html>`,
       {
         status: 200,
-        headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'no-store' },
+        headers: {
+          'Content-Type': 'text/html;charset=UTF-8',
+          'Set-Cookie': cookie,
+          'Cache-Control': 'no-store',
+        },
       },
     )
   } catch (err) {
-    console.error('[verify POST] error:', err instanceof Error ? err.message : String(err))
+    console.error('[verify POST]', err instanceof Error ? err.message : String(err))
     return redirect('/auth?error=server_error')
   }
 }

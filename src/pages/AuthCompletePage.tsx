@@ -1,21 +1,26 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styles from './AuthPage.module.css'
 
 export default function AuthCompletePage() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
 
   useEffect(() => {
-    const sessionId = window.location.hash.slice(1)
+    const sessionId = params.get('s')
     if (!sessionId) {
       navigate('/auth?error=missing_token', { replace: true })
       return
     }
-    localStorage.setItem('pantry_session', sessionId)
-    // Full reload so AuthProvider's initial fetchMe runs after localStorage is set,
-    // avoiding the race where fetchMe fires before we save the session.
+    try {
+      localStorage.setItem('pantry_session', sessionId)
+    } catch {
+      // localStorage unavailable — cookie fallback will handle auth
+    }
+    // Full reload so AuthProvider's initial fetchMe runs after localStorage is
+    // populated, avoiding the race where fetchMe fires before we save the session.
     window.location.replace('/')
-  }, [navigate])
+  }, [navigate, params])
 
   return (
     <div className={styles.page}>
