@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
 import type { User } from '../types'
 
 interface AuthContextValue {
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchMe = async () => {
+  const fetchMe = useCallback(async () => {
     try {
       const res = await fetch('/api/me', { credentials: 'include' })
       if (res.ok) {
@@ -33,14 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { fetchMe() }, [])
+  useEffect(() => { fetchMe() }, [fetchMe])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await fetch('/api/logout', { method: 'POST', credentials: 'include' })
     setUser(null)
-  }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, refetch: fetchMe, logout }}>
