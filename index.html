@@ -13,17 +13,23 @@
     <link rel="manifest" href="/manifest.json" />
     <title>Pantry</title>
     <script>
-      // Diagnostic: surface any resource-load or JS errors visibly on-screen.
+      // Diagnostic: surface any JS or resource errors visibly on-screen.
       window.__diag = function(msg) {
         var el = document.createElement('div');
         el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#C4220A;color:#fff;padding:12px 16px;font:14px/1.5 system-ui;word-break:break-all';
         el.textContent = msg;
         document.body ? document.body.appendChild(el) : document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(el); });
       };
+      // Catch resource-load failures (wrong MIME type, 404, CORS)
       window.addEventListener('error', function(e) {
         var src = (e.target && (e.target.src || e.target.href)) || '';
-        if (src) window.__diag('Failed to load: ' + src);
+        window.__diag(src ? 'Load error: ' + src : 'JS error: ' + (e.message || 'unknown'));
       }, { capture: true });
+      // Catch module-level errors (unhandled promise rejections from module eval)
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = e.reason ? (e.reason.message || String(e.reason)) : 'unhandled rejection';
+        window.__diag('Module error: ' + msg);
+      });
       setTimeout(function() {
         var root = document.getElementById('root');
         if (root && !root.hasChildNodes()) {
@@ -34,7 +40,7 @@
           btn.style.cssText = 'color:#C4633E;font:600 1.1rem system-ui;text-decoration:none';
           root.appendChild(btn);
         }
-      }, 5000);
+      }, 6000);
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
