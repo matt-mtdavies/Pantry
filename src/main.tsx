@@ -4,11 +4,12 @@ import './index.css'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 
+// Service worker disabled — it caused blank pages when Vite chunk hashes
+// changed between deployments (stale-while-revalidate served old HTML).
+// The deployed sw.js self-destructs and clears all caches on activation.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // SW registration is optional; app still works without it
-    })
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister())
   })
 }
 

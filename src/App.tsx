@@ -24,6 +24,7 @@ export default function App() {
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/verify" element={<AuthPage />} />
+          <Route path="/api/auth/verify" element={<AuthPage />} />
           <Route path="/share/:token" element={<SharePage />} />
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/recipe/new" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
