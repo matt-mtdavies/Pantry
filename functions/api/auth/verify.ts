@@ -9,8 +9,11 @@ function generateId(): string {
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const url = new URL(ctx.request.url)
   const token = url.searchParams.get('token')
+  const origin = url.origin
 
-  if (!token) return json({ error: 'Token required' }, 400)
+  if (!token) {
+    return Response.redirect(`${origin}/auth?error=missing_token`, 302)
+  }
 
   const now = Math.floor(Date.now() / 1000)
 
@@ -18,7 +21,9 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     'SELECT * FROM magic_tokens WHERE token = ? AND expires_at > ? AND used = 0'
   ).bind(token, now).first<{ token: string; email: string }>()
 
-  if (!magicToken) return json({ error: 'Invalid or expired link' }, 400)
+  if (!magicToken) {
+    return Response.redirect(`${origin}/auth?error=expired`, 302)
+  }
 
   // Mark token as used
   await ctx.env.DB.prepare('UPDATE magic_tokens SET used = 1 WHERE token = ?').bind(token).run()
@@ -43,20 +48,16 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     'INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)'
   ).bind(sessionId, user.id, sessionExpiry).run()
 
-  const isSecure = url.protocol === 'https:'
-  const cookieFlags = `Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}${isSecure ? '; Secure' : ''}`
+  const cookieFlags = `Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 30}`
 
-  return new Response(JSON.stringify({ ok: true }), {
+  // Server-side redirect — browser follows it with the cookie already set.
+  // This is far more reliable than client-side verification, especially
+  // for iOS Mail which opens links in a sandboxed in-app browser.
+  return new Response(null, {
+    status: 302,
     headers: {
-      'Content-Type': 'application/json',
+      'Location': `${origin}/`,
       'Set-Cookie': `pantry_session=${sessionId}; ${cookieFlags}`,
     },
-  })
-}
-
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
   })
 }
