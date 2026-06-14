@@ -5,12 +5,9 @@ import { useAuth } from '../hooks/useAuth'
 import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
+import { avatarEmoji } from '../lib/avatars'
 import type { Recipe } from '../types'
 import styles from './RecipePage.module.css'
-
-const AVATARS: Record<string, string> = {
-  herb: '🌿', lemon: '🍋', pepper: '🌶️', apple: '🍎', mushroom: '🍄', carrot: '🥕',
-}
 
 export default function RecipePage() {
   const { id } = useParams<{ id: string }>()
@@ -136,7 +133,7 @@ export default function RecipePage() {
             {/* Author attribution for public recipes */}
             {!isOwner && recipe.author_name !== undefined && (
               <div className={styles.authorRow}>
-                <span className={styles.authorAvatar}>{AVATARS[recipe.author_avatar ?? ''] ?? '🌿'}</span>
+                <span className={styles.authorAvatar}>{avatarEmoji(recipe.author_avatar)}</span>
                 <span className={styles.authorName}>by {recipe.author_name ?? 'Anonymous'}</span>
               </div>
             )}
@@ -286,17 +283,6 @@ export default function RecipePage() {
                   You rated this {recipe.my_rating}/5 — tap to change
                 </p>
               )}
-            </div>
-          )}
-
-          {recipe.screenshot_keys.length > 0 && (
-            <div className={styles.original}>
-              <span className={styles.originalLabel}>View original screenshot</span>
-              {recipe.screenshot_keys.map((key, i) => (
-                <a key={i} href={imageUrl(key)!} target="_blank" rel="noopener noreferrer" className={styles.originalLink}>
-                  {recipe.screenshot_keys.length > 1 ? `Screenshot ${i + 1}` : 'Screenshot'}
-                </a>
-              ))}
             </div>
           )}
 

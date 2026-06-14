@@ -3,12 +3,9 @@ import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getLeaderboard } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
+import { avatarEmoji } from '../lib/avatars'
 import type { LeaderboardRecipe, LeaderboardChef } from '../types'
 import styles from './LeaderboardPage.module.css'
-
-const AVATARS: Record<string, string> = {
-  herb: '🌿', lemon: '🍋', pepper: '🌶️', apple: '🍎', mushroom: '🍄', carrot: '🥕',
-}
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
@@ -118,7 +115,7 @@ function ChefRow({ chef: c, rank }: { chef: LeaderboardChef; rank: number }) {
     <div className={styles.row}>
       <span className={styles.rank}>{MEDALS[rank - 1] ?? `#${rank}`}</span>
       <div className={styles.chefAvatar}>
-        {AVATARS[c.avatar_id] ?? '🌿'}
+        {avatarEmoji(c.avatar_id)}
       </div>
       <div className={styles.rowInfo}>
         <p className={styles.rowTitle}>{c.display_name ?? 'Anonymous'}</p>

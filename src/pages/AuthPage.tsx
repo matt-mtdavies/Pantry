@@ -40,13 +40,14 @@ export default function AuthPage() {
         return
       }
 
-      const { sessionId } = mode === 'signin'
-        ? await login(email.trim(), password)
-        : await register(email.trim(), password, displayName.trim() || undefined)
+      const isRegister = mode === 'register'
+      const { sessionId } = isRegister
+        ? await register(email.trim(), password, displayName.trim() || undefined)
+        : await login(email.trim(), password)
 
       localStorage.setItem('pantry_session', sessionId)
       await refetch()
-      navigate('/', { replace: true })
+      navigate(isRegister ? '/profile' : '/', { replace: true })
     } catch (err) {
       setStatus('error')
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')

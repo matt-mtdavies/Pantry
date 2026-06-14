@@ -228,23 +228,6 @@
   line-height: var(--leading-relaxed);
 }
 
-.original {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: #9C9189;
-  margin-bottom: var(--sp-8);
-  flex-wrap: wrap;
-}
-
-.originalLabel { }
-
-.originalLink {
-  color: #7A8B6F;
-  text-decoration: underline;
-}
 
 .dangerZone {
   padding: var(--sp-8) 0 var(--sp-12);

@@ -107,14 +107,13 @@
 }
 
 .avatars {
-  display: flex;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: var(--sp-2);
 }
 
 .avatarBtn {
-  width: 72px;
-  height: 72px;
+  aspect-ratio: 1;
   border-radius: var(--radius-lg);
   border: 2px solid #E8E0D4;
   background: #FFFFFF;
@@ -193,7 +192,7 @@
   background: #FAF7F2;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-5);
 }
 
 .backfillTitle {
@@ -203,16 +202,44 @@
   color: #1F1B16;
 }
 
+.backfillRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+
+@media (max-width: 480px) {
+  .backfillRow { grid-template-columns: 1fr; }
+}
+
+.backfillItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: #FFFFFF;
+  border: 1px solid #E8E0D4;
+  border-radius: var(--radius-md);
+}
+
+.backfillLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #1F1B16;
+}
+
 .backfillText {
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: #6B6459;
   line-height: var(--leading-relaxed);
+  flex: 1;
 }
 
 .backfillBtn {
   align-self: flex-start;
-  padding: var(--sp-3) var(--sp-5);
+  padding: var(--sp-2) var(--sp-4);
   border: 1.5px solid #C4633E;
   border-radius: var(--radius-md);
   font-family: var(--font-ui);
@@ -220,7 +247,7 @@
   font-weight: 500;
   color: #C4633E;
   background: transparent;
-  min-height: 44px;
+  min-height: 40px;
   transition: background-color 150ms ease, color 150ms ease;
 }
 
@@ -233,8 +260,9 @@
 
 .backfillResult {
   font-family: var(--font-ui);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: #6B6459;
+  margin-top: var(--sp-1);
 }
 
 .signOutSection {

@@ -149,6 +149,12 @@ export async function backfillNutrition(): Promise<{ updated: number; has_more: 
   return request('/api/admin/backfill-nutrition', { method: 'POST' })
 }
 
+// Backfill missing recipe hero images
+
+export async function backfillImages(): Promise<{ updated: number; has_more: boolean; message: string }> {
+  return request('/api/admin/backfill-images', { method: 'POST' })
+}
+
 // Rate a recipe
 
 export async function rateRecipe(

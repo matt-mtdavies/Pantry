@@ -4,12 +4,9 @@ import Navigation from '../components/Navigation'
 import { searchPublicRecipes } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
+import { avatarEmoji } from '../lib/avatars'
 import type { Recipe } from '../types'
 import styles from './SearchPage.module.css'
-
-const AVATARS: Record<string, string> = {
-  herb: '🌿', lemon: '🍋', pepper: '🌶️', apple: '🍎', mushroom: '🍄', carrot: '🥕',
-}
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Other']
 const AGE_OPTIONS = ['Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+']
@@ -250,7 +247,7 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
           </div>
         )}
         <div className={styles.cardAuthor}>
-          <span className={styles.authorAvatar}>{AVATARS[r.author_avatar ?? ''] ?? '🌿'}</span>
+          <span className={styles.authorAvatar}>{avatarEmoji(r.author_avatar)}</span>
           <span className={styles.authorName}>{r.author_name ?? 'Anonymous'}</span>
         </div>
       </div>

@@ -2,17 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
-import { backfillNutrition } from '../lib/api'
+import { backfillNutrition, backfillImages } from '../lib/api'
+import { AVATARS } from '../lib/avatars'
 import styles from './ProfilePage.module.css'
-
-const AVATARS = [
-  { id: 'herb',     emoji: '🌿', label: 'Herb' },
-  { id: 'lemon',    emoji: '🍋', label: 'Lemon' },
-  { id: 'pepper',   emoji: '🌶️', label: 'Pepper' },
-  { id: 'apple',    emoji: '🍎', label: 'Apple' },
-  { id: 'mushroom', emoji: '🍄', label: 'Mushroom' },
-  { id: 'carrot',   emoji: '🥕', label: 'Carrot' },
-]
 
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary', 'Other']
 
@@ -43,6 +35,8 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false)
   const [backfilling, setBackfilling] = useState(false)
   const [backfillMsg, setBackfillMsg] = useState('')
+  const [backfillingImgs, setBackfillingImgs] = useState(false)
+  const [backfillImgsMsg, setBackfillImgsMsg] = useState('')
 
   if (!user) return null
 
@@ -87,6 +81,19 @@ export default function ProfilePage() {
       setBackfillMsg('Something went wrong. Please try again.')
     } finally {
       setBackfilling(false)
+    }
+  }
+
+  const handleBackfillImages = async () => {
+    setBackfillingImgs(true)
+    setBackfillImgsMsg('')
+    try {
+      const result = await backfillImages()
+      setBackfillImgsMsg(result.message + (result.has_more ? ' — run again for more.' : ''))
+    } catch {
+      setBackfillImgsMsg('Something went wrong. Please try again.')
+    } finally {
+      setBackfillingImgs(false)
     }
   }
 
@@ -237,19 +244,39 @@ export default function ProfilePage() {
           </div>
 
           <div className={styles.backfillSection}>
-            <h2 className={styles.backfillTitle}>Recipe estimates</h2>
-            <p className={styles.backfillText}>
-              Add estimated calories and cost (in your local currency) to any recipes that are missing them.
-              {user.country ? ` Costs will be estimated in your country (${user.country}).` : ' Set your country above for local currency costs.'}
-            </p>
-            <button
-              className={styles.backfillBtn}
-              onClick={handleBackfill}
-              disabled={backfilling}
-            >
-              {backfilling ? 'Estimating…' : 'Fill in missing estimates'}
-            </button>
-            {backfillMsg && <p className={styles.backfillResult}>{backfillMsg}</p>}
+            <h2 className={styles.backfillTitle}>Recipe improvements</h2>
+
+            <div className={styles.backfillRow}>
+              <div className={styles.backfillItem}>
+                <p className={styles.backfillLabel}>Add missing photos</p>
+                <p className={styles.backfillText}>
+                  Find food photos for any recipes that don't have one yet.
+                </p>
+                <button
+                  className={styles.backfillBtn}
+                  onClick={handleBackfillImages}
+                  disabled={backfillingImgs}
+                >
+                  {backfillingImgs ? 'Searching…' : 'Add missing photos'}
+                </button>
+                {backfillImgsMsg && <p className={styles.backfillResult}>{backfillImgsMsg}</p>}
+              </div>
+
+              <div className={styles.backfillItem}>
+                <p className={styles.backfillLabel}>Add missing estimates</p>
+                <p className={styles.backfillText}>
+                  Estimate calories and cost{user.country ? ` (${user.country} prices)` : ''} for recipes missing them.
+                </p>
+                <button
+                  className={styles.backfillBtn}
+                  onClick={handleBackfill}
+                  disabled={backfilling}
+                >
+                  {backfilling ? 'Estimating…' : 'Fill in missing estimates'}
+                </button>
+                {backfillMsg && <p className={styles.backfillResult}>{backfillMsg}</p>}
+              </div>
+            </div>
           </div>
 
           <div className={styles.signOutSection}>
