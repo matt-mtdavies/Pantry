@@ -384,6 +384,7 @@
 
 .imgThumb:hover { border-color: #C4633E; }
 .imgThumbActive { border-color: #C4633E !important; }
+.imgThumbSkeleton { width: 80px; height: 80px; flex-shrink: 0; }
 
 .imgThumbNone {
   font-family: var(--font-ui);

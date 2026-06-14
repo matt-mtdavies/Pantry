@@ -274,19 +274,32 @@ function ReviewScreen({
   const isEmptyExtraction = initial.ingredients.length === 0 && initial.steps.length === 0
   const [editMode, setEditMode] = useState(isEmptyExtraction)
 
-  // Image picker state
-  const [selectedImage, setSelectedImage] = useState<string | null>(initial.source_image_url ?? null)
-  const [imageOptions, setImageOptions] = useState<{ url: string; thumb: string }[]>([])
-  const [searchingImages, setSearchingImages] = useState(!initial.source_image_url)
+  // Build stable blob-URL entries for the uploaded files (computed once)
+  const screenshotOptions = useRef(
+    files.map(f => ({ url: URL.createObjectURL(f), file: f }))
+  ).current
 
+  // Revoke blob URLs when the component unmounts to avoid memory leaks
+  useEffect(() => () => screenshotOptions.forEach(o => URL.revokeObjectURL(o.url)), []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Image picker state — pre-select the first uploaded screenshot when no extracted image URL
+  const [selectedImage, setSelectedImage] = useState<string | null>(
+    initial.source_image_url ?? screenshotOptions[0]?.url ?? null
+  )
+  const [imageOptions, setImageOptions] = useState<{ url: string; thumb: string }[]>([])
+  const [searchingImages, setSearchingImages] = useState(false)
+
+  // Always search Unsplash for alternatives (don't auto-select if we already have an image)
   useEffect(() => {
     if (initial.source_image_url) return
     const title = initial.title.trim()
-    if (!title) { setSearchingImages(false); return }
+    if (!title) return
+    setSearchingImages(true)
+    const hasInitialSelection = !!initial.source_image_url || screenshotOptions.length > 0
     searchImages(title)
       .then(imgs => {
         setImageOptions(imgs)
-        if (imgs.length) setSelectedImage(imgs[0].url)
+        if (imgs.length && !hasInitialSelection) setSelectedImage(imgs[0].url)
       })
       .catch(() => {})
       .finally(() => setSearchingImages(false))
@@ -329,10 +342,14 @@ function ReviewScreen({
         cost_currency: recipe.cost_currency ?? 'USD',
       } as Parameters<typeof createRecipe>[0])
 
-      for (const file of files) {
-        try { await uploadImage(file, created.id, 'screenshot') } catch { /* non-fatal */ }
+      // If the user chose one of their uploaded screenshots as the hero, upload it as 'hero';
+      // upload the rest as 'screenshot'. Otherwise fetch the external URL as the hero.
+      const heroScreenshot = screenshotOptions.find(o => o.url === selectedImage)
+      for (const opt of screenshotOptions) {
+        const role = opt === heroScreenshot ? 'hero' : 'screenshot'
+        try { await uploadImage(opt.file, created.id, role) } catch { /* non-fatal */ }
       }
-      if (selectedImage) {
+      if (!heroScreenshot && selectedImage) {
         try { await fetchRecipeImage(created.id, selectedImage) } catch { /* non-fatal */ }
       }
 
@@ -353,9 +370,9 @@ function ReviewScreen({
         <main className="page-main">
           {(selectedImage || searchingImages) && (
             <div className={styles.previewHero}>
-              {searchingImages
-                ? <div className={styles.previewHeroPlaceholder} />
-                : <img src={selectedImage!} alt={recipe.title} className={styles.previewHeroImg} />
+              {selectedImage
+                ? <img src={selectedImage} alt={recipe.title} className={styles.previewHeroImg} />
+                : <div className={styles.previewHeroPlaceholder} />
               }
             </div>
           )}
@@ -462,41 +479,43 @@ function ReviewScreen({
 
           <div className={styles.reviewForm}>
             {/* Photo picker */}
-            {(searchingImages || selectedImage || imageOptions.length > 0) && (
+            {(screenshotOptions.length > 0 || searchingImages || selectedImage || imageOptions.length > 0) && (
               <div className={styles.field}>
                 <label className={styles.label}>Recipe photo</label>
 
-                {searchingImages && <p className={styles.imgSearching}>Finding photos…</p>}
-
-                {!searchingImages && selectedImage && (
+                {selectedImage && (
                   <div className={styles.imgSelected}>
                     <img src={selectedImage} alt="Recipe" className={styles.imgPreview} />
-                    <div className={styles.imgThumbs}>
-                      {imageOptions.map((opt, i) => (
-                        <button
-                          key={i}
-                          className={`${styles.imgThumb} ${selectedImage === opt.url ? styles.imgThumbActive : ''}`}
-                          onClick={() => setSelectedImage(opt.url)}
-                        >
-                          <img src={opt.thumb} alt="" />
-                        </button>
-                      ))}
-                      <button className={styles.imgThumbNone} onClick={() => setSelectedImage(null)}>
-                        No photo
-                      </button>
-                    </div>
                   </div>
                 )}
 
-                {!searchingImages && !selectedImage && imageOptions.length > 0 && (
-                  <div className={styles.imgPicker}>
-                    {imageOptions.map((opt, i) => (
-                      <button key={i} className={styles.imgThumb} onClick={() => setSelectedImage(opt.url)}>
-                        <img src={opt.thumb} alt={`Photo option ${i + 1}`} />
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className={styles.imgThumbs}>
+                  {/* Uploaded screenshots — shown first so the user's own photo is the default */}
+                  {screenshotOptions.map((opt, i) => (
+                    <button
+                      key={`ss-${i}`}
+                      className={`${styles.imgThumb} ${selectedImage === opt.url ? styles.imgThumbActive : ''}`}
+                      onClick={() => setSelectedImage(opt.url)}
+                      title="Use photo from your screenshot"
+                    >
+                      <img src={opt.url} alt={`Screenshot ${i + 1}`} />
+                    </button>
+                  ))}
+                  {/* Unsplash suggestions */}
+                  {imageOptions.map((opt, i) => (
+                    <button
+                      key={`uns-${i}`}
+                      className={`${styles.imgThumb} ${selectedImage === opt.url ? styles.imgThumbActive : ''}`}
+                      onClick={() => setSelectedImage(opt.url)}
+                    >
+                      <img src={opt.thumb} alt="" />
+                    </button>
+                  ))}
+                  {searchingImages && <div className={`skeleton ${styles.imgThumbSkeleton}`} />}
+                  <button className={styles.imgThumbNone} onClick={() => setSelectedImage(null)}>
+                    No photo
+                  </button>
+                </div>
               </div>
             )}
 
