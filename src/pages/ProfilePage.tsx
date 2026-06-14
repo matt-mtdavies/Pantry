@@ -297,19 +297,17 @@ export default function ProfilePage() {
           <div className={styles.inviteSection}>
             <h2 className={styles.inviteTitle}>Invite friends</h2>
             <p className={styles.inviteText}>
-              Know someone who'd love to track their recipes? Send them the link.
+              Know someone who'd love to track their recipes? Send them a link.
             </p>
-            <div className={styles.inviteRow}>
-              <span className={styles.inviteUrl}>{window.location.origin}</span>
-              <button className={styles.inviteCopyBtn} onClick={handleInviteCopy}>
-                {inviteCopied ? '✓ Copied!' : 'Copy link'}
+            {typeof navigator.share === 'function' ? (
+              <button className={styles.inviteShareBtn} onClick={handleInviteShare}>
+                Share Pantry
               </button>
-              {typeof navigator.share === 'function' && (
-                <button className={styles.inviteShareBtn} onClick={handleInviteShare}>
-                  Share
-                </button>
-              )}
-            </div>
+            ) : (
+              <button className={styles.inviteCopyBtn} onClick={handleInviteCopy}>
+                {inviteCopied ? '✓ Copied!' : 'Copy invite link'}
+              </button>
+            )}
           </div>
 
           <div className={styles.signOutSection}>
