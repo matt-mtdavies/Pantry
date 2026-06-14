@@ -171,6 +171,7 @@
     flex: none;
     width: 52px;
     height: 52px;
+    min-height: 52px;
     margin: 0 var(--sp-1);
     margin-bottom: var(--sp-2);
     padding: 0;
