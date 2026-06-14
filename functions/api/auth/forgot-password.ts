@@ -15,9 +15,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: true })
 
-  // Only send reset if account has a password set
+  // Allow any user (including those without a password yet) to set/reset via email
   const user = await ctx.env.DB.prepare(
-    'SELECT id FROM users WHERE email = ? AND password_hash IS NOT NULL'
+    'SELECT id FROM users WHERE email = ?'
   ).bind(email).first()
   if (!user) return json({ ok: true }) // silent — don't reveal whether email exists
 
@@ -29,9 +29,14 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const appUrl = (ctx.env.APP_URL ?? `https://${new URL(ctx.request.url).host}`).replace(/\/$/, '')
   const resetLink = `${appUrl}/reset-password?token=${token}`
-  const from = ctx.env.RESEND_FROM_EMAIL ?? 'Pantry <noreply@pantry.app>'
+  const from = ctx.env.RESEND_FROM_EMAIL ?? 'Pantry <noreply@myopenpantry.com>'
 
-  await fetch('https://api.resend.com/emails', {
+  if (!ctx.env.RESEND_API_KEY) {
+    console.error('[forgot-password] RESEND_API_KEY is not set')
+    return json({ ok: true })
+  }
+
+  const resendRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${ctx.env.RESEND_API_KEY}`,
@@ -44,6 +49,11 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
       html: buildEmail(resetLink),
     }),
   })
+
+  if (!resendRes.ok) {
+    const body = await resendRes.text()
+    console.error('[forgot-password] Resend error', resendRes.status, body)
+  }
 
   return json({ ok: true })
 }
