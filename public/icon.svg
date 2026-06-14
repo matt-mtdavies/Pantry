@@ -1,22 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- Background: terracotta rounded square -->
   <rect width="100" height="100" rx="22" fill="#C4633E"/>
-
-  <!-- Letter P: cream-coloured, built from paths so it renders crisply at any size -->
-  <!--
-    Stem: x 22→34, y 18→82
-    Outer bowl: D-curve from (34,18) sweeping right (peak ~x=73) back to (34,58)
-    Inner counter: D-curve from (34,30) sweeping right (peak ~x=60) back to (34,46)
-    The counter is painted terracotta to punch the hole.
-  -->
-
-  <!-- Full P shape (stem + filled bowl area) -->
-  <path d="M22 18 L22 82 L34 82 L34 58 C73 58 73 18 34 18 Z" fill="#FAF7F2"/>
-
-  <!-- Counter — restores background colour to create the open hole of the P -->
-  <path d="M34 46 C60 46 60 30 34 30 Z" fill="#C4633E"/>
-
-  <!-- Serif ticks on stem: top and bottom horizontal bars -->
-  <rect x="16" y="18" width="20" height="6" rx="3" fill="#FAF7F2"/>
-  <rect x="16" y="76" width="20" height="6" rx="3" fill="#FAF7F2"/>
+  <!-- Stem + bowl: control points pushed out so visual peak lands at x≈78 -->
+  <path d="M28 18 L28 82 L40 82 L40 58 C91 58 91 18 40 18 Z" fill="#FAF7F2"/>
+  <!-- Counter (inner hole) -->
+  <path d="M40 46 C78 46 78 30 40 30 Z" fill="#C4633E"/>
+  <!-- Serifs top + bottom -->
+  <rect x="21" y="18" width="25" height="6" rx="3" fill="#FAF7F2"/>
+  <rect x="21" y="76" width="25" height="6" rx="3" fill="#FAF7F2"/>
 </svg>
