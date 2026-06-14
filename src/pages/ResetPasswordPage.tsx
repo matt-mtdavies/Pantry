@@ -24,7 +24,7 @@ export default function ResetPasswordPage() {
     e.preventDefault()
     if (password !== confirm) {
       setStatus('error')
-      setError('Passwords don't match')
+      setError("Passwords don’t match")
       return
     }
     setStatus('submitting')
