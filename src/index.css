@@ -197,6 +197,13 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
   padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-8));
 }
 
+@media (max-width: 640px) {
+  .page-main {
+    /* extra space for the bottom tab bar (56px) + safe area */
+    padding-bottom: calc(56px + env(safe-area-inset-bottom) + var(--sp-4));
+  }
+}
+
 /* === LOADING SKELETON === */
 .skeleton {
   background: linear-gradient(90deg, #E8E0D4 25%, #F3EFE8 50%, #E8E0D4 75%);

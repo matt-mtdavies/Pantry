@@ -118,12 +118,90 @@
   transition: color 150ms ease;
 }
 
-.signOut:hover {
-  color: #1F1B16;
+.signOut:hover { color: #1F1B16; }
+
+/* ── Mobile bottom tab bar ────────────────────────── */
+
+.mobileNav {
+  display: none;
 }
 
-@media (max-width: 600px) {
-  .signOut { display: none; }
-  .links { gap: var(--sp-1); }
-  .userName { display: none; }
+@media (max-width: 640px) {
+  /* Hide top nav links on mobile */
+  .links  { display: none; }
+  .user   { display: none; }
+
+  /* Show bottom tab bar */
+  .mobileNav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #FAF7F2;
+    border-top: 1px solid #E8E0D4;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--sp-2) 0;
+    text-decoration: none;
+    min-height: 56px;
+    color: #9C9189;
+    transition: color 150ms ease;
+  }
+
+  .tabActive {
+    color: #C4633E;
+  }
+
+  .tabIcon {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .tabAvatarIcon {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .tabLabel {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  /* Featured "Add" button in centre */
+  .tabAdd {
+    flex: none;
+    width: 56px;
+    margin: 0 var(--sp-2);
+    padding: 0;
+    align-self: center;
+    border-radius: var(--radius-full);
+    background: #C4633E;
+    color: #FFFFFF;
+    height: 48px;
+    flex-direction: row;
+    box-shadow: 0 2px 8px rgba(196, 99, 62, 0.4);
+  }
+
+  .tabAdd.tabActive {
+    color: #FFFFFF;
+    background: #a8532f;
+  }
+
+  .tabAddIcon {
+    font-size: 1.75rem;
+    line-height: 1;
+    font-weight: 300;
+  }
 }
