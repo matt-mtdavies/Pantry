@@ -11,6 +11,8 @@ const EMPTY_RECIPE = (): Partial<Recipe> => ({
   servings: 4,
   prep_time: null,
   cook_time: null,
+  calories_per_serving: null,
+  cost_per_serving: null,
   ingredients: [],
   steps: [],
   tags: [],
@@ -173,6 +175,34 @@ export default function EditRecipePage() {
                   value={recipe.servings ?? ''}
                   onChange={e => update('servings', parseInt(e.target.value) || null as unknown as number)}
                   placeholder="4"
+                />
+              </div>
+            </div>
+
+            <div className={styles.metaRow}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="calories">Calories / serving <span className={styles.optional}>(est.)</span></label>
+                <input
+                  id="calories"
+                  className={styles.inputSm}
+                  type="number"
+                  min={0}
+                  value={recipe.calories_per_serving ?? ''}
+                  onChange={e => update('calories_per_serving', parseInt(e.target.value) || null as unknown as number)}
+                  placeholder="e.g. 450"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="cost">Cost / serving USD <span className={styles.optional}>(est.)</span></label>
+                <input
+                  id="cost"
+                  className={styles.inputSm}
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={recipe.cost_per_serving ?? ''}
+                  onChange={e => update('cost_per_serving', parseFloat(e.target.value) || null as unknown as number)}
+                  placeholder="e.g. 4.50"
                 />
               </div>
             </div>

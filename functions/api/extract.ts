@@ -20,7 +20,9 @@ Return exactly this schema:
     "Second step in full."
   ],
   "tags": ["baking", "vegetarian"],
-  "source_guess": "Name of website or publication if visible, otherwise null"
+  "source_guess": "Name of website or publication if visible, otherwise null",
+  "calories_per_serving": 450,
+  "cost_per_serving": 3.50
 }
 
 Rules:
@@ -30,6 +32,8 @@ Rules:
 - unit can be empty string "" if no unit (e.g. "2 eggs" → amount: "2", unit: "", name: "eggs")
 - steps should be complete sentences with all the detail from the original
 - tags should be lowercase, short, helpful (e.g. dinner, baking, quick, vegetarian, chicken, pasta)
+- calories_per_serving: integer, estimated kcal per serving based on the ingredients. Use null if you cannot estimate.
+- cost_per_serving: float, estimated ingredient cost per serving in USD at typical supermarket prices. Use null if you cannot estimate.
 - If you cannot read the image or it doesn't contain a recipe, return: {"error": "Cannot extract recipe from this image"}`
 
 interface ClaudeMessage {
@@ -125,6 +129,8 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     steps: Array.isArray(extracted.steps) ? extracted.steps.map(String) : [],
     tags: Array.isArray(extracted.tags) ? extracted.tags.map(String) : [],
     source_guess: extracted.source_guess ? String(extracted.source_guess) : null,
+    calories_per_serving: typeof extracted.calories_per_serving === 'number' ? Math.round(extracted.calories_per_serving) : null,
+    cost_per_serving: typeof extracted.cost_per_serving === 'number' ? extracted.cost_per_serving : null,
   })
 }
 

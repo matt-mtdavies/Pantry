@@ -133,8 +133,8 @@ export async function resetPassword(token: string, password: string): Promise<{ 
 
 // Search public recipes
 
-export async function searchPublicRecipes(q: string): Promise<Recipe[]> {
-  return request<Recipe[]>(`/api/search?q=${encodeURIComponent(q)}`)
+export async function searchPublicRecipes(qs: string): Promise<Recipe[]> {
+  return request<Recipe[]>(`/api/search?${qs}`)
 }
 
 // Leaderboard

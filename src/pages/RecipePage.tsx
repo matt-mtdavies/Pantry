@@ -167,6 +167,18 @@ export default function RecipePage() {
                   <span className={styles.metaValue}>{recipe.servings}</span>
                 </div>
               )}
+              {recipe.calories_per_serving != null && (
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Calories</span>
+                  <span className={styles.metaValue}>~{recipe.calories_per_serving} kcal</span>
+                </div>
+              )}
+              {recipe.cost_per_serving != null && (
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Est. cost</span>
+                  <span className={styles.metaValue}>~${recipe.cost_per_serving.toFixed(2)}</span>
+                </div>
+              )}
             </div>
 
             {/* Rating display */}

@@ -62,7 +62,7 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     UPDATE recipes SET
       title = ?, description = ?, servings = ?, prep_time = ?, cook_time = ?,
       ingredients = ?, steps = ?, tags = ?, source_guess = ?, is_favourite = ?,
-      needs_attention = ?, updated_at = ?
+      needs_attention = ?, calories_per_serving = ?, cost_per_serving = ?, updated_at = ?
     WHERE id = ? AND user_id = ?
   `).bind(
     body.title ?? 'Untitled',
@@ -76,6 +76,8 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     body.source_guess ?? null,
     body.is_favourite ? 1 : 0,
     body.needs_attention ? 1 : 0,
+    typeof body.calories_per_serving === 'number' ? body.calories_per_serving : null,
+    typeof body.cost_per_serving === 'number' ? body.cost_per_serving : null,
     now, id, userId,
   ).run()
 

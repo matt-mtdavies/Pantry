@@ -35,6 +35,8 @@ export interface Recipe {
   is_deleted: boolean;
   needs_attention: boolean;
   share_token: string | null;
+  calories_per_serving: number | null;
+  cost_per_serving: number | null;
   created_at: number;
   updated_at: number;
   // Populated on public/search views
@@ -63,6 +65,8 @@ export interface ExtractedRecipe {
   tags: string[];
   source_guess: string | null;
   source_image_url?: string | null;
+  calories_per_serving?: number | null;
+  cost_per_serving?: number | null;
 }
 
 export interface LeaderboardRecipe {
