@@ -172,8 +172,7 @@
     width: 52px;
     height: 52px;
     min-height: 52px;
-    margin: 0 var(--sp-1);
-    margin-bottom: var(--sp-2);
+    margin: var(--sp-2) var(--sp-1) var(--sp-1);
     padding: 0;
     align-self: center;
     border-radius: var(--radius-full);
