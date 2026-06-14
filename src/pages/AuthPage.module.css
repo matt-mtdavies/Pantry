@@ -137,6 +137,48 @@
   font-size: inherit;
 }
 
+.toggle {
+  display: flex;
+  gap: var(--sp-1);
+  background: #F3EFE8;
+  border-radius: var(--radius-md);
+  padding: var(--sp-1);
+  margin-bottom: var(--sp-6);
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: calc(var(--radius-md) - 2px);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #6B6459;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.toggleBtnActive {
+  background: #FFFFFF;
+  color: #1F1B16;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.optional {
+  font-weight: 400;
+  color: #9C9189;
+}
+
+.forgotLink {
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #9C9189;
+  transition: color 150ms ease;
+  margin-top: var(--sp-1);
+}
+
+.forgotLink:hover { color: #C4633E; }
+
 .spinner {
   width: 40px;
   height: 40px;

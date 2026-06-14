@@ -95,11 +95,39 @@ export async function uploadImage(file: File, recipeId: string, role: 'hero' | '
 
 // Auth
 
-export async function sendMagicLink(email: string): Promise<void> {
-  await request<void>('/api/auth/send-link', {
+export async function login(email: string, password: string): Promise<{ sessionId: string }> {
+  return request<{ sessionId: string }>('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+}
+
+export async function register(
+  email: string,
+  password: string,
+  displayName?: string,
+): Promise<{ sessionId: string }> {
+  return request<{ sessionId: string }>('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, display_name: displayName }),
+  })
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  await request<void>('/api/auth/forgot-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
+  })
+}
+
+export async function resetPassword(token: string, password: string): Promise<{ sessionId: string }> {
+  return request<{ sessionId: string }>('/api/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
   })
 }
 

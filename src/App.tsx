@@ -9,6 +9,7 @@ import SharePage from './pages/SharePage'
 import ProfilePage from './pages/ProfilePage'
 import AuthPage from './pages/AuthPage'
 import AuthCompletePage from './pages/AuthCompletePage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import NeedsAttentionPage from './pages/NeedsAttentionPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/auth/complete" element={<AuthCompletePage />} />
           <Route path="/auth/verify" element={<AuthPage />} />
           <Route path="/api/auth/verify" element={<AuthPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/share/:token" element={<SharePage />} />
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/recipe/new" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
