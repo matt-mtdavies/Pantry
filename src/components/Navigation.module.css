@@ -120,18 +120,14 @@
 
 .signOut:hover { color: #1F1B16; }
 
-/* ── Mobile bottom tab bar ────────────────────────── */
+/* ── Mobile bottom tab bar ─────────────────────────────────────────────────── */
 
-.mobileNav {
-  display: none;
-}
+.mobileNav { display: none; }
 
 @media (max-width: 640px) {
-  /* Hide top nav links on mobile */
-  .links  { display: none; }
-  .user   { display: none; }
+  .links { display: none; }
+  .user  { display: none; }
 
-  /* Show bottom tab bar */
   .mobileNav {
     display: flex;
     position: fixed;
@@ -139,7 +135,9 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: #FAF7F2;
+    background: rgba(250, 247, 242, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid #E8E0D4;
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -150,58 +148,44 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    padding: var(--sp-2) 0;
+    gap: 4px;
+    padding: var(--sp-2) 0 var(--sp-1);
     text-decoration: none;
-    min-height: 56px;
+    min-height: 58px;
     color: #9C9189;
-    transition: color 150ms ease;
+    transition: color 120ms ease;
   }
 
-  .tabActive {
-    color: #C4633E;
-  }
-
-  .tabIcon {
-    font-size: 1.25rem;
-    line-height: 1;
-  }
-
-  .tabAvatarIcon {
-    font-size: 1.35rem;
-    line-height: 1;
-  }
+  .tabActive { color: #C4633E; }
 
   .tabLabel {
     font-family: var(--font-ui);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
-  /* Featured "Add" button in centre */
+  /* Raised orange "Add" circle */
   .tabAdd {
     flex: none;
-    width: 56px;
-    margin: 0 var(--sp-2);
+    width: 52px;
+    height: 52px;
+    margin: 0 var(--sp-1);
+    margin-bottom: var(--sp-2);
     padding: 0;
     align-self: center;
     border-radius: var(--radius-full);
     background: #C4633E;
-    color: #FFFFFF;
-    height: 48px;
+    color: #FFFFFF !important;
     flex-direction: row;
-    box-shadow: 0 2px 8px rgba(196, 99, 62, 0.4);
+    box-shadow: 0 3px 12px rgba(196, 99, 62, 0.45);
+    transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
   }
 
-  .tabAdd.tabActive {
-    color: #FFFFFF;
+  .tabAdd:active {
+    transform: scale(0.9);
+    box-shadow: 0 1px 4px rgba(196, 99, 62, 0.3);
     background: #a8532f;
-  }
-
-  .tabAddIcon {
-    font-size: 1.75rem;
-    line-height: 1;
-    font-weight: 300;
   }
 }
