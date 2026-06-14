@@ -13,12 +13,29 @@ const AVATARS = [
   { id: 'carrot',   emoji: '🥕', label: 'Carrot' },
 ]
 
+const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary', 'Other']
+
+const AGE_OPTIONS = [
+  'Prefer not to say',
+  'Under 18',
+  '18–24',
+  '25–34',
+  '35–44',
+  '45–54',
+  '55–64',
+  '65+',
+]
+
 export default function ProfilePage() {
   const { user, refetch, logout } = useAuth()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState(user?.display_name ?? '')
   const [avatarId, setAvatarId] = useState(user?.avatar_id ?? 'herb')
   const [defaultServings, setDefaultServings] = useState(user?.default_servings ?? 2)
+  const [isPublic, setIsPublic] = useState(user?.is_public ?? true)
+  const [country, setCountry] = useState(user?.country ?? '')
+  const [gender, setGender] = useState(user?.gender ?? 'Prefer not to say')
+  const [ageBracket, setAgeBracket] = useState(user?.age_bracket ?? 'Prefer not to say')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -34,7 +51,15 @@ export default function ProfilePage() {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ display_name: displayName, avatar_id: avatarId, default_servings: defaultServings }),
+        body: JSON.stringify({
+          display_name: displayName,
+          avatar_id: avatarId,
+          default_servings: defaultServings,
+          is_public: isPublic,
+          country: country || null,
+          gender: gender === 'Prefer not to say' ? null : gender,
+          age_bracket: ageBracket === 'Prefer not to say' ? null : ageBracket,
+        }),
       })
       await refetch()
       setSaved(true)
@@ -71,6 +96,8 @@ export default function ProfilePage() {
           </div>
 
           <div className={styles.form}>
+
+            {/* Display name */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="display-name">Your name</label>
               <input
@@ -82,6 +109,7 @@ export default function ProfilePage() {
               />
             </div>
 
+            {/* Avatar */}
             <div className={styles.field}>
               <span className={styles.label}>Profile picture</span>
               <div className={styles.avatars}>
@@ -99,6 +127,71 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Privacy toggle */}
+            <div className={styles.field}>
+              <span className={styles.label}>Profile visibility</span>
+              <p className={styles.hint}>
+                Public profiles appear in community search and the leaderboard.
+              </p>
+              <div className={styles.toggle}>
+                <button
+                  className={`${styles.toggleBtn} ${isPublic ? styles.toggleBtnActive : ''}`}
+                  onClick={() => setIsPublic(true)}
+                  aria-pressed={isPublic}
+                >
+                  🌍 Public
+                </button>
+                <button
+                  className={`${styles.toggleBtn} ${!isPublic ? styles.toggleBtnActive : ''}`}
+                  onClick={() => setIsPublic(false)}
+                  aria-pressed={!isPublic}
+                >
+                  🔒 Private
+                </button>
+              </div>
+            </div>
+
+            {/* Country */}
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="country">
+                Country <span className={styles.optional}>(optional)</span>
+              </label>
+              <input
+                id="country"
+                className={styles.input}
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                placeholder="e.g. Australia"
+              />
+            </div>
+
+            {/* Gender */}
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="gender">Gender</label>
+              <select
+                id="gender"
+                className={styles.select}
+                value={gender}
+                onChange={e => setGender(e.target.value)}
+              >
+                {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+
+            {/* Age bracket */}
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="age-bracket">Age group</label>
+              <select
+                id="age-bracket"
+                className={styles.select}
+                value={ageBracket}
+                onChange={e => setAgeBracket(e.target.value)}
+              >
+                {AGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+
+            {/* Default servings */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="default-servings">
                 Default number of servings

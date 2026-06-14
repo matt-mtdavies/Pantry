@@ -1,4 +1,4 @@
-import type { Recipe, ExtractedRecipe } from '../types'
+import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef } from '../types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: 'include', ...init })
@@ -128,6 +128,31 @@ export async function resetPassword(token: string, password: string): Promise<{ 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, password }),
+  })
+}
+
+// Search public recipes
+
+export async function searchPublicRecipes(q: string): Promise<Recipe[]> {
+  return request<Recipe[]>(`/api/search?q=${encodeURIComponent(q)}`)
+}
+
+// Leaderboard
+
+export async function getLeaderboard(): Promise<{ topRecipes: LeaderboardRecipe[]; topChefs: LeaderboardChef[] }> {
+  return request('/api/leaderboard')
+}
+
+// Rate a recipe
+
+export async function rateRecipe(
+  recipeId: string,
+  rating: number,
+): Promise<{ avg_rating: number; rating_count: number; my_rating: number }> {
+  return request(`/api/recipes/${recipeId}/rate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rating }),
   })
 }
 

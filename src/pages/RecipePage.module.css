@@ -418,3 +418,87 @@
 }
 
 .nativeShareBtn:hover { color: #C4633E; }
+
+/* Author attribution */
+.authorRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.authorAvatar { font-size: 1.25rem; }
+
+.authorName {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #6B6459;
+}
+
+/* Rating display (aggregate) */
+.ratingDisplay {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.ratingStars {
+  color: #F59E0B;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.ratingScore {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: #1F1B16;
+}
+
+.ratingCount {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #9C9189;
+}
+
+/* Interactive rating widget */
+.ratingWidget {
+  margin: var(--sp-8) 0;
+  padding: var(--sp-6);
+  background: #FAF7F2;
+  border-radius: var(--radius-xl);
+  border: 1px solid #E8E0D4;
+  text-align: center;
+}
+
+.ratingWidgetLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #6B6459;
+  margin-bottom: var(--sp-3);
+}
+
+.stars {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: center;
+}
+
+.star {
+  font-size: 2rem;
+  color: #E8E0D4;
+  transition: color 100ms ease, transform 100ms ease;
+  line-height: 1;
+}
+
+.star:hover { transform: scale(1.15); }
+.starFilled { color: #F59E0B; }
+
+.ratingWidgetSub {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #9C9189;
+  margin-top: var(--sp-2);
+}

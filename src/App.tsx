@@ -10,6 +10,8 @@ import ProfilePage from './pages/ProfilePage'
 import AuthPage from './pages/AuthPage'
 import AuthCompletePage from './pages/AuthCompletePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import SearchPage from './pages/SearchPage'
+import LeaderboardPage from './pages/LeaderboardPage'
 import NeedsAttentionPage from './pages/NeedsAttentionPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -35,6 +37,8 @@ export default function App() {
           <Route path="/recipe/:id" element={<ProtectedRoute><RecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id/edit" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id/cook" element={<ProtectedRoute><CookModePage /></ProtectedRoute>} />
+          <Route path="/explore" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
           <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
           <Route path="/needs-attention" element={<ProtectedRoute><NeedsAttentionPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

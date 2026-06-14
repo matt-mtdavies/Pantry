@@ -22,11 +22,29 @@ function generateToken(): string {
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
   const { id } = ctx.params as { id: string }
-  const row = await ctx.env.DB.prepare(
-    'SELECT * FROM recipes WHERE id = ? AND user_id = ? AND is_deleted = 0'
-  ).bind(id, userId).first<Record<string, unknown>>()
+  const row = await ctx.env.DB.prepare(`
+    SELECT r.*,
+      u.display_name                                                              AS author_name,
+      u.avatar_id                                                                 AS author_avatar,
+      ROUND(COALESCE(AVG(rr.rating), 0), 1)                                      AS avg_rating,
+      COUNT(rr.recipe_id)                                                         AS rating_count,
+      (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?) AS my_rating
+    FROM recipes r
+    JOIN users u ON r.user_id = u.id
+    LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
+    WHERE r.id = ? AND r.is_deleted = 0
+      AND (r.user_id = ? OR u.is_public = 1)
+    GROUP BY r.id
+  `).bind(userId, id, userId).first<Record<string, unknown>>()
   if (!row) return json({ error: 'Not found' }, 404)
-  return json(parseRecipe(row))
+  return json({
+    ...parseRecipe(row),
+    author_name: row.author_name,
+    author_avatar: row.author_avatar,
+    avg_rating: Number(row.avg_rating),
+    rating_count: Number(row.rating_count),
+    my_rating: row.my_rating != null ? Number(row.my_rating) : null,
+  })
 }
 
 export const onRequestPut: PagesFunction<Env> = async (ctx) => {

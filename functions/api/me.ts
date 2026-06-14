@@ -7,6 +7,10 @@ function parseRow(row: Record<string, unknown>) {
     display_name: row.display_name,
     avatar_id: row.avatar_id ?? 'herb',
     default_servings: row.default_servings ?? 2,
+    is_public: row.is_public === 1 || row.is_public === true,
+    country: row.country ?? null,
+    gender: row.gender ?? null,
+    age_bracket: row.age_bracket ?? null,
     created_at: row.created_at,
   }
 }
@@ -24,13 +28,24 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     display_name?: string
     avatar_id?: string
     default_servings?: number
+    is_public?: boolean
+    country?: string
+    gender?: string
+    age_bracket?: string
   }
   await ctx.env.DB.prepare(
-    'UPDATE users SET display_name = ?, avatar_id = ?, default_servings = ? WHERE id = ?'
+    `UPDATE users SET
+      display_name = ?, avatar_id = ?, default_servings = ?,
+      is_public = ?, country = ?, gender = ?, age_bracket = ?
+    WHERE id = ?`
   ).bind(
     body.display_name ?? null,
     body.avatar_id ?? 'herb',
     body.default_servings ?? 2,
+    body.is_public !== false ? 1 : 0,
+    body.country ?? null,
+    body.gender ?? null,
+    body.age_bracket ?? null,
     userId,
   ).run()
   const user = await ctx.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()

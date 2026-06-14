@@ -27,6 +27,18 @@ export default function Navigation() {
             My Recipes
           </Link>
           <Link
+            to="/explore"
+            className={`${styles.link} ${location.pathname === '/explore' ? styles.active : ''}`}
+          >
+            Explore
+          </Link>
+          <Link
+            to="/leaderboard"
+            className={`${styles.link} ${location.pathname === '/leaderboard' ? styles.active : ''}`}
+          >
+            Leaderboard
+          </Link>
+          <Link
             to="/import"
             className={`${styles.link} ${location.pathname === '/import' ? styles.active : ''}`}
           >
