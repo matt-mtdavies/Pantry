@@ -88,7 +88,6 @@ export default function SearchPage() {
                 placeholder="Search by name, ingredient, tag…"
                 className={styles.search}
                 aria-label="Search all recipes"
-                autoFocus
               />
             </div>
           </div>
