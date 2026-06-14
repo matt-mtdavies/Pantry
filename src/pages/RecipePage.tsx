@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
+import { useWakeLock } from '../hooks/useWakeLock'
 import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
@@ -13,6 +14,7 @@ export default function RecipePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { acquire: acquireWakeLock, release: releaseWakeLock } = useWakeLock()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
@@ -29,10 +31,11 @@ export default function RecipePage() {
   useEffect(() => {
     if (!id) return
     getRecipe(id)
-      .then(setRecipe)
+      .then(r => { setRecipe(r); acquireWakeLock() })
       .catch(() => navigate('/explore'))
       .finally(() => setLoading(false))
-  }, [id, navigate])
+    return () => releaseWakeLock()
+  }, [id, navigate, acquireWakeLock, releaseWakeLock])
 
   const isOwner = !!user && !!recipe && recipe.user_id === user.id
 
