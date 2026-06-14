@@ -157,7 +157,28 @@ export default function ImportPage() {
 
             {files.length === 0 ? (
               <div className={styles.dropContent}>
-                <div className={styles.dropIcon}>📸</div>
+                <div className={styles.dropIcon}>
+                  <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true"
+                    strokeLinecap="round" strokeLinejoin="round">
+                    {/* Body */}
+                    <rect x="4" y="16" width="44" height="30" rx="5"
+                      fill="#F5E8E2" stroke="#C4633E" strokeWidth="2" />
+                    {/* Lens ring */}
+                    <circle cx="26" cy="31" r="9"
+                      fill="#FAF7F2" stroke="#C4633E" strokeWidth="2" />
+                    {/* Lens inner */}
+                    <circle cx="26" cy="31" r="5"
+                      fill="#F5E8E2" stroke="#C4633E" strokeWidth="1.5" />
+                    {/* Viewfinder dot */}
+                    <circle cx="26" cy="31" r="2" fill="#C4633E" />
+                    {/* Hump / shutter bump */}
+                    <path d="M18 16v-4a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4"
+                      stroke="#C4633E" strokeWidth="2" fill="none" />
+                    {/* Flash */}
+                    <rect x="36" y="22" width="6" height="4" rx="1.5"
+                      fill="#C4633E" opacity="0.35" />
+                  </svg>
+                </div>
                 <p className={styles.dropTitle}>Tap to choose a screenshot</p>
                 <p className={styles.dropHint}>
                   Add up to 10 screenshots — we'll combine them into one recipe.

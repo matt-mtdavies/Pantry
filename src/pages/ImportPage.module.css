@@ -54,7 +54,17 @@
   padding: var(--sp-8);
 }
 
-.dropIcon { font-size: 3.5rem; margin-bottom: var(--sp-5); }
+.dropIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--sp-5);
+  transition: transform 200ms ease;
+}
+
+.dropZone:hover .dropIcon,
+.dropZone:focus-visible .dropIcon,
+.dragOver .dropIcon { transform: scale(1.08); }
 
 .dropTitle {
   font-family: var(--font-display);
