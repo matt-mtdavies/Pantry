@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
+import SaltGrinder from '../components/SaltGrinder'
 import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import { formatTime } from '../lib/utils'
 import type { ExtractedRecipe, Ingredient } from '../types'
@@ -86,7 +87,7 @@ export default function ImportPage() {
         <Navigation />
         <main className="page-main">
           <div className={styles.extracting}>
-            <div className={styles.spinner} />
+            <SaltGrinder size={64} />
             <h2 className={styles.extractingTitle}>Reading your recipe…</h2>
             <p className={styles.extractingText}>
               Claude is pulling out all the ingredients and steps.

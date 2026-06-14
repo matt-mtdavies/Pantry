@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import SaltGrinder from '../components/SaltGrinder'
 import { getSharedRecipe, saveSharedRecipe } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
@@ -37,7 +38,7 @@ export default function SharePage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.spinner} aria-label="Loading recipe" />
+        <div className={styles.loadingWrap}><SaltGrinder /></div>
       </div>
     )
   }

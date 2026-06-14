@@ -179,16 +179,6 @@
 
 .forgotLink:hover { color: #C4633E; }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #E8E0D4;
-  border-top-color: #C4633E;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  margin: 0 auto var(--sp-6);
-}
-
 .verifyText {
   font-family: var(--font-body);
   font-size: var(--text-base);

@@ -1,0 +1,62 @@
+.grinder {
+  display: block;
+  flex-shrink: 0;
+}
+
+.body {
+  fill: rgba(250, 247, 242, 0.6);
+  stroke: #C4633E;
+  stroke-width: 2.5;
+}
+
+.band {
+  fill: rgba(196, 99, 62, 0.08);
+  stroke: none;
+}
+
+.cap {
+  fill: #C4633E;
+  /* rotate around the cap's bottom-center (x=28, y=24) */
+  transform-origin: 28px 24px;
+  animation: grind 1.8s ease-in-out infinite;
+}
+
+.knob {
+  fill: #a8532f;
+  transform-origin: 28px 24px;
+  animation: grind 1.8s ease-in-out infinite;
+}
+
+.base {
+  fill: #1F1B16;
+  opacity: 0.18;
+}
+
+/* ── Grind twist ────────────────────────────────── */
+@keyframes grind {
+  0%   { transform: rotate(0deg); }
+  18%  { transform: rotate(36deg); }
+  28%  { transform: rotate(34deg); }   /* slight settle */
+  52%  { transform: rotate(-36deg); }
+  62%  { transform: rotate(-34deg); }  /* slight settle */
+  82%  { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* ── Salt crystals ──────────────────────────────── */
+.crystal {
+  fill: #E8E0D4;
+  opacity: 0;
+}
+
+@keyframes salt-fall {
+  0%   { transform: translateY(0);    opacity: 0; }
+  8%   { opacity: 1; }
+  80%  { opacity: 0.7; }
+  100% { transform: translateY(18px); opacity: 0; }
+}
+
+.cr1 { animation: salt-fall 1.8s ease-in infinite; animation-delay: 0.05s; }
+.cr2 { animation: salt-fall 1.8s ease-in infinite; animation-delay: 0.50s; }
+.cr3 { animation: salt-fall 1.8s ease-in infinite; animation-delay: 0.95s; }
+.cr4 { animation: salt-fall 1.8s ease-in infinite; animation-delay: 1.40s; }

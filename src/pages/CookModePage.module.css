@@ -349,14 +349,11 @@
   background: rgba(255,255,255,.4);
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(255,255,255,.1);
-  border-top-color: #C4633E;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
+.loadingWrap {
   margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {

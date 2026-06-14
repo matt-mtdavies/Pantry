@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
+import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe, createRecipe, updateRecipe } from '../lib/api'
 import { getCurrencySymbol } from '../lib/currency'
 import type { Recipe, Ingredient } from '../types'
@@ -98,7 +99,7 @@ export default function EditRecipePage() {
         <Navigation />
         <main className="page-main">
           <div className={styles.loading}>
-            <div className={styles.spinner} aria-label="Loading recipe" />
+            <SaltGrinder />
           </div>
         </main>
       </div>

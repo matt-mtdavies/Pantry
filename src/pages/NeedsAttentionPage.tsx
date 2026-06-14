@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
+import SaltGrinder from '../components/SaltGrinder'
 import { listRecipes, deleteRecipe } from '../lib/api'
 import { imageUrl } from '../lib/utils'
 import type { Recipe } from '../types'
@@ -38,7 +39,7 @@ export default function NeedsAttentionPage() {
 
           {loading ? (
             <div className={styles.loading}>
-              <div className={styles.spinner} />
+              <SaltGrinder />
             </div>
           ) : recipes.length === 0 ? (
             <div className={styles.empty}>

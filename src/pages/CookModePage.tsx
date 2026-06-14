@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
 import { detectTimerMinutes, scaleIngredient, formatTime } from '../lib/utils'
 import { useWakeLock } from '../hooks/useWakeLock'
@@ -109,7 +110,7 @@ export default function CookModePage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.spinner} aria-label="Loading recipe" />
+        <div className={styles.loadingWrap}><SaltGrinder /></div>
       </div>
     )
   }

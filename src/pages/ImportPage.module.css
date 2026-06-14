@@ -255,16 +255,6 @@
   padding: var(--sp-8);
 }
 
-.spinner {
-  width: 56px;
-  height: 56px;
-  border: 4px solid #E8E0D4;
-  border-top-color: #C4633E;
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-  margin-bottom: var(--sp-8);
-}
-
 .extractingTitle {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
