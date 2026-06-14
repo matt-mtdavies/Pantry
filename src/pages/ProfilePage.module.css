@@ -265,6 +265,83 @@
   margin-top: var(--sp-1);
 }
 
+.inviteSection {
+  margin-top: var(--sp-10);
+  padding: var(--sp-6);
+  background: #F3EFE8;
+  border-radius: var(--radius-lg);
+  border: 1px solid #E8E0D4;
+}
+
+.inviteTitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #1F1B16;
+  margin-bottom: var(--sp-2);
+}
+
+.inviteText {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: #6B6459;
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--sp-4);
+}
+
+.inviteRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.inviteUrl {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #6B6459;
+  background: #FFFFFF;
+  border: 1px solid #E8E0D4;
+  border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-3);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inviteCopyBtn {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #FFFFFF;
+  background: #C4633E;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  min-height: 40px;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.inviteCopyBtn:hover { background: #a8532f; }
+
+.inviteShareBtn {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #C4633E;
+  background: transparent;
+  border: 1.5px solid #C4633E;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  min-height: 40px;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.inviteShareBtn:hover { background: #C4633E; color: #FFFFFF; }
+
 .signOutSection {
   margin-top: var(--sp-12);
   padding-top: var(--sp-8);

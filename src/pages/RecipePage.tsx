@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
-import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe } from '../lib/api'
+import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { avatarEmoji } from '../lib/avatars'
@@ -23,6 +23,8 @@ export default function RecipePage() {
   const [deleting, setDeleting] = useState(false)
   const [ratingLoading, setRatingLoading] = useState(false)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!id) return
@@ -76,6 +78,19 @@ export default function RecipePage() {
     catch { setRecipe(r => r ? { ...r, is_favourite: !next } : r) }
   }
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !recipe) return
+    setPhotoUploading(true)
+    try {
+      const { key } = await uploadImage(file, recipe.id, 'hero')
+      setRecipe(r => r ? { ...r, hero_image_key: key } : r)
+    } catch { /* ignore */ } finally {
+      setPhotoUploading(false)
+      e.target.value = ''
+    }
+  }
+
   const handleRate = async (rating: number) => {
     if (!recipe || ratingLoading) return
     setRatingLoading(true)
@@ -113,11 +128,40 @@ export default function RecipePage() {
       <Navigation />
       <main className="page-main">
 
-        {recipe.hero_image_key && (
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handlePhotoUpload}
+          aria-hidden="true"
+        />
+
+        {recipe.hero_image_key ? (
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
+            {isOwner && (
+              <button
+                className={styles.heroPhotoBtn}
+                onClick={() => photoInputRef.current?.click()}
+                disabled={photoUploading}
+                aria-label="Change recipe photo"
+              >
+                {photoUploading ? 'Uploading…' : '📷 Change photo'}
+              </button>
+            )}
           </div>
-        )}
+        ) : isOwner ? (
+          <div className={styles.heroEmpty}>
+            <button
+              className={styles.heroAddPhotoBtn}
+              onClick={() => photoInputRef.current?.click()}
+              disabled={photoUploading}
+            >
+              {photoUploading ? 'Uploading…' : '📷 Add a photo'}
+            </button>
+          </div>
+        ) : null}
 
         <div className="content-col">
           <div className={styles.header}>

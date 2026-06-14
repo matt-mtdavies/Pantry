@@ -3,6 +3,7 @@
   max-height: 480px;
   overflow: hidden;
   margin-bottom: var(--sp-8);
+  position: relative;
 }
 
 .heroImg {
@@ -11,6 +12,51 @@
   object-fit: cover;
   max-height: 480px;
 }
+
+.heroPhotoBtn {
+  position: absolute;
+  bottom: var(--sp-3);
+  right: var(--sp-4);
+  background: rgba(31, 27, 22, 0.55);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background-color 150ms ease;
+  cursor: pointer;
+}
+
+.heroPhotoBtn:hover { background: rgba(31, 27, 22, 0.75); }
+.heroPhotoBtn:disabled { opacity: 0.6; }
+
+.heroEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3EFE8;
+  height: 160px;
+  margin-bottom: var(--sp-8);
+}
+
+.heroAddPhotoBtn {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #6B6459;
+  border: 1.5px dashed #C4C0B8;
+  border-radius: var(--radius-full);
+  padding: var(--sp-3) var(--sp-6);
+  background: transparent;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.heroAddPhotoBtn:hover { color: #C4633E; border-color: #C4633E; }
+.heroAddPhotoBtn:disabled { opacity: 0.6; }
 
 .header {
   padding-top: var(--sp-8);

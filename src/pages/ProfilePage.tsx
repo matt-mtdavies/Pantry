@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [backfillMsg, setBackfillMsg] = useState('')
   const [backfillingImgs, setBackfillingImgs] = useState(false)
   const [backfillImgsMsg, setBackfillImgsMsg] = useState('')
+  const [inviteCopied, setInviteCopied] = useState(false)
 
   if (!user) return null
 
@@ -95,6 +96,20 @@ export default function ProfilePage() {
     } finally {
       setBackfillingImgs(false)
     }
+  }
+
+  const handleInviteCopy = async () => {
+    const url = `${window.location.origin}/auth`
+    try {
+      await navigator.clipboard.writeText(url)
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2500)
+    } catch { /* ignore */ }
+  }
+
+  const handleInviteShare = () => {
+    const url = `${window.location.origin}/auth`
+    navigator.share?.({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url }).catch(() => {})
   }
 
   const handleDeleteAccount = async () => {
@@ -276,6 +291,24 @@ export default function ProfilePage() {
                 </button>
                 {backfillMsg && <p className={styles.backfillResult}>{backfillMsg}</p>}
               </div>
+            </div>
+          </div>
+
+          <div className={styles.inviteSection}>
+            <h2 className={styles.inviteTitle}>Invite friends</h2>
+            <p className={styles.inviteText}>
+              Know someone who'd love to track their recipes? Send them the link.
+            </p>
+            <div className={styles.inviteRow}>
+              <span className={styles.inviteUrl}>{window.location.origin}</span>
+              <button className={styles.inviteCopyBtn} onClick={handleInviteCopy}>
+                {inviteCopied ? '✓ Copied!' : 'Copy link'}
+              </button>
+              {typeof navigator.share === 'function' && (
+                <button className={styles.inviteShareBtn} onClick={handleInviteShare}>
+                  Share
+                </button>
+              )}
             </div>
           </div>
 
