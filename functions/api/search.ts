@@ -5,6 +5,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const url = new URL(ctx.request.url)
 
   const q          = url.searchParams.get('q')?.trim() ?? ''
+  const author     = url.searchParams.get('author')?.trim() ?? ''
   const country    = url.searchParams.get('country')?.trim() ?? ''
   const gender     = url.searchParams.get('gender')?.trim() ?? ''
   const ageBracket = url.searchParams.get('age_bracket')?.trim() ?? ''
@@ -19,8 +20,12 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
   if (q) {
     const like = `%${q}%`
-    wheres.push('(r.title LIKE ? OR r.description LIKE ? OR r.tags LIKE ?)')
-    binds.push(like, like, like)
+    wheres.push('(r.title LIKE ? OR r.description LIKE ? OR r.tags LIKE ? OR u.display_name LIKE ?)')
+    binds.push(like, like, like, like)
+  }
+  if (author) {
+    wheres.push('LOWER(u.display_name) LIKE LOWER(?)')
+    binds.push(`%${author}%`)
   }
   if (country) {
     wheres.push('LOWER(u.country) LIKE LOWER(?)')

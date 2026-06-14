@@ -12,6 +12,7 @@ const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Other']
 const AGE_OPTIONS = ['Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+']
 
 interface Filters {
+  author: string
   country: string
   gender: string
   age_bracket: string
@@ -19,10 +20,10 @@ interface Filters {
   cost_max: string
 }
 
-const EMPTY_FILTERS: Filters = { country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '' }
+const EMPTY_FILTERS: Filters = { author: '', country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '' }
 
 function activeFilterCount(f: Filters) {
-  return [f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max].filter(Boolean).length
+  return [f.author, f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max].filter(Boolean).length
 }
 
 export default function SearchPage() {
@@ -36,6 +37,7 @@ export default function SearchPage() {
   const doSearch = useCallback((q: string, f: Filters) => {
     setLoading(true)
     const params = new URLSearchParams({ q })
+    if (f.author)      params.set('author', f.author)
     if (f.country)     params.set('country', f.country)
     if (f.gender)      params.set('gender', f.gender)
     if (f.age_bracket) params.set('age_bracket', f.age_bracket)
@@ -113,6 +115,15 @@ export default function SearchPage() {
               <div className={styles.filterSection}>
                 <p className={styles.filterSectionLabel}>Author</p>
                 <div className={styles.filterRow}>
+                  <div className={styles.filterField}>
+                    <label className={styles.filterLabel}>Name</label>
+                    <input
+                      className={styles.filterInput}
+                      placeholder="e.g. Matt"
+                      value={filters.author}
+                      onChange={e => handleFilterChange({ author: e.target.value })}
+                    />
+                  </div>
                   <div className={styles.filterField}>
                     <label className={styles.filterLabel}>Country</label>
                     <input
