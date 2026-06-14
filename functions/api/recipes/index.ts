@@ -37,8 +37,8 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   await ctx.env.DB.prepare(`
     INSERT INTO recipes (id, user_id, title, description, servings, prep_time, cook_time,
       ingredients, steps, tags, source_guess, screenshot_keys, needs_attention,
-      calories_per_serving, cost_per_serving, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      calories_per_serving, cost_per_serving, cost_currency, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id, userId,
     body.title ?? 'Untitled',
@@ -54,6 +54,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     body.needs_attention ? 1 : 0,
     typeof body.calories_per_serving === 'number' ? body.calories_per_serving : null,
     typeof body.cost_per_serving === 'number' ? body.cost_per_serving : null,
+    typeof body.cost_currency === 'string' ? body.cost_currency : 'USD',
     now, now,
   ).run()
 

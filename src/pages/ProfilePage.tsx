@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
+import { backfillNutrition } from '../lib/api'
 import styles from './ProfilePage.module.css'
 
 const AVATARS = [
@@ -40,6 +41,8 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [backfilling, setBackfilling] = useState(false)
+  const [backfillMsg, setBackfillMsg] = useState('')
 
   if (!user) return null
 
@@ -72,6 +75,19 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout()
     navigate('/auth')
+  }
+
+  const handleBackfill = async () => {
+    setBackfilling(true)
+    setBackfillMsg('')
+    try {
+      const result = await backfillNutrition()
+      setBackfillMsg(result.message + (result.has_more ? ' — run again for more.' : ''))
+    } catch {
+      setBackfillMsg('Something went wrong. Please try again.')
+    } finally {
+      setBackfilling(false)
+    }
   }
 
   const handleDeleteAccount = async () => {
@@ -218,6 +234,22 @@ export default function ProfilePage() {
                 {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save changes'}
               </button>
             </div>
+          </div>
+
+          <div className={styles.backfillSection}>
+            <h2 className={styles.backfillTitle}>Recipe estimates</h2>
+            <p className={styles.backfillText}>
+              Add estimated calories and cost (in your local currency) to any recipes that are missing them.
+              {user.country ? ` Costs will be estimated in your country (${user.country}).` : ' Set your country above for local currency costs.'}
+            </p>
+            <button
+              className={styles.backfillBtn}
+              onClick={handleBackfill}
+              disabled={backfilling}
+            >
+              {backfilling ? 'Estimating…' : 'Fill in missing estimates'}
+            </button>
+            {backfillMsg && <p className={styles.backfillResult}>{backfillMsg}</p>}
           </div>
 
           <div className={styles.signOutSection}>

@@ -37,6 +37,7 @@ export interface Recipe {
   share_token: string | null;
   calories_per_serving: number | null;
   cost_per_serving: number | null;
+  cost_currency: string;
   created_at: number;
   updated_at: number;
   // Populated on public/search views
@@ -67,6 +68,7 @@ export interface ExtractedRecipe {
   source_image_url?: string | null;
   calories_per_serving?: number | null;
   cost_per_serving?: number | null;
+  cost_currency?: string;
 }
 
 export interface LeaderboardRecipe {

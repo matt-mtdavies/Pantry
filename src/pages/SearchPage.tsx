@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { searchPublicRecipes } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
+import { getCurrencySymbol } from '../lib/currency'
 import type { Recipe } from '../types'
 import styles from './SearchPage.module.css'
 
@@ -241,7 +242,7 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
         <div className={styles.cardMeta}>
           {totalTime > 0 && <span>{formatTime(totalTime)}</span>}
           {r.calories_per_serving && <span>~{r.calories_per_serving} kcal</span>}
-          {r.cost_per_serving != null && <span>~${r.cost_per_serving.toFixed(2)}</span>}
+          {r.cost_per_serving != null && <span>~{getCurrencySymbol(r.cost_currency)}{r.cost_per_serving.toFixed(2)}</span>}
         </div>
         {(r.avg_rating ?? 0) > 0 && (
           <div className={styles.cardStars}>

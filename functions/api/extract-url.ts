@@ -1,6 +1,11 @@
 import type { Env } from '../env'
+import { getCurrency, getCurrencySymbol } from '../lib/currency'
 
-const EXTRACTION_PROMPT = `You are a recipe extraction assistant. Extract the recipe from the provided webpage text and return ONLY valid JSON — no explanation, no markdown fences, just the JSON object.
+function buildPrompt(currency: string, countryCtx: string): string {
+  const priceCtx = countryCtx
+    ? `${currency} (${getCurrencySymbol(currency)}) at typical ${countryCtx} supermarket prices`
+    : `USD ($) at typical supermarket prices`
+  return `You are a recipe extraction assistant. Extract the recipe from the provided webpage text and return ONLY valid JSON — no explanation, no markdown fences, just the JSON object.
 
 Return exactly this schema:
 {
@@ -31,8 +36,9 @@ Rules:
 - steps should be complete sentences with all the detail from the original
 - tags should be lowercase, short, helpful (e.g. dinner, baking, quick, vegetarian, chicken, pasta)
 - calories_per_serving: integer, estimated kcal per serving based on the ingredients. Use null if you cannot estimate.
-- cost_per_serving: float, estimated ingredient cost per serving in USD at typical supermarket prices. Use null if you cannot estimate.
+- cost_per_serving: float, estimated ingredient cost per serving in ${priceCtx}. Use null if you cannot estimate.
 - If the page doesn't contain a recipe, return: {"error": "No recipe found on this page"}`
+}
 
 interface ClaudeMessage {
   content: Array<{ text: string }>
@@ -84,6 +90,19 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return json({ error: 'AI extraction not configured' }, 503)
   }
 
+  // Determine user's currency from their country
+  const userId = ctx.data.userId as string | undefined
+  let currency = 'USD'
+  let countryCtx = ''
+  if (userId) {
+    const userRow = await ctx.env.DB.prepare('SELECT country FROM users WHERE id = ?')
+      .bind(userId).first<{ country: string | null }>()
+    if (userRow?.country) {
+      currency = getCurrency(userRow.country)
+      countryCtx = userRow.country
+    }
+  }
+
   let pageText: string
   let sourceImageUrl: string | null = null
   try {
@@ -126,7 +145,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
       max_tokens: 4096,
       messages: [{
         role: 'user',
-        content: `${EXTRACTION_PROMPT}\n\nPage URL: ${parsedUrl.toString()}\n\nPage content:\n${pageText}`,
+        content: `${buildPrompt(currency, countryCtx)}\n\nPage URL: ${parsedUrl.toString()}\n\nPage content:\n${pageText}`,
       }],
     }),
   })
@@ -169,6 +188,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     source_image_url: sourceImageUrl,
     calories_per_serving: typeof extracted.calories_per_serving === 'number' ? Math.round(extracted.calories_per_serving) : null,
     cost_per_serving: typeof extracted.cost_per_serving === 'number' ? extracted.cost_per_serving : null,
+    cost_currency: currency,
   })
 }
 

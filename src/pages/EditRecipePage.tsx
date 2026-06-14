@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getRecipe, createRecipe, updateRecipe } from '../lib/api'
+import { getCurrencySymbol } from '../lib/currency'
 import type { Recipe, Ingredient } from '../types'
 import styles from './EditRecipePage.module.css'
 
@@ -13,6 +14,7 @@ const EMPTY_RECIPE = (): Partial<Recipe> => ({
   cook_time: null,
   calories_per_serving: null,
   cost_per_serving: null,
+  cost_currency: 'USD',
   ingredients: [],
   steps: [],
   tags: [],
@@ -193,7 +195,7 @@ export default function EditRecipePage() {
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.label} htmlFor="cost">Cost / serving USD <span className={styles.optional}>(est.)</span></label>
+                <label className={styles.label} htmlFor="cost">Cost / serving {getCurrencySymbol(recipe.cost_currency ?? 'USD')} <span className={styles.optional}>(est.)</span></label>
                 <input
                   id="cost"
                   className={styles.inputSm}

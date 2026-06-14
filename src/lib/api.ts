@@ -143,6 +143,12 @@ export async function getLeaderboard(): Promise<{ topRecipes: LeaderboardRecipe[
   return request('/api/leaderboard')
 }
 
+// Backfill missing nutrition/cost estimates
+
+export async function backfillNutrition(): Promise<{ updated: number; has_more: boolean; message: string }> {
+  return request('/api/admin/backfill-nutrition', { method: 'POST' })
+}
+
 // Rate a recipe
 
 export async function rateRecipe(

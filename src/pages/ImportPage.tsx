@@ -302,6 +302,9 @@ function ReviewScreen({
         tags: recipe.tags,
         source_guess: recipe.source_guess || null,
         screenshot_keys: [],
+        calories_per_serving: recipe.calories_per_serving ?? null,
+        cost_per_serving: recipe.cost_per_serving ?? null,
+        cost_currency: recipe.cost_currency ?? 'USD',
       } as Parameters<typeof createRecipe>[0])
 
       for (const file of files) {

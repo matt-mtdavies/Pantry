@@ -1,6 +1,11 @@
 import type { Env } from '../env'
+import { getCurrency, getCurrencySymbol } from '../lib/currency'
 
-const EXTRACTION_PROMPT = `You are a recipe extraction assistant. Extract the recipe from the provided screenshot(s) and return ONLY valid JSON — no explanation, no markdown fences, just the JSON object.
+function buildPrompt(currency: string, countryCtx: string): string {
+  const priceCtx = countryCtx
+    ? `${currency} (${getCurrencySymbol(currency)}) at typical ${countryCtx} supermarket prices`
+    : `USD ($) at typical supermarket prices`
+  return `You are a recipe extraction assistant. Extract the recipe from the provided screenshot(s) and return ONLY valid JSON — no explanation, no markdown fences, just the JSON object.
 
 If multiple screenshots are provided, they show different parts of the same recipe — merge them into one complete recipe.
 
@@ -33,8 +38,9 @@ Rules:
 - steps should be complete sentences with all the detail from the original
 - tags should be lowercase, short, helpful (e.g. dinner, baking, quick, vegetarian, chicken, pasta)
 - calories_per_serving: integer, estimated kcal per serving based on the ingredients. Use null if you cannot estimate.
-- cost_per_serving: float, estimated ingredient cost per serving in USD at typical supermarket prices. Use null if you cannot estimate.
+- cost_per_serving: float, estimated ingredient cost per serving in ${priceCtx}. Use null if you cannot estimate.
 - If you cannot read the image or it doesn't contain a recipe, return: {"error": "Cannot extract recipe from this image"}`
+}
 
 interface ClaudeMessage {
   content: Array<{ text: string }>
@@ -61,6 +67,19 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return json({ error: 'AI extraction not configured' }, 503)
   }
 
+  // Determine user's currency from their country
+  const userId = ctx.data.userId as string | undefined
+  let currency = 'USD'
+  let countryCtx = ''
+  if (userId) {
+    const userRow = await ctx.env.DB.prepare('SELECT country FROM users WHERE id = ?')
+      .bind(userId).first<{ country: string | null }>()
+    if (userRow?.country) {
+      currency = getCurrency(userRow.country)
+      countryCtx = userRow.country
+    }
+  }
+
   // Convert images to base64 for Claude (max 10 screenshots)
   const imageContents: unknown[] = []
   for (const file of screenshots.slice(0, 10)) {
@@ -73,7 +92,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     })
   }
 
-  imageContents.push({ type: 'text', text: EXTRACTION_PROMPT })
+  imageContents.push({ type: 'text', text: buildPrompt(currency, countryCtx) })
 
   const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -131,6 +150,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     source_guess: extracted.source_guess ? String(extracted.source_guess) : null,
     calories_per_serving: typeof extracted.calories_per_serving === 'number' ? Math.round(extracted.calories_per_serving) : null,
     cost_per_serving: typeof extracted.cost_per_serving === 'number' ? extracted.cost_per_serving : null,
+    cost_currency: currency,
   })
 }
 

@@ -4,6 +4,7 @@ import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
+import { getCurrencySymbol } from '../lib/currency'
 import type { Recipe } from '../types'
 import styles from './RecipePage.module.css'
 
@@ -176,7 +177,7 @@ export default function RecipePage() {
               {recipe.cost_per_serving != null && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Est. cost</span>
-                  <span className={styles.metaValue}>~${recipe.cost_per_serving.toFixed(2)}</span>
+                  <span className={styles.metaValue}>~{getCurrencySymbol(recipe.cost_currency)}{recipe.cost_per_serving.toFixed(2)}</span>
                 </div>
               )}
             </div>
