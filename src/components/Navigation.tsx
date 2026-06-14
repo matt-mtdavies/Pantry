@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { avatarEmoji } from '../lib/avatars'
 import styles from './Navigation.module.css'
 
 export default function Navigation() {
@@ -49,7 +50,7 @@ export default function Navigation() {
         {user && (
           <div className={styles.user}>
             <Link to="/profile" className={styles.profileLink} aria-label="My profile">
-              <span className={styles.avatar}>{AVATARS[user.avatar_id] ?? '🌿'}</span>
+              <span className={styles.avatar}>{avatarEmoji(user.avatar_id)}</span>
               <span className={styles.userName}>
                 {user.display_name || user.email.split('@')[0]}
               </span>
@@ -62,13 +63,4 @@ export default function Navigation() {
       </div>
     </header>
   )
-}
-
-const AVATARS: Record<string, string> = {
-  herb: '🌿',
-  lemon: '🍋',
-  pepper: '🌶️',
-  apple: '🍎',
-  mushroom: '🍄',
-  carrot: '🥕',
 }
