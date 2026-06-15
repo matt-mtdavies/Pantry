@@ -600,3 +600,170 @@
 }
 
 .deleteCancelBtn:hover { border-color: #C4633E; color: #C4633E; }
+
+/* ── Avatar emoji fallback ───────────────────────────────────────── */
+.avatarEmojiWrap {
+  font-size: 2.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Crop modal ──────────────────────────────────────────────────── */
+.cropOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .cropOverlay { align-items: center; }
+}
+
+.cropSheet {
+  width: 100%;
+  max-width: 480px;
+  background: #FAF7F2;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--sp-2) var(--sp-5) var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+@media (min-width: 640px) {
+  .cropSheet {
+    border-radius: var(--radius-xl);
+    padding: var(--sp-6) var(--sp-6) var(--sp-6);
+  }
+}
+
+.cropHandle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: #E8E0D4;
+  flex-shrink: 0;
+  margin-bottom: var(--sp-1);
+}
+
+@media (min-width: 640px) {
+  .cropHandle { display: none; }
+}
+
+.cropHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cropTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: #1F1B16;
+  letter-spacing: -0.01em;
+}
+
+.wizardClose {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: #9C9189;
+  background: transparent;
+  font-size: var(--text-base);
+  transition: color 150ms ease, background-color 150ms ease;
+  flex-shrink: 0;
+}
+
+.wizardClose:hover { color: #1F1B16; background: #E8E0D4; }
+
+.cropHint {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #9C9189;
+  text-align: center;
+  margin-top: calc(var(--sp-2) * -1);
+}
+
+.cropCircle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px #C4633E, 0 0 0 6px rgba(196, 99, 62, 0.15);
+  background: #1F1B16;
+}
+
+.cropCircle:active { cursor: grabbing; }
+
+.cropImg {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.cropZoomRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 0 var(--sp-1);
+}
+
+.cropZoomBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #E8E0D4;
+  background: #FFFFFF;
+  color: #1F1B16;
+  font-size: var(--text-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.cropZoomBtn:hover { border-color: #C4633E; color: #C4633E; }
+
+.cropZoomTrack {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: #E8E0D4;
+  overflow: hidden;
+}
+
+.cropZoomFill {
+  height: 100%;
+  background: #C4633E;
+  border-radius: 2px;
+  transition: width 60ms linear;
+}
+
+.cropActions {
+  display: flex;
+  gap: var(--sp-3);
+  width: 100%;
+}

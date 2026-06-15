@@ -9,17 +9,7 @@ import { imageUrl } from '../lib/utils'
 import styles from './ProfilePage.module.css'
 
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary', 'Other']
-
-const AGE_OPTIONS = [
-  'Prefer not to say',
-  'Under 18',
-  '18–24',
-  '25–34',
-  '35–44',
-  '45–54',
-  '55–64',
-  '65+',
-]
+const AGE_OPTIONS = ['Prefer not to say', 'Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+']
 
 export default function ProfilePage() {
   const { user, refetch, logout } = useAuth()
@@ -42,16 +32,19 @@ export default function ProfilePage() {
   const [inviteCopied, setInviteCopied] = useState(false)
   const [stats, setStats] = useState<{ recipe_count: number; avg_rating: number | null; total_ratings: number } | null>(null)
 
-  // Avatar upload
+  // Avatar upload state
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
   const previewUrlRef = useRef<string | null>(null)
+  const cropUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
     return () => {
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+      if (cropUrlRef.current) URL.revokeObjectURL(cropUrlRef.current)
     }
   }, [])
 
@@ -66,8 +59,10 @@ export default function ProfilePage() {
 
   const avatarSrc = avatarPreview ?? imageUrl(user.avatar_image_key ?? null)
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Step 1: file selected → open crop modal
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    e.target.value = ''
     if (!file) return
     setAvatarError(null)
 
@@ -75,18 +70,31 @@ export default function ProfilePage() {
       setAvatarError('Please choose an image file.')
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setAvatarError('Image must be under 5 MB.')
+    if (file.size > 20 * 1024 * 1024) {
+      setAvatarError('Image must be under 20 MB.')
       return
     }
 
+    if (cropUrlRef.current) URL.revokeObjectURL(cropUrlRef.current)
+    const src = URL.createObjectURL(file)
+    cropUrlRef.current = src
+    setCropSrc(src)
+  }
+
+  // Step 2: crop confirmed → upload blob
+  const handleCropSave = async (blob: Blob) => {
+    if (cropUrlRef.current) { URL.revokeObjectURL(cropUrlRef.current); cropUrlRef.current = null }
+    setCropSrc(null)
+
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-    const preview = URL.createObjectURL(file)
+    const preview = URL.createObjectURL(blob)
     previewUrlRef.current = preview
     setAvatarPreview(preview)
 
     setAvatarUploading(true)
+    setAvatarError(null)
     try {
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
       await uploadAvatar(file)
       await refetch()
       setAvatarPreview(null)
@@ -97,8 +105,12 @@ export default function ProfilePage() {
       if (previewUrlRef.current) { URL.revokeObjectURL(previewUrlRef.current); previewUrlRef.current = null }
     } finally {
       setAvatarUploading(false)
-      e.target.value = ''
     }
+  }
+
+  const handleCropCancel = () => {
+    if (cropUrlRef.current) { URL.revokeObjectURL(cropUrlRef.current); cropUrlRef.current = null }
+    setCropSrc(null)
   }
 
   const handleRemoveAvatar = async () => {
@@ -140,49 +152,36 @@ export default function ProfilePage() {
     }
   }
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/auth')
-  }
+  const handleLogout = async () => { await logout(); navigate('/auth') }
 
   const handleBackfill = async () => {
-    setBackfilling(true)
-    setBackfillMsg('')
+    setBackfilling(true); setBackfillMsg('')
     try {
-      const result = await backfillNutrition()
-      setBackfillMsg(result.message + (result.has_more ? ' — run again for more.' : ''))
-    } catch {
-      setBackfillMsg('Something went wrong. Please try again.')
-    } finally {
-      setBackfilling(false)
-    }
+      const r = await backfillNutrition()
+      setBackfillMsg(r.message + (r.has_more ? ' — run again for more.' : ''))
+    } catch { setBackfillMsg('Something went wrong. Please try again.') }
+    finally { setBackfilling(false) }
   }
 
   const handleBackfillImages = async () => {
-    setBackfillingImgs(true)
-    setBackfillImgsMsg('')
+    setBackfillingImgs(true); setBackfillImgsMsg('')
     try {
-      const result = await backfillImages()
-      setBackfillImgsMsg(result.message + (result.has_more ? ' — run again for more.' : ''))
-    } catch {
-      setBackfillImgsMsg('Something went wrong. Please try again.')
-    } finally {
-      setBackfillingImgs(false)
-    }
+      const r = await backfillImages()
+      setBackfillImgsMsg(r.message + (r.has_more ? ' — run again for more.' : ''))
+    } catch { setBackfillImgsMsg('Something went wrong. Please try again.') }
+    finally { setBackfillingImgs(false) }
   }
 
   const handleInviteCopy = async () => {
-    const url = `${window.location.origin}/auth`
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(`${window.location.origin}/auth`)
       setInviteCopied(true)
       setTimeout(() => setInviteCopied(false), 2500)
     } catch { /* ignore */ }
   }
 
   const handleInviteShare = () => {
-    const url = `${window.location.origin}/auth`
-    navigator.share?.({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url }).catch(() => {})
+    navigator.share?.({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url: `${window.location.origin}/auth` }).catch(() => {})
   }
 
   const handleDeleteAccount = async () => {
@@ -191,9 +190,7 @@ export default function ProfilePage() {
       await fetch('/api/me', { method: 'DELETE', credentials: 'include' })
       try { localStorage.removeItem('pantry_session') } catch { /* ignore */ }
       navigate('/auth')
-    } catch {
-      setDeleting(false)
-    }
+    } catch { setDeleting(false) }
   }
 
   return (
@@ -201,38 +198,33 @@ export default function ProfilePage() {
       <Navigation />
       <main className="page-main">
         <div className="content-col">
+
           {/* Profile hero */}
           <div className={styles.profileHero}>
-            {/* Avatar upload */}
             <div className={styles.avatarArea}>
               <input
                 ref={avatarInputRef}
                 type="file"
                 accept="image/*"
                 style={{ display: 'none' }}
-                onChange={handleAvatarUpload}
+                onChange={handleFileSelect}
                 aria-hidden="true"
               />
               <button
                 className={`${styles.avatarBtn} ${avatarUploading ? styles.avatarBtnLoading : ''}`}
-                onClick={() => avatarInputRef.current?.click()}
+                onClick={() => !avatarUploading && avatarInputRef.current?.click()}
                 disabled={avatarUploading}
                 aria-label="Change profile picture"
               >
-                {avatarSrc ? (
-                  <img src={avatarSrc} alt="Profile picture" className={styles.avatarPhoto} />
-                ) : (
-                  <span className={styles.avatarEmoji}>{avatarEmoji(user.avatar_id)}</span>
-                )}
+                {avatarSrc
+                  ? <img src={avatarSrc} alt="Profile picture" className={styles.avatarPhoto} />
+                  : <span className={styles.avatarEmojiWrap}>{avatarEmoji(user.avatar_id)}</span>
+                }
                 <div className={styles.avatarOverlay} aria-hidden="true">
-                  {avatarUploading ? (
-                    <span className={styles.avatarSpinner} />
-                  ) : (
-                    <>
-                      <CameraIcon size={22} />
-                      <span className={styles.avatarOverlayLabel}>Change photo</span>
-                    </>
-                  )}
+                  {avatarUploading
+                    ? <span className={styles.avatarSpinner} />
+                    : <><CameraIcon size={22} /><span className={styles.avatarOverlayLabel}>Change photo</span></>
+                  }
                 </div>
                 {!avatarUploading && (
                   <div className={styles.avatarBadge} aria-hidden="true">
@@ -283,104 +275,46 @@ export default function ProfilePage() {
           </div>
 
           <div className={styles.form}>
-
-            {/* Display name */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="display-name">Your name</label>
-              <input
-                id="display-name"
-                className={styles.input}
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                placeholder="e.g. Margaret"
-              />
+              <input id="display-name" className={styles.input} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="e.g. Margaret" />
             </div>
 
-            {/* Privacy toggle */}
             <div className={styles.field}>
               <span className={styles.label}>Profile visibility</span>
-              <p className={styles.hint}>
-                {isPublic
-                  ? 'Your recipes appear in the community feed and others can view your profile and see your ratings.'
-                  : 'Your recipes and profile are hidden from the community. Only you can see them.'}
-              </p>
+              <p className={styles.hint}>{isPublic ? 'Your recipes appear in the community feed and others can view your profile.' : 'Your recipes and profile are hidden from the community.'}</p>
               <div className={styles.toggle}>
-                <button
-                  className={`${styles.toggleBtn} ${isPublic ? styles.toggleBtnActive : ''}`}
-                  onClick={() => setIsPublic(true)}
-                  aria-pressed={isPublic}
-                >
-                  Public
-                </button>
-                <button
-                  className={`${styles.toggleBtn} ${!isPublic ? styles.toggleBtnActive : ''}`}
-                  onClick={() => setIsPublic(false)}
-                  aria-pressed={!isPublic}
-                >
-                  Private
-                </button>
+                <button className={`${styles.toggleBtn} ${isPublic ? styles.toggleBtnActive : ''}`} onClick={() => setIsPublic(true)} aria-pressed={isPublic}>Public</button>
+                <button className={`${styles.toggleBtn} ${!isPublic ? styles.toggleBtnActive : ''}`} onClick={() => setIsPublic(false)} aria-pressed={!isPublic}>Private</button>
               </div>
             </div>
 
-            {/* Country */}
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="country">
-                Country <span className={styles.optional}>(optional)</span>
-              </label>
-              <input
-                id="country"
-                className={styles.input}
-                value={country}
-                onChange={e => setCountry(e.target.value)}
-                placeholder="e.g. Australia"
-              />
+              <label className={styles.label} htmlFor="country">Country <span className={styles.optional}>(optional)</span></label>
+              <input id="country" className={styles.input} value={country} onChange={e => setCountry(e.target.value)} placeholder="e.g. Australia" />
             </div>
 
-            {/* Gender */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="gender">Gender</label>
-              <select
-                id="gender"
-                className={styles.select}
-                value={gender}
-                onChange={e => setGender(e.target.value)}
-              >
+              <select id="gender" className={styles.select} value={gender} onChange={e => setGender(e.target.value)}>
                 {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
 
-            {/* Age bracket */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="age-bracket">Age group</label>
-              <select
-                id="age-bracket"
-                className={styles.select}
-                value={ageBracket}
-                onChange={e => setAgeBracket(e.target.value)}
-              >
+              <select id="age-bracket" className={styles.select} value={ageBracket} onChange={e => setAgeBracket(e.target.value)}>
                 {AGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
 
-            {/* Default servings */}
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="default-servings">
-                Default number of servings
-              </label>
+              <label className={styles.label}>Default number of servings</label>
               <p className={styles.hint}>Used when scaling recipes in cook mode</p>
               <div className={styles.servingsRow}>
-                <button
-                  className={styles.servingsBtn}
-                  onClick={() => setDefaultServings(s => Math.max(1, s - 1))}
-                  disabled={defaultServings <= 1}
-                  aria-label="Decrease"
-                >−</button>
-                <span className={styles.servingsNum} id="default-servings">{defaultServings}</span>
-                <button
-                  className={styles.servingsBtn}
-                  onClick={() => setDefaultServings(s => s + 1)}
-                  aria-label="Increase"
-                >+</button>
+                <button className={styles.servingsBtn} onClick={() => setDefaultServings(s => Math.max(1, s - 1))} disabled={defaultServings <= 1} aria-label="Decrease">−</button>
+                <span className={styles.servingsNum}>{defaultServings}</span>
+                <button className={styles.servingsBtn} onClick={() => setDefaultServings(s => s + 1)} aria-label="Increase">+</button>
               </div>
             </div>
 
@@ -393,35 +327,17 @@ export default function ProfilePage() {
 
           <div className={styles.backfillSection}>
             <h2 className={styles.backfillTitle}>Recipe improvements</h2>
-
             <div className={styles.backfillRow}>
               <div className={styles.backfillItem}>
                 <p className={styles.backfillLabel}>Add missing photos</p>
-                <p className={styles.backfillText}>
-                  Find food photos for any recipes that don't have one yet.
-                </p>
-                <button
-                  className={styles.backfillBtn}
-                  onClick={handleBackfillImages}
-                  disabled={backfillingImgs}
-                >
-                  {backfillingImgs ? 'Searching…' : 'Add missing photos'}
-                </button>
+                <p className={styles.backfillText}>Find food photos for any recipes that don't have one yet.</p>
+                <button className={styles.backfillBtn} onClick={handleBackfillImages} disabled={backfillingImgs}>{backfillingImgs ? 'Searching…' : 'Add missing photos'}</button>
                 {backfillImgsMsg && <p className={styles.backfillResult}>{backfillImgsMsg}</p>}
               </div>
-
               <div className={styles.backfillItem}>
                 <p className={styles.backfillLabel}>Add missing estimates</p>
-                <p className={styles.backfillText}>
-                  Estimate calories and cost{user.country ? ` (${user.country} prices)` : ''} for recipes missing them.
-                </p>
-                <button
-                  className={styles.backfillBtn}
-                  onClick={handleBackfill}
-                  disabled={backfilling}
-                >
-                  {backfilling ? 'Estimating…' : 'Fill in missing estimates'}
-                </button>
+                <p className={styles.backfillText}>Estimate calories and cost{user.country ? ` (${user.country} prices)` : ''} for recipes missing them.</p>
+                <button className={styles.backfillBtn} onClick={handleBackfill} disabled={backfilling}>{backfilling ? 'Estimating…' : 'Fill in missing estimates'}</button>
                 {backfillMsg && <p className={styles.backfillResult}>{backfillMsg}</p>}
               </div>
             </div>
@@ -429,54 +345,192 @@ export default function ProfilePage() {
 
           <div className={styles.inviteSection}>
             <h2 className={styles.inviteTitle}>Invite friends</h2>
-            <p className={styles.inviteText}>
-              Know someone who'd love to track their recipes? Send them a link.
-            </p>
-            {typeof navigator.share === 'function' ? (
-              <button className={styles.inviteShareBtn} onClick={handleInviteShare}>
-                Share Pantry
-              </button>
-            ) : (
-              <button className={styles.inviteCopyBtn} onClick={handleInviteCopy}>
-                {inviteCopied ? '✓ Copied!' : 'Copy invite link'}
-              </button>
-            )}
+            <p className={styles.inviteText}>Know someone who'd love to track their recipes? Send them a link.</p>
+            {typeof navigator.share === 'function'
+              ? <button className={styles.inviteShareBtn} onClick={handleInviteShare}>Share Pantry</button>
+              : <button className={styles.inviteCopyBtn} onClick={handleInviteCopy}>{inviteCopied ? '✓ Copied!' : 'Copy invite link'}</button>
+            }
           </div>
 
           <div className={styles.signOutSection}>
-            <button className={styles.signOutBtn} onClick={handleLogout}>
-              Sign out of Pantry
-            </button>
+            <button className={styles.signOutBtn} onClick={handleLogout}>Sign out of Pantry</button>
           </div>
 
           <div className={styles.dangerZone}>
             <h2 className={styles.dangerTitle}>Danger zone</h2>
             {!confirmDelete ? (
-              <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>
-                Delete my account
-              </button>
+              <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>Delete my account</button>
             ) : (
               <div className={styles.deleteConfirm}>
-                <p className={styles.deleteWarning}>
-                  This permanently deletes your account and all your recipes. It can't be undone.
-                </p>
+                <p className={styles.deleteWarning}>This permanently deletes your account and all your recipes. It can't be undone.</p>
                 <div className={styles.deleteActions}>
-                  <button
-                    className={styles.deleteConfirmBtn}
-                    onClick={handleDeleteAccount}
-                    disabled={deleting}
-                  >
-                    {deleting ? 'Deleting…' : 'Yes, delete everything'}
-                  </button>
-                  <button className={styles.deleteCancelBtn} onClick={() => setConfirmDelete(false)}>
-                    Cancel
-                  </button>
+                  <button className={styles.deleteConfirmBtn} onClick={handleDeleteAccount} disabled={deleting}>{deleting ? 'Deleting…' : 'Yes, delete everything'}</button>
+                  <button className={styles.deleteCancelBtn} onClick={() => setConfirmDelete(false)}>Cancel</button>
                 </div>
               </div>
             )}
           </div>
         </div>
       </main>
+
+      {cropSrc && <CropModal src={cropSrc} onSave={handleCropSave} onCancel={handleCropCancel} />}
+    </div>
+  )
+}
+
+/* ── Crop modal ──────────────────────────────────────────────────── */
+
+const CROP_VIEW = 280
+
+interface CropModalProps {
+  src: string
+  onSave: (blob: Blob) => void
+  onCancel: () => void
+}
+
+function CropModal({ src, onSave, onCancel }: CropModalProps) {
+  const imgRef = useRef<HTMLImageElement>(null)
+  const [loaded, setLoaded] = useState(false)
+  const [baseW, setBaseW] = useState(0)
+  const [baseH, setBaseH] = useState(0)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const zoomRef = useRef(1)
+  const baseWRef = useRef(0)
+  const baseHRef = useRef(0)
+  const activePointers = useRef<Map<number, { x: number; y: number }>>(new Map())
+
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+
+  const clampOffset = (x: number, y: number, z: number) => {
+    const w = baseWRef.current * z
+    const h = baseHRef.current * z
+    const mx = Math.max(0, (w - CROP_VIEW) / 2)
+    const my = Math.max(0, (h - CROP_VIEW) / 2)
+    return { x: clamp(x, -mx, mx), y: clamp(y, -my, my) }
+  }
+
+  const applyZoom = (z: number) => {
+    const cz = clamp(z, 1, 4)
+    zoomRef.current = cz
+    setZoom(cz)
+    setOffset(prev => clampOffset(prev.x, prev.y, cz))
+  }
+
+  const onImgLoad = () => {
+    const img = imgRef.current!
+    const fitScale = Math.max(CROP_VIEW / img.naturalWidth, CROP_VIEW / img.naturalHeight)
+    const bw = img.naturalWidth * fitScale
+    const bh = img.naturalHeight * fitScale
+    baseWRef.current = bw
+    baseHRef.current = bh
+    setBaseW(bw)
+    setBaseH(bh)
+    setLoaded(true)
+  }
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    (e.currentTarget as Element).setPointerCapture(e.pointerId)
+  }
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    const prev = activePointers.current.get(e.pointerId)
+    if (!prev) return
+
+    if (activePointers.current.size >= 2) {
+      // Pinch zoom
+      const others = Array.from(activePointers.current.entries()).filter(([id]) => id !== e.pointerId)
+      if (others.length > 0) {
+        const other = others[0][1]
+        const prevDist = Math.hypot(prev.x - other.x, prev.y - other.y)
+        const newDist = Math.hypot(e.clientX - other.x, e.clientY - other.y)
+        if (prevDist > 0) applyZoom(zoomRef.current * (newDist / prevDist))
+      }
+    } else {
+      // Pan
+      const dx = e.clientX - prev.x
+      const dy = e.clientY - prev.y
+      setOffset(o => clampOffset(o.x + dx, o.y + dy, zoomRef.current))
+    }
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  }
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    activePointers.current.delete(e.pointerId)
+  }
+
+  const onWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    applyZoom(zoomRef.current * (1 - e.deltaY * 0.002))
+  }
+
+  const handleSave = () => {
+    const img = imgRef.current!
+    const OUTPUT = 400
+    const ratio = OUTPUT / CROP_VIEW
+    const canvas = document.createElement('canvas')
+    canvas.width = OUTPUT
+    canvas.height = OUTPUT
+    const ctx = canvas.getContext('2d')!
+
+    const dw = baseW * zoom * ratio
+    const dh = baseH * zoom * ratio
+    const dx = ((CROP_VIEW - baseW * zoom) / 2 + offset.x) * ratio
+    const dy = ((CROP_VIEW - baseH * zoom) / 2 + offset.y) * ratio
+
+    ctx.drawImage(img, dx, dy, dw, dh)
+    canvas.toBlob(blob => { if (blob) onSave(blob) }, 'image/jpeg', 0.92)
+  }
+
+  const displayW = baseW * zoom
+  const displayH = baseH * zoom
+  const imgLeft = (CROP_VIEW - displayW) / 2 + offset.x
+  const imgTop = (CROP_VIEW - displayH) / 2 + offset.y
+
+  return (
+    <div className={styles.cropOverlay} onWheel={onWheel}>
+      <div className={styles.cropSheet}>
+        <div className={styles.cropHandle} />
+        <div className={styles.cropHeader}>
+          <h2 className={styles.cropTitle}>Adjust your photo</h2>
+          <button className={styles.wizardClose} onClick={onCancel} aria-label="Cancel">✕</button>
+        </div>
+        <p className={styles.cropHint}>Drag to reposition · pinch or use buttons to zoom</p>
+
+        <div
+          className={styles.cropCircle}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+        >
+          <img
+            ref={imgRef}
+            src={src}
+            alt=""
+            className={styles.cropImg}
+            style={{ width: displayW, height: displayH, left: imgLeft, top: imgTop }}
+            onLoad={onImgLoad}
+            draggable={false}
+          />
+        </div>
+
+        <div className={styles.cropZoomRow}>
+          <button className={styles.cropZoomBtn} onClick={() => applyZoom(zoom - 0.15)} aria-label="Zoom out">−</button>
+          <div className={styles.cropZoomTrack}>
+            <div className={styles.cropZoomFill} style={{ width: `${((zoom - 1) / 3) * 100}%` }} />
+          </div>
+          <button className={styles.cropZoomBtn} onClick={() => applyZoom(zoom + 0.15)} aria-label="Zoom in">+</button>
+        </div>
+
+        <div className={styles.cropActions}>
+          <button className={styles.deleteCancelBtn} onClick={onCancel}>Cancel</button>
+          <button className={styles.saveBtn} style={{ flex: 1 }} onClick={handleSave} disabled={!loaded}>
+            Save photo
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
