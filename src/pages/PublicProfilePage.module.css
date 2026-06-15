@@ -6,8 +6,8 @@
 }
 
 .avatarWrap {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: var(--radius-full);
   background: #F3EFE8;
   border: 2px solid #E8E0D4;
@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto var(--sp-4);
-  font-size: 2.5rem;
+  font-size: 3.5rem;
   line-height: 1;
   overflow: hidden;
 }
@@ -174,8 +174,8 @@
 }
 
 .avatarSkeleton {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: var(--radius-full);
 }
 

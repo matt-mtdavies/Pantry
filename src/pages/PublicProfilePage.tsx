@@ -75,7 +75,7 @@ export default function PublicProfilePage() {
               <Avatar
                 imageKey={profile.avatar_image_key}
                 avatarId={profile.avatar_id}
-                size={80}
+                size={120}
                 className={styles.avatar}
               />
             </div>
