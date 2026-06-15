@@ -118,7 +118,7 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
       {/* Recently shared */}
       {feed.recentShared.length > 0 && (
         <div className={styles.feedSection}>
-          <h2 className={styles.feedSectionTitle}>Recently Shared</h2>
+          <h2 className={styles.feedSectionTitle}>Recently Added</h2>
           <div className={styles.feedList}>
             {feed.recentShared.map(r => (
               <Link key={r.id} to={`/recipe/${r.id}`} className={styles.feedRow}>
