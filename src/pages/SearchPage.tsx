@@ -292,12 +292,14 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
   const [result, setResult] = useState<DinnerResult | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const seenTitles = useRef<string[]>([])
 
-  const runSearch = async (ing: string, sv: number, md: 'match' | 'create') => {
+  const runSearch = async (ing: string, sv: number, md: 'match' | 'create', exclude: string[] = []) => {
     setStage('loading')
     setSavedId(null)
     try {
-      const res = await getDinnerSuggestions(ing, sv, md)
+      const res = await getDinnerSuggestions(ing, sv, md, exclude)
+      if (res.type === 'created') seenTitles.current = [...exclude, res.recipe.title]
       setResult(res)
       setStage('results')
     } catch {
@@ -307,10 +309,11 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
 
   const handleFind = () => {
     if (!ingredients.trim()) return
-    runSearch(ingredients, servings, mode)
+    seenTitles.current = []
+    runSearch(ingredients, servings, mode, [])
   }
 
-  const handleTryAgain = () => runSearch(ingredients, servings, mode)
+  const handleTryAgain = () => runSearch(ingredients, servings, mode, seenTitles.current)
 
   const handleBack = () => { setResult(null); setSavedId(null); setStage('form') }
 

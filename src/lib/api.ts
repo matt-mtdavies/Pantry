@@ -203,10 +203,11 @@ export async function getDinnerSuggestions(
   ingredients: string,
   servings?: number,
   mode?: 'match' | 'create',
+  excludeTitles?: string[],
 ): Promise<DinnerResult> {
   return request<DinnerResult>('/api/dinner-suggestion', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ingredients, servings, mode }),
+    body: JSON.stringify({ ingredients, servings, mode, excludeTitles }),
   })
 }

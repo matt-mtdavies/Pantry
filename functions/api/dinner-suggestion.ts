@@ -20,11 +20,13 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     ingredients?: string
     servings?: number
     mode?: 'match' | 'create'
+    excludeTitles?: string[]
   }
 
   const rawIngredients = body.ingredients ?? ''
   const servings = body.servings ?? 2
   const mode = body.mode ?? 'match'
+  const excludeTitles = body.excludeTitles ?? []
 
   const ingredientList = rawIngredients
     .split(/[,\n]/)
@@ -53,16 +55,18 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   "cost_currency": "USD"
 }`
 
-  const prompt = mode === 'create'
-    ? `You are a creative chef assistant. Create a single delicious recipe using these ingredients as a starting point: ${ingredientList.join(', ')}.
+  const avoidLine = excludeTitles.length > 0
+    ? `\nDo NOT suggest any of these recipes (already shown): ${excludeTitles.map(t => `"${t}"`).join(', ')}. Choose something clearly different.\n`
+    : ''
 
+  const prompt = mode === 'create'
+    ? `You are a creative chef assistant. Create a single delicious recipe using these ingredients as a starting point: ${ingredientList.join(', ')}.${avoidLine}
 The user is happy to shop for additional ingredients. Aim for ${servings} servings.
 Also include a "shopping_list" array of any extra ingredients needed beyond what the user has.
 
 Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) matching this schema exactly, plus a "shopping_list" string array:
 ${sharedSchema.replace('}', ',\n  "shopping_list": ["extra item"]\n}')}`
-    : `You are a creative chef assistant. Create a single delicious recipe using ONLY these available ingredients: ${ingredientList.join(', ')}.
-
+    : `You are a creative chef assistant. Create a single delicious recipe using ONLY these available ingredients: ${ingredientList.join(', ')}.${avoidLine}
 Do not require any other ingredients. Aim for ${servings} servings.
 
 Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) matching this schema exactly, plus "shopping_list": []:
