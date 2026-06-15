@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { avatarEmoji } from '../lib/avatars'
+import { Avatar } from './Avatar'
 import styles from './Navigation.module.css'
 
 // ── SVG Tab Icons ─────────────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ export default function Navigation() {
           {user && (
             <div className={styles.user}>
               <Link to="/profile" className={styles.profileLink} aria-label="My profile">
-                <span className={styles.avatar}>{avatarEmoji(user.avatar_id)}</span>
+                <Avatar imageKey={user.avatar_image_key} avatarId={user.avatar_id} size={40} className={styles.avatar} />
                 <span className={styles.userName}>
                   {user.display_name || user.email.split('@')[0]}
                 </span>
