@@ -1,4 +1,4 @@
-import type { Env } from '../env.d'
+import type { Env } from '../env'
 
 interface GeneratedRecipe {
   title: string
@@ -13,7 +13,6 @@ interface GeneratedRecipe {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-  const userId = ctx.data.userId as string
   const body = await ctx.request.json() as {
     ingredients?: string
     servings?: number
@@ -95,8 +94,10 @@ Respond with ONLY a valid JSON object (no markdown, no code fences, no explanati
     }
 
     const aiData = await aiRes.json() as { content: Array<{ text: string }> }
-    const text = (aiData.content?.[0]?.text ?? '').trim()
-    const generated = JSON.parse(text) as GeneratedRecipe
+    const raw = aiData.content?.[0]?.text ?? ''
+    const jsonMatch = raw.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return json({ error: 'Could not parse generated recipe' }, 500)
+    const generated = JSON.parse(jsonMatch[0]) as GeneratedRecipe
     return json({ type: 'created', recipe: generated })
   } catch {
     return json({ error: 'Failed to generate recipe' }, 500)
