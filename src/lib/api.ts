@@ -180,14 +180,30 @@ export async function saveSharedRecipe(token: string): Promise<Recipe> {
   return request<Recipe>(`/api/share/${token}/save`, { method: 'POST' })
 }
 
+export interface GeneratedRecipe {
+  title: string
+  description: string
+  servings: number
+  prep_time: number
+  cook_time: number
+  ingredients: Array<{ amount: string; unit: string; name: string }>
+  steps: string[]
+  tags: string[]
+  shopping_list: string[]
+}
+
+export type DinnerResult =
+  | { type: 'matched'; recipes: Recipe[] }
+  | { type: 'created'; recipe: GeneratedRecipe }
+
 export async function getDinnerSuggestions(
   ingredients: string,
   servings?: number,
-): Promise<Recipe[]> {
-  const res = await request<{ recipes: Recipe[] }>('/api/dinner-suggestion', {
+  mode?: 'match' | 'create',
+): Promise<DinnerResult> {
+  return request<DinnerResult>('/api/dinner-suggestion', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ingredients, servings }),
+    body: JSON.stringify({ ingredients, servings, mode }),
   })
-  return res.recipes
 }

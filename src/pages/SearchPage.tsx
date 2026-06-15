@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
-import { searchPublicRecipes, getDinnerSuggestions } from '../lib/api'
+import { searchPublicRecipes, getDinnerSuggestions, createRecipe } from '../lib/api'
+import type { DinnerResult, GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { avatarEmoji } from '../lib/avatars'
@@ -273,20 +274,48 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
 function DinnerWizard({ onClose }: { onClose: () => void }) {
   const [ingredients, setIngredients] = useState('')
   const [servings, setServings] = useState(2)
+  const [mode, setMode] = useState<'match' | 'create'>('match')
   const [stage, setStage] = useState<'form' | 'loading' | 'results'>('form')
-  const [results, setResults] = useState<Recipe[]>([])
+  const [result, setResult] = useState<DinnerResult | null>(null)
+  const [savedId, setSavedId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
-  const handleFind = async () => {
-    if (!ingredients.trim()) return
+  const runSearch = async (ing: string, sv: number, md: 'match' | 'create') => {
     setStage('loading')
+    setSavedId(null)
     try {
-      const recipes = await getDinnerSuggestions(ingredients, servings)
-      setResults(recipes)
-      setStage('results')
+      const res = await getDinnerSuggestions(ing, sv, md)
+      setResult(res)
     } catch {
-      setStage('results')
-      setResults([])
+      setResult({ type: 'matched', recipes: [] })
     }
+    setStage('results')
+  }
+
+  const handleFind = () => {
+    if (!ingredients.trim()) return
+    runSearch(ingredients, servings, mode)
+  }
+
+  const handleTryAgain = () => runSearch(ingredients, servings, mode)
+
+  const handleBack = () => { setResult(null); setSavedId(null); setStage('form') }
+
+  const handleSave = async (recipe: GeneratedRecipe) => {
+    setSaving(true)
+    try {
+      const saved = await createRecipe({
+        title: recipe.title,
+        description: recipe.description,
+        servings: recipe.servings,
+        prep_time: recipe.prep_time,
+        cook_time: recipe.cook_time,
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        tags: recipe.tags,
+      })
+      setSavedId(saved.id)
+    } catch { /* ignore */ } finally { setSaving(false) }
   }
 
   return (
@@ -314,6 +343,25 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                 autoFocus
               />
             </div>
+
+            <div className={styles.wizardField}>
+              <label className={styles.wizardLabel}>Do you want to go shopping?</label>
+              <div className={styles.wizardModeToggle}>
+                <button
+                  className={`${styles.wizardModeBtn} ${mode === 'match' ? styles.wizardModeBtnActive : ''}`}
+                  onClick={() => setMode('match')}
+                >
+                  That's all I have
+                </button>
+                <button
+                  className={`${styles.wizardModeBtn} ${mode === 'create' ? styles.wizardModeBtnActive : ''}`}
+                  onClick={() => setMode('create')}
+                >
+                  Happy to go to the shops
+                </button>
+              </div>
+            </div>
+
             <div className={styles.wizardField}>
               <label className={styles.wizardLabel}>How many people are you cooking for?</label>
               <div className={styles.wizardServings}>
@@ -322,12 +370,13 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                 <button className={styles.wizardServingsBtn} onClick={() => setServings(s => s + 1)}>+</button>
               </div>
             </div>
+
             <button
               className={styles.wizardFindBtn}
               onClick={handleFind}
               disabled={!ingredients.trim()}
             >
-              Find dinner →
+              {mode === 'create' ? 'Create a recipe →' : 'Find dinner →'}
             </button>
           </div>
         )}
@@ -335,27 +384,108 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         {stage === 'loading' && (
           <div className={styles.wizardLoading}>
             <div className={styles.wizardSpinner} />
-            <p className={styles.wizardLoadingText}>Finding recipes that match…</p>
+            <p className={styles.wizardLoadingText}>
+              {mode === 'create' ? 'Creating a custom recipe for you…' : 'Finding recipes that match…'}
+            </p>
           </div>
         )}
 
-        {stage === 'results' && (
+        {stage === 'results' && result?.type === 'matched' && (
           <div className={styles.wizardResults}>
-            {results.length === 0 ? (
+            {result.recipes.length === 0 ? (
               <div className={styles.wizardEmpty}>
                 <p className={styles.wizardEmptyTitle}>No matches found</p>
                 <p className={styles.wizardEmptySub}>Try different ingredients or fewer of them.</p>
-                <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>Try again</button>
+                <button className={styles.wizardBackBtn} onClick={handleBack}>← Try again</button>
               </div>
             ) : (
               <>
-                <p className={styles.wizardResultCount}>{results.length} recipe{results.length !== 1 ? 's' : ''} match your ingredients</p>
+                <p className={styles.wizardResultCount}>{result.recipes.length} recipe{result.recipes.length !== 1 ? 's' : ''} match your ingredients</p>
                 <div className={styles.wizardResultList}>
-                  {results.map(r => <SearchCard key={r.id} recipe={r} />)}
+                  {result.recipes.map(r => <SearchCard key={r.id} recipe={r} />)}
                 </div>
-                <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Search again</button>
+                <button className={styles.wizardBackBtn} onClick={handleBack}>← Search again</button>
               </>
             )}
+          </div>
+        )}
+
+        {stage === 'results' && result?.type === 'created' && (
+          <div className={styles.wizardCreated}>
+            <div className={styles.createdCard}>
+              {result.recipe.tags.length > 0 && (
+                <div className={styles.createdTags}>
+                  {result.recipe.tags.slice(0, 3).map(t => (
+                    <span key={t} className={styles.createdTag}>{t}</span>
+                  ))}
+                </div>
+              )}
+              <h3 className={styles.createdTitle}>{result.recipe.title}</h3>
+              {result.recipe.description && (
+                <p className={styles.createdDesc}>{result.recipe.description}</p>
+              )}
+              <div className={styles.createdMeta}>
+                {result.recipe.prep_time > 0 && <span>Prep {result.recipe.prep_time}m</span>}
+                {result.recipe.cook_time > 0 && <span>Cook {result.recipe.cook_time}m</span>}
+                <span>Serves {result.recipe.servings}</span>
+              </div>
+
+              <div className={styles.createdSection}>
+                <h4 className={styles.createdSectionTitle}>Ingredients</h4>
+                <ul className={styles.createdIngredients}>
+                  {result.recipe.ingredients.map((ing, i) => (
+                    <li key={i} className={styles.createdIngredient}>
+                      <span className={styles.createdIngAmt}>{ing.amount} {ing.unit}</span>
+                      <span>{ing.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {result.recipe.shopping_list.length > 0 && (
+                <div className={styles.createdSection}>
+                  <h4 className={styles.createdSectionTitle}>Shopping list</h4>
+                  <ul className={styles.createdShoppingList}>
+                    {result.recipe.shopping_list.map((item, i) => (
+                      <li key={i} className={styles.createdShoppingItem}>
+                        <span className={styles.createdShopCheck}>☐</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className={styles.createdSection}>
+                <h4 className={styles.createdSectionTitle}>Method</h4>
+                <ol className={styles.createdSteps}>
+                  {result.recipe.steps.map((step, i) => (
+                    <li key={i} className={styles.createdStep}>
+                      <span className={styles.createdStepNum}>{i + 1}</span>
+                      <p>{step}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+
+            <div className={styles.createdActions}>
+              {savedId ? (
+                <Link to={`/recipe/${savedId}`} className={styles.createdSavedLink} onClick={onClose}>
+                  ✓ Saved — View recipe
+                </Link>
+              ) : (
+                <button
+                  className={styles.createdSaveBtn}
+                  onClick={() => handleSave(result.recipe)}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving…' : 'Save to my recipes'}
+                </button>
+              )}
+              <button className={styles.wizardBackBtn} onClick={handleTryAgain}>Try another idea</button>
+              <button className={styles.wizardBackBtn} onClick={handleBack}>← Change ingredients</button>
+            </div>
           </div>
         )}
       </div>
