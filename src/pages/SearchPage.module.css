@@ -60,6 +60,9 @@
 }
 
 .filterToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 500;

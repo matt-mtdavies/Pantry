@@ -96,7 +96,14 @@ export default function SearchPage() {
               />
             </div>
             <button className={styles.dinnerBtn} onClick={() => setWizardOpen(true)}>
-              🍽 What's for dinner tonight?
+              <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5.5 4.5C5.5 3 5.8 2 5.5 1" />
+                <path d="M8.5 4.5C8.5 3 8.8 2 8.5 1" />
+                <path d="M11.5 4.5C11.5 3 11.8 2 11.5 1" />
+                <path d="M2 7.5h13" />
+                <path d="M2 7.5C2 11.64 4.91 15 8.5 15S15 11.64 15 7.5" />
+              </svg>
+              What's for dinner tonight?
             </button>
           </div>
         </div>
@@ -108,7 +115,12 @@ export default function SearchPage() {
               className={`${styles.filterToggle} ${filtersOpen ? styles.filterToggleOpen : ''}`}
               onClick={() => setFiltersOpen(o => !o)}
             >
-              ⚙ Filters{activeCount > 0 ? ` (${activeCount})` : ''}
+              <svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                <line x1="0.75" y1="1" x2="13.25" y2="1" />
+                <line x1="2.75" y1="5.5" x2="11.25" y2="5.5" />
+                <line x1="4.75" y1="10" x2="9.25" y2="10" />
+              </svg>
+              Filters{activeCount > 0 ? ` (${activeCount})` : ''}
             </button>
             {activeCount > 0 && (
               <button className={styles.clearFilters} onClick={clearFilters}>Clear all</button>
