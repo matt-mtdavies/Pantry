@@ -76,7 +76,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
            u.display_name AS author_name, u.avatar_id
     FROM recipes r
     LEFT JOIN users u ON r.user_id = u.id
-    WHERE r.share_token IS NOT NULL AND r.is_deleted = 0
+    WHERE u.is_public = 1 AND r.is_deleted = 0
     ORDER BY r.created_at DESC
     LIMIT 8
   `).all<{
