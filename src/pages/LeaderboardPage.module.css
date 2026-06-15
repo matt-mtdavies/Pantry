@@ -348,7 +348,20 @@ a.row:hover {
   font-size: var(--text-xs);
   color: #9C9189;
   margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
 }
+
+.feedTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #9C9189;
+}
+
+.feedTimeIcon { display: block; flex-shrink: 0; }
 
 .feedRating {
   display: flex;

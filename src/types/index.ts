@@ -112,6 +112,8 @@ export interface FeedRecipe {
   author_name: string | null;
   share_token?: string | null;
   avatar_id?: string;
+  prep_time?: number | null;
+  cook_time?: number | null;
   avg_rating?: number;
   rating_count?: number;
 }

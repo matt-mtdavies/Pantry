@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import { getLeaderboard, getFeed } from '../lib/api'
 import { imageUrl, formatTime, timeAgo } from '../lib/utils'
 import { avatarEmoji } from '../lib/avatars'
-import { TrophyIcon, PersonIcon, DishIcon, StarIcon, SunIcon } from '../components/icons'
+import { TrophyIcon, PersonIcon, DishIcon, StarIcon, SunIcon, ClockIcon } from '../components/icons'
 import type { LeaderboardRecipe, LeaderboardChef, FeedData } from '../types'
 import styles from './LeaderboardPage.module.css'
 
@@ -134,6 +134,12 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
                     {r.author_name ? `by ${r.author_name}` : 'Anonymous'}
                     {' · '}
                     {timeAgo(r.created_at)}
+                    {(r.prep_time ?? 0) + (r.cook_time ?? 0) > 0 && (
+                      <span className={styles.feedTime}>
+                        <ClockIcon size={11} className={styles.feedTimeIcon} />
+                        {formatTime((r.prep_time ?? 0) + (r.cook_time ?? 0))}
+                      </span>
+                    )}
                   </p>
                 </div>
               </Link>
