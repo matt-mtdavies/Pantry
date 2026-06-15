@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
-import { backfillNutrition, backfillImages } from '../lib/api'
-import { AVATARS } from '../lib/avatars'
+import { backfillNutrition, backfillImages, getPublicProfile } from '../lib/api'
+import { AVATARS, avatarEmoji } from '../lib/avatars'
+import { StarIcon } from '../components/icons'
 import styles from './ProfilePage.module.css'
 
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary', 'Other']
@@ -38,6 +39,14 @@ export default function ProfilePage() {
   const [backfillingImgs, setBackfillingImgs] = useState(false)
   const [backfillImgsMsg, setBackfillImgsMsg] = useState('')
   const [inviteCopied, setInviteCopied] = useState(false)
+  const [stats, setStats] = useState<{ recipe_count: number; avg_rating: number | null; total_ratings: number } | null>(null)
+
+  useEffect(() => {
+    if (!user) return
+    getPublicProfile(user.id)
+      .then(p => setStats({ recipe_count: p.recipe_count, avg_rating: p.avg_rating, total_ratings: p.total_ratings }))
+      .catch(() => {})
+  }, [user])
 
   if (!user) return null
 
@@ -128,9 +137,43 @@ export default function ProfilePage() {
       <Navigation />
       <main className="page-main">
         <div className="content-col">
-          <div className={styles.header}>
-            <h1 className={styles.title}>My profile</h1>
-            <p className={styles.email}>{user.email}</p>
+          {/* Profile hero — live preview as you edit */}
+          <div className={styles.profileHero}>
+            <div className={styles.profileAvatarWrap}>
+              <span className={styles.profileAvatarEmoji}>{avatarEmoji(avatarId)}</span>
+            </div>
+            <h1 className={styles.profileName}>{displayName || 'Your profile'}</h1>
+            <p className={styles.profileEmail}>{user.email}</p>
+
+            {stats && (
+              <div className={styles.profileStats}>
+                <div className={styles.profileStat}>
+                  <span className={styles.profileStatValue}>{stats.recipe_count}</span>
+                  <span className={styles.profileStatLabel}>Recipe{stats.recipe_count !== 1 ? 's' : ''}</span>
+                </div>
+                {stats.avg_rating != null && (
+                  <div className={styles.profileStat}>
+                    <span className={styles.profileStatValue}>
+                      <StarIcon size={13} className={styles.profileStatStar} />
+                      {stats.avg_rating.toFixed(1)}
+                    </span>
+                    <span className={styles.profileStatLabel}>Avg rating</span>
+                  </div>
+                )}
+                {stats.total_ratings > 0 && (
+                  <div className={styles.profileStat}>
+                    <span className={styles.profileStatValue}>{stats.total_ratings}</span>
+                    <span className={styles.profileStatLabel}>Rating{stats.total_ratings !== 1 ? 's' : ''}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {user.is_public && (
+              <Link to={`/user/${user.id}`} className={styles.viewProfileLink}>
+                View your public profile →
+              </Link>
+            )}
           </div>
 
           <div className={styles.form}>
@@ -169,7 +212,9 @@ export default function ProfilePage() {
             <div className={styles.field}>
               <span className={styles.label}>Profile visibility</span>
               <p className={styles.hint}>
-                Public profiles appear in community search and the leaderboard.
+                {isPublic
+                  ? 'Your recipes appear in the community feed and others can view your profile and see your ratings.'
+                  : 'Your recipes and profile are hidden from the community. Only you can see them.'}
               </p>
               <div className={styles.toggle}>
                 <button
@@ -177,14 +222,14 @@ export default function ProfilePage() {
                   onClick={() => setIsPublic(true)}
                   aria-pressed={isPublic}
                 >
-                  🌍 Public
+                  Public
                 </button>
                 <button
                   className={`${styles.toggleBtn} ${!isPublic ? styles.toggleBtnActive : ''}`}
                   onClick={() => setIsPublic(false)}
                   aria-pressed={!isPublic}
                 >
-                  🔒 Private
+                  Private
                 </button>
               </div>
             </div>
