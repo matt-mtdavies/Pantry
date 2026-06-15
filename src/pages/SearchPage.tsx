@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
+import SaltGrinder from '../components/SaltGrinder'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe } from '../lib/api'
 import type { DinnerResult, GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
@@ -383,7 +384,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
 
         {stage === 'loading' && (
           <div className={styles.wizardLoading}>
-            <div className={styles.wizardSpinner} />
+            <SaltGrinder size={56} />
             <p className={styles.wizardLoadingText}>Creating a custom recipe for you…</p>
           </div>
         )}
