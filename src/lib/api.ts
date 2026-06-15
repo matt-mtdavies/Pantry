@@ -190,6 +190,9 @@ export interface GeneratedRecipe {
   steps: string[]
   tags: string[]
   shopping_list: string[]
+  calories_per_serving: number | null
+  cost_per_serving: number | null
+  cost_currency: string
 }
 
 export type DinnerResult =

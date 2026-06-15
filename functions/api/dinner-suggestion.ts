@@ -10,6 +10,9 @@ interface GeneratedRecipe {
   steps: string[]
   tags: string[]
   shopping_list: string[]
+  calories_per_serving: number | null
+  cost_per_serving: number | null
+  cost_currency: string
 }
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
@@ -32,47 +35,38 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return json({ type: 'matched', recipes: [] })
   }
 
+  const sharedSchema = `{
+  "title": "Recipe name",
+  "description": "Brief appealing description (1-2 sentences)",
+  "servings": ${servings},
+  "prep_time": 15,
+  "cook_time": 30,
+  "ingredients": [
+    { "amount": "200", "unit": "g", "name": "ingredient name" }
+  ],
+  "steps": [
+    "Step description"
+  ],
+  "tags": ["tag1", "tag2"],
+  "calories_per_serving": 450,
+  "cost_per_serving": 3.50,
+  "cost_currency": "USD"
+}`
+
   const prompt = mode === 'create'
     ? `You are a creative chef assistant. Create a single delicious recipe using these ingredients as a starting point: ${ingredientList.join(', ')}.
 
 The user is happy to shop for additional ingredients. Aim for ${servings} servings.
+Also include a "shopping_list" array of any extra ingredients needed beyond what the user has.
 
-Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) with this exact structure:
-{
-  "title": "Recipe name",
-  "description": "Brief appealing description (1-2 sentences)",
-  "servings": ${servings},
-  "prep_time": 15,
-  "cook_time": 30,
-  "ingredients": [
-    { "amount": "200", "unit": "g", "name": "ingredient name" }
-  ],
-  "steps": [
-    "Step description"
-  ],
-  "tags": ["tag1", "tag2"],
-  "shopping_list": ["extra item the user needs to buy"]
-}`
+Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) matching this schema exactly, plus a "shopping_list" string array:
+${sharedSchema.replace('}', ',\n  "shopping_list": ["extra item"]\n}')}`
     : `You are a creative chef assistant. Create a single delicious recipe using ONLY these available ingredients: ${ingredientList.join(', ')}.
 
 Do not require any other ingredients. Aim for ${servings} servings.
 
-Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) with this exact structure:
-{
-  "title": "Recipe name",
-  "description": "Brief appealing description (1-2 sentences)",
-  "servings": ${servings},
-  "prep_time": 15,
-  "cook_time": 30,
-  "ingredients": [
-    { "amount": "200", "unit": "g", "name": "ingredient name" }
-  ],
-  "steps": [
-    "Step description"
-  ],
-  "tags": ["tag1", "tag2"],
-  "shopping_list": []
-}`
+Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) matching this schema exactly, plus "shopping_list": []:
+${sharedSchema.replace('}', ',\n  "shopping_list": []\n}')}`
 
   try {
     const aiRes = await fetch('https://api.anthropic.com/v1/messages', {

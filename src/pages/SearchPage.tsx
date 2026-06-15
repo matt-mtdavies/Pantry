@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { searchPublicRecipes, getDinnerSuggestions, createRecipe } from '../lib/api'
+import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
 import type { DinnerResult, GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
@@ -326,7 +326,18 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         ingredients: recipe.ingredients,
         steps: recipe.steps,
         tags: recipe.tags,
+        calories_per_serving: recipe.calories_per_serving,
+        cost_per_serving: recipe.cost_per_serving,
+        cost_currency: recipe.cost_currency || 'USD',
       })
+      // Attach a hero image in the background — best effort
+      try {
+        const imageQuery = [recipe.title, ...recipe.tags.slice(0, 2)].join(' ')
+        const images = await searchImages(imageQuery)
+        if (images.length > 0) {
+          await fetchRecipeImage(saved.id, images[0].url)
+        }
+      } catch { /* image is optional */ }
       setSavedId(saved.id)
     } catch { /* ignore */ } finally { setSaving(false) }
   }
@@ -448,6 +459,8 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                 {result.recipe.prep_time > 0 && <span>Prep {result.recipe.prep_time}m</span>}
                 {result.recipe.cook_time > 0 && <span>Cook {result.recipe.cook_time}m</span>}
                 <span>Serves {result.recipe.servings}</span>
+                {result.recipe.calories_per_serving != null && <span>~{result.recipe.calories_per_serving} kcal</span>}
+                {result.recipe.cost_per_serving != null && <span>~${result.recipe.cost_per_serving.toFixed(2)}/serve</span>}
               </div>
 
               <div className={styles.createdSection}>
