@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk'
 import type { Env } from '../env'
 
 const TIP_CATEGORIES = ['Technique', 'Ingredient', 'Storage', 'Flavour', 'Kitchen']
@@ -34,28 +33,40 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       )
       const category = TIP_CATEGORIES[dayOfYear % TIP_CATEGORIES.length]
 
-      const ai = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
-      const msg = await ai.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 200,
-        messages: [{
-          role: 'user',
-          content: `Generate a single practical cooking tip for home cooks. Category: ${category}. Keep it to 1-2 sentences, specific and actionable. Return ONLY valid JSON with no markdown fences: {"category": "...", "tip": "...", "emoji": "..."}`,
-        }],
+      const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 200,
+          messages: [{
+            role: 'user',
+            content: `Generate a single practical cooking tip for home cooks. Category: ${category}. Keep it to 1-2 sentences, specific and actionable. Return ONLY valid JSON with no markdown fences: {"category": "...", "tip": "...", "emoji": "..."}`,
+          }],
+        }),
       })
 
-      const raw = (msg.content[0] as { type: string; text: string }).text
-      const jsonMatch = raw.match(/\{[\s\S]*\}/)
-      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw) as {
-        category?: string; tip: string; emoji?: string
+      if (aiRes.ok) {
+        const aiData = await aiRes.json() as { content: Array<{ text: string }> }
+        const raw = aiData.content?.[0]?.text ?? ''
+        const jsonMatch = raw.match(/\{[\s\S]*\}/)
+        const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw) as {
+          category?: string; tip: string; emoji?: string
+        }
+
+        await env.DB.prepare(
+          'INSERT OR REPLACE INTO daily_tips (date, category, tip, emoji) VALUES (?, ?, ?, ?)',
+        ).bind(today, parsed.category ?? category, parsed.tip, parsed.emoji ?? '🍳').run()
+
+        tip = { date: today, category: parsed.category ?? category, tip: parsed.tip, emoji: parsed.emoji ?? '🍳' }
       }
+    } catch { /* fall through to fallback */ }
 
-      await env.DB.prepare(
-        'INSERT OR REPLACE INTO daily_tips (date, category, tip, emoji) VALUES (?, ?, ?, ?)',
-      ).bind(today, parsed.category ?? category, parsed.tip, parsed.emoji ?? '🍳').run()
-
-      tip = { date: today, category: parsed.category ?? category, tip: parsed.tip, emoji: parsed.emoji ?? '🍳' }
-    } catch {
+    if (!tip) {
       tip = { date: today, ...FALLBACK_TIP }
     }
   }
