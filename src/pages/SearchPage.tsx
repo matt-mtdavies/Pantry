@@ -351,7 +351,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                   className={`${styles.wizardModeBtn} ${mode === 'match' ? styles.wizardModeBtnActive : ''}`}
                   onClick={() => setMode('match')}
                 >
-                  That's all I have
+                  No, use what I have
                 </button>
                 <button
                   className={`${styles.wizardModeBtn} ${mode === 'create' ? styles.wizardModeBtnActive : ''}`}
@@ -376,7 +376,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
               onClick={handleFind}
               disabled={!ingredients.trim()}
             >
-              {mode === 'create' ? 'Create a recipe →' : 'Find dinner →'}
+              Create a recipe →
             </button>
           </div>
         )}
@@ -384,9 +384,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         {stage === 'loading' && (
           <div className={styles.wizardLoading}>
             <div className={styles.wizardSpinner} />
-            <p className={styles.wizardLoadingText}>
-              {mode === 'create' ? 'Creating a custom recipe for you…' : 'Finding recipes that match…'}
-            </p>
+            <p className={styles.wizardLoadingText}>Creating a custom recipe for you…</p>
           </div>
         )}
 
