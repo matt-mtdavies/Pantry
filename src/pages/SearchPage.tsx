@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
 import { SearchIcon, DishIcon } from '../components/icons'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
-import type { DinnerResult, GeneratedRecipe } from '../lib/api'
+import type { GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { avatarEmoji } from '../lib/avatars'
@@ -288,66 +288,93 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
   )
 }
 
+const PANTRY_CHIPS = [
+  'Eggs', 'Onion', 'Garlic', 'Tomatoes', 'Chicken', 'Pasta', 'Rice',
+  'Potatoes', 'Carrots', 'Butter', 'Milk', 'Cheese', 'Bread', 'Lemon',
+  'Olive oil', 'Flour', 'Canned tomatoes', 'Mushrooms', 'Spinach', 'Broccoli',
+  'Tuna', 'Salmon', 'Bacon', 'Sausages', 'Chickpeas', 'Lentils',
+  'Kidney beans', 'Avocado', 'Yoghurt', 'Cream', 'Soy sauce',
+  'Ginger', 'Pork', 'Beef mince', 'Prawns', 'Tofu', 'Corn',
+]
+
+type WizardStage = 'form' | 'loading' | 'summaries' | 'detail' | 'error'
+
 function DinnerWizard({ onClose }: { onClose: () => void }) {
-  const [ingredients, setIngredients] = useState('')
-  const [servings, setServings] = useState(2)
-  const [mode, setMode] = useState<'match' | 'create'>('match')
-  const [stage, setStage] = useState<'form' | 'loading' | 'results' | 'error'>('form')
-  const [result, setResult] = useState<DinnerResult | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [surpriseMe, setSurpriseMe] = useState(false)
+  const [mode, setMode] = useState<'match' | 'create'>('create')
+  const [stage, setStage] = useState<WizardStage>('form')
+  const [recipes, setRecipes] = useState<GeneratedRecipe[]>([])
+  const [summaryImages, setSummaryImages] = useState<(string | null)[]>([null, null, null])
+  const [activeRecipe, setActiveRecipe] = useState<GeneratedRecipe | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const seenTitles = useRef<string[]>([])
 
-  const runSearch = async (ing: string, sv: number, md: 'match' | 'create', exclude: string[] = []) => {
+  const toggleChip = (item: string) => {
+    setSurpriseMe(false)
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(item)) { next.delete(item) } else { next.add(item) }
+      return next
+    })
+  }
+
+  const toggleSurprise = () => {
+    setSurpriseMe(s => !s)
+    setSelected(new Set())
+  }
+
+  const runWizard = async () => {
     setStage('loading')
-    setSavedId(null)
+    setSummaryImages([null, null, null])
     try {
-      const res = await getDinnerSuggestions(ing, sv, md, exclude)
-      if (res.type === 'created') seenTitles.current = [...exclude, res.recipe.title]
-      setResult(res)
-      setStage('results')
+      const ingredientList = surpriseMe ? [] : Array.from(selected)
+      const result = await getDinnerSuggestions(ingredientList, mode)
+      setRecipes(result.recipes.slice(0, 3))
+      setStage('summaries')
+      result.recipes.slice(0, 3).forEach(async (r, i) => {
+        try {
+          const imgs = await searchImages([r.title, ...r.tags.slice(0, 1)].join(' '))
+          if (imgs.length > 0) {
+            setSummaryImages(prev => { const next = [...prev]; next[i] = imgs[0].thumb; return next })
+          }
+        } catch { /* image is optional */ }
+      })
     } catch {
       setStage('error')
     }
   }
 
-  const handleFind = () => {
-    if (!ingredients.trim()) return
-    seenTitles.current = []
-    runSearch(ingredients, servings, mode, [])
-  }
-
-  const handleTryAgain = () => runSearch(ingredients, servings, mode, seenTitles.current)
-
-  const handleBack = () => { setResult(null); setSavedId(null); setStage('form') }
-
-  const handleSave = async (recipe: GeneratedRecipe) => {
+  const handleSave = async () => {
+    if (!activeRecipe) return
     setSaving(true)
     try {
       const saved = await createRecipe({
-        title: recipe.title,
-        description: recipe.description,
-        servings: recipe.servings,
-        prep_time: recipe.prep_time,
-        cook_time: recipe.cook_time,
-        ingredients: recipe.ingredients,
-        steps: recipe.steps,
-        tags: recipe.tags,
-        calories_per_serving: recipe.calories_per_serving,
-        cost_per_serving: recipe.cost_per_serving,
-        cost_currency: recipe.cost_currency || 'USD',
+        title: activeRecipe.title,
+        description: activeRecipe.description,
+        servings: activeRecipe.servings,
+        prep_time: activeRecipe.prep_time,
+        cook_time: activeRecipe.cook_time,
+        ingredients: activeRecipe.ingredients,
+        steps: activeRecipe.steps,
+        tags: activeRecipe.tags,
+        calories_per_serving: activeRecipe.calories_per_serving,
+        cost_per_serving: activeRecipe.cost_per_serving,
+        cost_currency: activeRecipe.cost_currency || 'USD',
       })
-      // Attach a hero image in the background — best effort
       try {
-        const imageQuery = [recipe.title, ...recipe.tags.slice(0, 2)].join(' ')
+        const imageQuery = [activeRecipe.title, ...activeRecipe.tags.slice(0, 2)].join(' ')
         const images = await searchImages(imageQuery)
-        if (images.length > 0) {
-          await fetchRecipeImage(saved.id, images[0].url)
-        }
+        if (images.length > 0) await fetchRecipeImage(saved.id, images[0].url)
       } catch { /* image is optional */ }
       setSavedId(saved.id)
     } catch { /* ignore */ } finally { setSaving(false) }
   }
+
+  const wizardSubtitle =
+    stage === 'summaries' ? '3 ideas for tonight — tap one to see the full recipe.' :
+    stage === 'detail' ? 'Full recipe — save it to your collection.' :
+    'Tap what you have in your pantry.'
 
   return (
     <div className={styles.wizardOverlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
@@ -356,7 +383,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         <div className={styles.wizardHeader}>
           <div>
             <h2 className={styles.wizardTitle}>What's for dinner?</h2>
-            <p className={styles.wizardSub}>Tell us what you have and we'll find something delicious.</p>
+            <p className={styles.wizardSub}>{wizardSubtitle}</p>
           </div>
           <button className={styles.wizardClose} onClick={onClose} aria-label="Close">✕</button>
         </div>
@@ -364,15 +391,26 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         {stage === 'form' && (
           <div className={styles.wizardForm}>
             <div className={styles.wizardField}>
-              <label className={styles.wizardLabel}>What ingredients do you have?</label>
-              <textarea
-                className={styles.wizardTextarea}
-                placeholder="e.g. chicken, garlic, lemon, pasta…"
-                value={ingredients}
-                onChange={e => setIngredients(e.target.value)}
-                rows={4}
-                autoFocus
-              />
+              <label className={styles.wizardLabel}>What's in your pantry?</label>
+              <div className={styles.chipGrid}>
+                {PANTRY_CHIPS.map(item => (
+                  <button
+                    key={item}
+                    className={`${styles.chip} ${selected.has(item) ? styles.chipActive : ''}`}
+                    onClick={() => toggleChip(item)}
+                    aria-pressed={selected.has(item)}
+                  >
+                    {item}
+                  </button>
+                ))}
+                <button
+                  className={`${styles.chip} ${styles.chipNone} ${surpriseMe ? styles.chipNoneActive : ''}`}
+                  onClick={toggleSurprise}
+                  aria-pressed={surpriseMe}
+                >
+                  🎲 Surprise me
+                </button>
+              </div>
             </div>
 
             <div className={styles.wizardField}>
@@ -393,21 +431,12 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
-            <div className={styles.wizardField}>
-              <label className={styles.wizardLabel}>How many people are you cooking for?</label>
-              <div className={styles.wizardServings}>
-                <button className={styles.wizardServingsBtn} onClick={() => setServings(s => Math.max(1, s - 1))}>−</button>
-                <span className={styles.wizardServingsNum}>{servings}</span>
-                <button className={styles.wizardServingsBtn} onClick={() => setServings(s => s + 1)}>+</button>
-              </div>
-            </div>
-
             <button
               className={styles.wizardFindBtn}
-              onClick={handleFind}
-              disabled={!ingredients.trim()}
+              onClick={runWizard}
+              disabled={selected.size === 0 && !surpriseMe}
             >
-              Create a recipe →
+              Find recipes →
             </button>
           </div>
         )}
@@ -415,65 +444,78 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         {stage === 'loading' && (
           <div className={styles.wizardLoading}>
             <SaltGrinder size={56} />
-            <p className={styles.wizardLoadingText}>Creating a custom recipe for you…</p>
+            <p className={styles.wizardLoadingText}>Cooking up 3 ideas for you…</p>
           </div>
         )}
 
         {stage === 'error' && (
           <div className={styles.wizardEmpty}>
             <p className={styles.wizardEmptyTitle}>Something went wrong</p>
-            <p className={styles.wizardEmptySub}>Couldn't generate a recipe — please try again.</p>
-            <button className={styles.wizardBackBtn} onClick={handleTryAgain}>Try again</button>
-            <button className={styles.wizardBackBtn} onClick={handleBack}>← Change ingredients</button>
+            <p className={styles.wizardEmptySub}>Couldn't generate recipes — please try again.</p>
+            <button className={styles.wizardBackBtn} onClick={runWizard}>Try again</button>
+            <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
           </div>
         )}
 
-        {stage === 'results' && result?.type === 'matched' && (
-          <div className={styles.wizardResults}>
-            {result.recipes.length === 0 ? (
-              <div className={styles.wizardEmpty}>
-                <p className={styles.wizardEmptyTitle}>No matches found</p>
-                <p className={styles.wizardEmptySub}>Try different ingredients or fewer of them.</p>
-                <button className={styles.wizardBackBtn} onClick={handleBack}>← Try again</button>
-              </div>
-            ) : (
-              <>
-                <p className={styles.wizardResultCount}>{result.recipes.length} recipe{result.recipes.length !== 1 ? 's' : ''} match your ingredients</p>
-                <div className={styles.wizardResultList}>
-                  {result.recipes.map(r => <SearchCard key={r.id} recipe={r} />)}
-                </div>
-                <button className={styles.wizardBackBtn} onClick={handleBack}>← Search again</button>
-              </>
-            )}
+        {stage === 'summaries' && (
+          <div className={styles.wizardSummaries}>
+            <div className={styles.summaryGrid}>
+              {recipes.map((r, i) => (
+                <button
+                  key={i}
+                  className={styles.summaryCard}
+                  onClick={() => { setActiveRecipe(r); setSavedId(null); setStage('detail') }}
+                >
+                  <div className={styles.summaryImgWrap}>
+                    {summaryImages[i]
+                      ? <img src={summaryImages[i]!} alt={r.title} className={styles.summaryImg} />
+                      : <DishIcon size={32} className={styles.summaryPlaceholder} />
+                    }
+                  </div>
+                  <div className={styles.summaryBody}>
+                    <h3 className={styles.summaryTitle}>{r.title}</h3>
+                    {r.description && <p className={styles.summaryDesc}>{r.description}</p>}
+                    <div className={styles.summaryMeta}>
+                      {(r.prep_time + r.cook_time) > 0 && <span>{formatTime(r.prep_time + r.cook_time)}</span>}
+                      <span>Serves {r.servings}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className={styles.summaryActions}>
+              <button className={styles.wizardTryAgain} onClick={runWizard}>Try different ideas</button>
+              <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
+            </div>
           </div>
         )}
 
-        {stage === 'results' && result?.type === 'created' && (
+        {stage === 'detail' && activeRecipe && (
           <div className={styles.wizardCreated}>
             <div className={styles.createdCard}>
-              {result.recipe.tags.length > 0 && (
+              {activeRecipe.tags.length > 0 && (
                 <div className={styles.createdTags}>
-                  {result.recipe.tags.slice(0, 3).map(t => (
+                  {activeRecipe.tags.slice(0, 3).map(t => (
                     <span key={t} className={styles.createdTag}>{t}</span>
                   ))}
                 </div>
               )}
-              <h3 className={styles.createdTitle}>{result.recipe.title}</h3>
-              {result.recipe.description && (
-                <p className={styles.createdDesc}>{result.recipe.description}</p>
+              <h3 className={styles.createdTitle}>{activeRecipe.title}</h3>
+              {activeRecipe.description && (
+                <p className={styles.createdDesc}>{activeRecipe.description}</p>
               )}
               <div className={styles.createdMeta}>
-                {result.recipe.prep_time > 0 && <span>Prep {result.recipe.prep_time}m</span>}
-                {result.recipe.cook_time > 0 && <span>Cook {result.recipe.cook_time}m</span>}
-                <span>Serves {result.recipe.servings}</span>
-                {result.recipe.calories_per_serving != null && <span>~{result.recipe.calories_per_serving} kcal</span>}
-                {result.recipe.cost_per_serving != null && <span>~${result.recipe.cost_per_serving.toFixed(2)}/serve</span>}
+                {activeRecipe.prep_time > 0 && <span>Prep {activeRecipe.prep_time}m</span>}
+                {activeRecipe.cook_time > 0 && <span>Cook {activeRecipe.cook_time}m</span>}
+                <span>Serves {activeRecipe.servings}</span>
+                {activeRecipe.calories_per_serving != null && <span>~{activeRecipe.calories_per_serving} kcal</span>}
+                {activeRecipe.cost_per_serving != null && <span>~${activeRecipe.cost_per_serving.toFixed(2)}/serve</span>}
               </div>
 
               <div className={styles.createdSection}>
                 <h4 className={styles.createdSectionTitle}>Ingredients</h4>
                 <ul className={styles.createdIngredients}>
-                  {result.recipe.ingredients.map((ing, i) => (
+                  {activeRecipe.ingredients.map((ing, i) => (
                     <li key={i} className={styles.createdIngredient}>
                       <span className={styles.createdIngAmt}>{ing.amount} {ing.unit}</span>
                       <span>{ing.name}</span>
@@ -482,11 +524,11 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                 </ul>
               </div>
 
-              {result.recipe.shopping_list.length > 0 && (
+              {activeRecipe.shopping_list.length > 0 && (
                 <div className={styles.createdSection}>
                   <h4 className={styles.createdSectionTitle}>Shopping list</h4>
                   <ul className={styles.createdShoppingList}>
-                    {result.recipe.shopping_list.map((item, i) => (
+                    {activeRecipe.shopping_list.map((item, i) => (
                       <li key={i} className={styles.createdShoppingItem}>
                         <span className={styles.createdShopCheck}>☐</span>
                         {item}
@@ -499,7 +541,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
               <div className={styles.createdSection}>
                 <h4 className={styles.createdSectionTitle}>Method</h4>
                 <ol className={styles.createdSteps}>
-                  {result.recipe.steps.map((step, i) => (
+                  {activeRecipe.steps.map((step, i) => (
                     <li key={i} className={styles.createdStep}>
                       <span className={styles.createdStepNum}>{i + 1}</span>
                       <p>{step}</p>
@@ -515,16 +557,13 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                   ✓ Saved — View recipe
                 </Link>
               ) : (
-                <button
-                  className={styles.createdSaveBtn}
-                  onClick={() => handleSave(result.recipe)}
-                  disabled={saving}
-                >
+                <button className={styles.createdSaveBtn} onClick={handleSave} disabled={saving}>
                   {saving ? 'Saving…' : 'Save to my recipes'}
                 </button>
               )}
-              <button className={styles.wizardBackBtn} onClick={handleTryAgain}>Try another idea</button>
-              <button className={styles.wizardBackBtn} onClick={handleBack}>← Change ingredients</button>
+              <button className={styles.wizardBackBtn} onClick={() => { setActiveRecipe(null); setSavedId(null); setStage('summaries') }}>
+                ← Back to ideas
+              </button>
             </div>
           </div>
         )}

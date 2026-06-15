@@ -207,19 +207,13 @@ export interface GeneratedRecipe {
   cost_currency: string
 }
 
-export type DinnerResult =
-  | { type: 'matched'; recipes: Recipe[] }
-  | { type: 'created'; recipe: GeneratedRecipe }
-
 export async function getDinnerSuggestions(
-  ingredients: string,
-  servings?: number,
+  ingredients: string[],
   mode?: 'match' | 'create',
-  excludeTitles?: string[],
-): Promise<DinnerResult> {
-  return request<DinnerResult>('/api/dinner-suggestion', {
+): Promise<{ recipes: GeneratedRecipe[] }> {
+  return request<{ recipes: GeneratedRecipe[] }>('/api/dinner-suggestion', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ingredients, servings, mode, excludeTitles }),
+    body: JSON.stringify({ ingredients, mode }),
   })
 }

@@ -17,60 +17,31 @@ interface GeneratedRecipe {
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const body = await ctx.request.json() as {
-    ingredients?: string
-    servings?: number
+    ingredients?: string[]
     mode?: 'match' | 'create'
-    excludeTitles?: string[]
   }
 
-  const rawIngredients = body.ingredients ?? ''
-  const servings = body.servings ?? 2
-  const mode = body.mode ?? 'match'
-  const excludeTitles = body.excludeTitles ?? []
+  const ingredients = body.ingredients ?? []
+  const mode = body.mode ?? 'create'
 
-  const ingredientList = rawIngredients
-    .split(/[,\n]/)
-    .map((s: string) => s.trim().toLowerCase())
-    .filter(Boolean)
+  const ingredientStr = ingredients.length > 0
+    ? ingredients.join(', ')
+    : 'any common pantry staples you like'
 
-  if (ingredientList.length === 0) {
-    return json({ type: 'matched', recipes: [] })
-  }
+  const shoppingNote = mode === 'create'
+    ? 'The user is happy to shop for extra ingredients — include these in shopping_list.'
+    : 'Use ONLY the listed ingredients — set shopping_list to [].'
 
-  const sharedSchema = `{
-  "title": "Recipe name",
-  "description": "Brief appealing description (1-2 sentences)",
-  "servings": ${servings},
-  "prep_time": 15,
-  "cook_time": 30,
-  "ingredients": [
-    { "amount": "200", "unit": "g", "name": "ingredient name" }
-  ],
-  "steps": [
-    "Step description"
-  ],
-  "tags": ["tag1", "tag2"],
-  "calories_per_serving": 450,
-  "cost_per_serving": 3.50,
-  "cost_currency": "USD"
-}`
+  const recipeSchema = `{"title":"string","description":"1-2 sentence description","servings":2,"prep_time":15,"cook_time":30,"ingredients":[{"amount":"200","unit":"g","name":"ingredient"}],"steps":["step text"],"tags":["tag"],"shopping_list":[],"calories_per_serving":450,"cost_per_serving":3.50,"cost_currency":"USD"}`
 
-  const avoidLine = excludeTitles.length > 0
-    ? `\nDo NOT suggest any of these recipes (already shown): ${excludeTitles.map(t => `"${t}"`).join(', ')}. Choose something clearly different.\n`
-    : ''
+  const prompt = `You are a creative chef assistant. Generate exactly 3 different delicious recipe ideas.
+Available ingredients: ${ingredientStr}.
+${shoppingNote}
+Make the 3 recipes clearly different — vary cuisines, cooking styles, or main protein.
+Each recipe serves 2 people.
 
-  const prompt = mode === 'create'
-    ? `You are a creative chef assistant. Create a single delicious recipe using these ingredients as a starting point: ${ingredientList.join(', ')}.${avoidLine}
-The user is happy to shop for additional ingredients. Aim for ${servings} servings.
-Also include a "shopping_list" array of any extra ingredients needed beyond what the user has.
-
-Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) matching this schema exactly, plus a "shopping_list" string array:
-${sharedSchema.replace('}', ',\n  "shopping_list": ["extra item"]\n}')}`
-    : `You are a creative chef assistant. Create a single delicious recipe using ONLY these available ingredients: ${ingredientList.join(', ')}.${avoidLine}
-Do not require any other ingredients. Aim for ${servings} servings.
-
-Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation) matching this schema exactly, plus "shopping_list": []:
-${sharedSchema.replace('}', ',\n  "shopping_list": []\n}')}`
+Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation):
+{"recipes":[${recipeSchema},${recipeSchema},${recipeSchema}]}`
 
   try {
     const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -82,23 +53,23 @@ ${sharedSchema.replace('}', ',\n  "shopping_list": []\n}')}`
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }],
       }),
     })
 
     if (!aiRes.ok) {
-      return json({ error: 'Failed to generate recipe' }, 500)
+      return json({ error: 'Failed to generate recipes' }, 500)
     }
 
     const aiData = await aiRes.json() as { content: Array<{ text: string }> }
     const raw = aiData.content?.[0]?.text ?? ''
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) return json({ error: 'Could not parse generated recipe' }, 500)
-    const generated = JSON.parse(jsonMatch[0]) as GeneratedRecipe
-    return json({ type: 'created', recipe: generated })
+    if (!jsonMatch) return json({ error: 'Could not parse generated recipes' }, 500)
+    const parsed = JSON.parse(jsonMatch[0]) as { recipes: GeneratedRecipe[] }
+    return json({ recipes: parsed.recipes ?? [] })
   } catch {
-    return json({ error: 'Failed to generate recipe' }, 500)
+    return json({ error: 'Failed to generate recipes' }, 500)
   }
 }
 
