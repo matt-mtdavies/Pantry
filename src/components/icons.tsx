@@ -86,6 +86,15 @@ export function EditIcon({ size = 16, className }: IconProps) {
   )
 }
 
+export function SunIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <circle cx="8" cy="8" r="2.5" />
+      <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.7 3.7l1.06 1.06M11.24 11.24l1.06 1.06M12.3 3.7l-1.06 1.06M4.76 11.24l-1.06 1.06" />
+    </svg>
+  )
+}
+
 export function TrophyIcon({ size = 16, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>

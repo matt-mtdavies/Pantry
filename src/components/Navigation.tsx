@@ -100,7 +100,7 @@ export default function Navigation() {
               Explore
             </Link>
             <Link to="/leaderboard" className={`${styles.link} ${p === '/leaderboard' ? styles.active : ''}`}>
-              Leaderboard
+              Community
             </Link>
             <Link to="/import" className={`${styles.link} ${p === '/import' ? styles.active : ''}`}>
               Add Recipe

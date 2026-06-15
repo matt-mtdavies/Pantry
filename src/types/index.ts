@@ -96,3 +96,28 @@ export interface LeaderboardChef {
 }
 
 export type FilterMode = 'all' | 'favourites' | 'needs-attention';
+
+export interface FeedTip {
+  date: string;
+  category: string;
+  tip: string;
+  emoji: string;
+}
+
+export interface FeedRecipe {
+  id: string;
+  title: string;
+  hero_image_key: string | null;
+  created_at: number;
+  author_name: string | null;
+  share_token?: string | null;
+  avatar_id?: string;
+  avg_rating?: number;
+  rating_count?: number;
+}
+
+export interface FeedData {
+  tip: FeedTip;
+  recentShared: FeedRecipe[];
+  topThisWeek: FeedRecipe[];
+}
