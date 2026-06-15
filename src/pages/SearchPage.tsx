@@ -275,7 +275,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
   const [ingredients, setIngredients] = useState('')
   const [servings, setServings] = useState(2)
   const [mode, setMode] = useState<'match' | 'create'>('match')
-  const [stage, setStage] = useState<'form' | 'loading' | 'results'>('form')
+  const [stage, setStage] = useState<'form' | 'loading' | 'results' | 'error'>('form')
   const [result, setResult] = useState<DinnerResult | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -286,10 +286,10 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
     try {
       const res = await getDinnerSuggestions(ing, sv, md)
       setResult(res)
+      setStage('results')
     } catch {
-      setResult({ type: 'matched', recipes: [] })
+      setStage('error')
     }
-    setStage('results')
   }
 
   const handleFind = () => {
@@ -385,6 +385,15 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
           <div className={styles.wizardLoading}>
             <div className={styles.wizardSpinner} />
             <p className={styles.wizardLoadingText}>Creating a custom recipe for you…</p>
+          </div>
+        )}
+
+        {stage === 'error' && (
+          <div className={styles.wizardEmpty}>
+            <p className={styles.wizardEmptyTitle}>Something went wrong</p>
+            <p className={styles.wizardEmptySub}>Couldn't generate a recipe — please try again.</p>
+            <button className={styles.wizardBackBtn} onClick={handleTryAgain}>Try again</button>
+            <button className={styles.wizardBackBtn} onClick={handleBack}>← Change ingredients</button>
           </div>
         )}
 
