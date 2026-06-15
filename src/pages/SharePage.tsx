@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
+import { DishIcon } from '../components/icons'
 import { getSharedRecipe, saveSharedRecipe } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
@@ -47,7 +48,7 @@ export default function SharePage() {
     return (
       <div className={styles.page}>
         <div className={styles.notFound}>
-          <div className={styles.notFoundIcon}>🍽</div>
+          <DishIcon size={56} className={styles.notFoundIcon} />
           <h1 className={styles.notFoundTitle}>Recipe not found</h1>
           <p className={styles.notFoundText}>
             This link may have expired or the recipe may have been removed.

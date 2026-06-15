@@ -26,6 +26,9 @@
   border-radius: var(--radius-full);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   transition: background-color 150ms ease;
   cursor: pointer;
 }
@@ -51,6 +54,9 @@
   border-radius: var(--radius-full);
   padding: var(--sp-3) var(--sp-6);
   background: transparent;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   cursor: pointer;
   transition: color 150ms ease, border-color 150ms ease;
 }
@@ -173,7 +179,6 @@
   justify-content: center;
   border: 1.5px solid #E8E0D4;
   border-radius: var(--radius-md);
-  font-size: 1.25rem;
   color: #6B6459;
   background: #FFFFFF;
   text-decoration: none;

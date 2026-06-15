@@ -1,4 +1,5 @@
 import { Component, ReactNode } from 'react'
+import { DishIcon } from './icons'
 
 interface Props { children: ReactNode }
 interface State { error: Error | null }
@@ -19,7 +20,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           background: '#FAF7F2', padding: '2rem', textAlign: 'center',
           fontFamily: 'Georgia, serif',
         }}>
-          <p style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🍽</p>
+          <div style={{ marginBottom: '1.5rem', opacity: 0.5, color: '#9C9189' }}><DishIcon size={56} /></div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '1.75rem', color: '#1F1B16', marginBottom: '1rem' }}>
             Something went wrong
           </h1>

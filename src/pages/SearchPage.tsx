@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
+import { SearchIcon } from '../components/icons'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
 import type { DinnerResult, GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
@@ -85,7 +86,7 @@ export default function SearchPage() {
             <h1 className={styles.heroTitle}>Explore recipes</h1>
             <p className={styles.heroSub}>Browse dishes shared by the community, ranked by rating.</p>
             <div className={styles.searchWrap}>
-              <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+              <SearchIcon size={15} className={styles.searchIcon} />
               <input
                 type="search"
                 value={query}

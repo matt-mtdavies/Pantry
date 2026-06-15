@@ -7,6 +7,7 @@ import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, upl
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { avatarEmoji } from '../lib/avatars'
+import { HeartIcon, CameraIcon, ShareIcon, EditIcon } from '../components/icons'
 import type { Recipe } from '../types'
 import styles from './RecipePage.module.css'
 
@@ -150,7 +151,7 @@ export default function RecipePage() {
                 disabled={photoUploading}
                 aria-label="Change recipe photo"
               >
-                {photoUploading ? 'Uploading…' : '📷 Change photo'}
+                {photoUploading ? 'Uploading…' : <><CameraIcon size={14} /> Change photo</>}
               </button>
             )}
           </div>
@@ -161,7 +162,7 @@ export default function RecipePage() {
               onClick={() => photoInputRef.current?.click()}
               disabled={photoUploading}
             >
-              {photoUploading ? 'Uploading…' : '📷 Add a photo'}
+              {photoUploading ? 'Uploading…' : <><CameraIcon size={14} /> Add a photo</>}
             </button>
           </div>
         ) : null}
@@ -246,9 +247,9 @@ export default function RecipePage() {
                   onClick={handleToggleFavourite}
                   aria-label={recipe.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
                   aria-pressed={recipe.is_favourite}
-                >{recipe.is_favourite ? '♥' : '♡'}</button>
-                <button className={styles.iconBtn} onClick={handleShare} disabled={sharing} aria-label="Share recipe">↗</button>
-                <Link to={`/recipe/${recipe.id}/edit`} className={styles.iconBtn} aria-label="Edit recipe">✎</Link>
+                ><HeartIcon filled={recipe.is_favourite} size={20} /></button>
+                <button className={styles.iconBtn} onClick={handleShare} disabled={sharing} aria-label="Share recipe"><ShareIcon size={18} /></button>
+                <Link to={`/recipe/${recipe.id}/edit`} className={styles.iconBtn} aria-label="Edit recipe"><EditIcon size={18} /></Link>
               </div>
             )}
 

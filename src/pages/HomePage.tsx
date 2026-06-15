@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
+import { SearchIcon, DishIcon, WarningIcon } from '../components/icons'
 import { listRecipes, toggleFavourite } from '../lib/api'
 import type { Recipe, FilterMode } from '../types'
 import styles from './HomePage.module.css'
@@ -68,7 +69,7 @@ export default function HomePage() {
         <div className="wide-col">
           <div className={styles.toolbar}>
             <div className={styles.searchWrap}>
-              <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+              <SearchIcon size={15} className={styles.searchIcon} />
               <input
                 type="search"
                 value={query}
@@ -106,9 +107,9 @@ export default function HomePage() {
 
           {needsAttentionCount > 0 && (
             <Link to="/needs-attention" className={styles.attentionBanner}>
-              <span>⚠️</span>
+              <WarningIcon size={16} />
               <span>{needsAttentionCount} screenshot{needsAttentionCount > 1 ? 's need' : ' needs'} attention</span>
-              <span className={styles.attentionArrow}>→</span>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={styles.attentionArrow}><path d="M2 7h10M8 3l4 4-4 4"/></svg>
             </Link>
           )}
 
@@ -127,7 +128,7 @@ export default function HomePage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className={styles.empty}>
-              <div className={styles.emptyIcon}>🍽</div>
+              <DishIcon size={56} className={styles.emptyIcon} />
               {query ? (
                 <>
                   <h2 className={styles.emptyTitle}>No recipes found</h2>

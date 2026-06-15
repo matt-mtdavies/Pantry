@@ -39,8 +39,9 @@
   left: var(--sp-4);
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1rem;
+  color: #9C9189;
   pointer-events: none;
+  display: block;
 }
 
 .search {
@@ -190,7 +191,7 @@
   padding: var(--sp-20) var(--sp-6);
 }
 
-.emptyIcon { font-size: 4rem; margin-bottom: var(--sp-6); opacity: 0.4; }
+.emptyIcon { display: block; margin-bottom: var(--sp-6); opacity: 0.4; color: #9C9189; }
 
 .emptyTitle {
   font-family: var(--font-display);

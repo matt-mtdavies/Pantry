@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Recipe } from '../types'
 import { formatTime, imageUrl } from '../lib/utils'
+import { ClockIcon, PersonIcon, HeartIcon, DishIcon } from './icons'
 import styles from './RecipeCard.module.css'
 
 interface Props {
@@ -18,7 +19,7 @@ export default function RecipeCard({ recipe, onToggleFavourite }: Props) {
           <img src={heroSrc} alt={recipe.title} className={styles.image} loading="lazy" />
         ) : (
           <div className={styles.placeholder}>
-            <span className={styles.placeholderIcon}>🍽</span>
+            <DishIcon size={44} className={styles.placeholderIcon} />
           </div>
         )}
       </Link>
@@ -30,7 +31,7 @@ export default function RecipeCard({ recipe, onToggleFavourite }: Props) {
           aria-label={recipe.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
           aria-pressed={recipe.is_favourite}
         >
-          {recipe.is_favourite ? '♥' : '♡'}
+          <HeartIcon filled={recipe.is_favourite} size={20} />
         </button>
       )}
 
@@ -54,13 +55,13 @@ export default function RecipeCard({ recipe, onToggleFavourite }: Props) {
         <div className={styles.meta}>
           {recipe.cook_time && (
             <span className={styles.metaItem}>
-              <span className={styles.metaIcon}>⏱</span>
+              <ClockIcon size={13} className={styles.metaIcon} />
               {formatTime(recipe.cook_time)}
             </span>
           )}
           {recipe.servings && (
             <span className={styles.metaItem}>
-              <span className={styles.metaIcon}>👤</span>
+              <PersonIcon size={13} className={styles.metaIcon} />
               {recipe.servings}
             </span>
           )}

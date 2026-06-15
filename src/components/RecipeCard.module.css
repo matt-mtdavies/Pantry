@@ -39,8 +39,8 @@
 }
 
 .placeholderIcon {
-  font-size: 3rem;
-  opacity: 0.4;
+  opacity: 0.35;
+  color: #9C9189;
 }
 
 .heart {
@@ -52,7 +52,6 @@
   border-radius: var(--radius-full);
   background: rgba(250,247,242,.92);
   backdrop-filter: blur(4px);
-  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,5 +139,6 @@
 }
 
 .metaIcon {
-  font-size: 0.875rem;
+  flex-shrink: 0;
+  display: block;
 }

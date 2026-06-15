@@ -16,7 +16,7 @@
   margin: auto;
 }
 
-.notFoundIcon { font-size: 4rem; margin-bottom: var(--sp-6); opacity: .4; }
+.notFoundIcon { display: block; margin-bottom: var(--sp-6); opacity: .4; color: #9C9189; }
 
 .notFoundTitle {
   font-family: var(--font-display);
