@@ -289,11 +289,17 @@
 .deleteBtn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
-  text-decoration: underline;
+  font-weight: 500;
+  color: #B91C1C;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1.5px solid #FECACA;
+  border-radius: var(--radius-full);
+  background: #FEF2F2;
+  cursor: pointer;
+  transition: all 150ms ease;
 }
 
-.deleteBtn:hover { color: #C4633E; }
+.deleteBtn:hover { color: #FFFFFF; background: #B91C1C; border-color: #B91C1C; }
 
 .confirmBox {
   background: #F5E8E2;
@@ -444,14 +450,20 @@
 .nativeShareBtn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
+  font-weight: 500;
   color: #6B6459;
-  text-decoration: underline;
-  text-align: left;
-  padding: 0;
-  transition: color 150ms ease;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-lg);
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 150ms ease;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
 }
 
-.nativeShareBtn:hover { color: #C4633E; }
+.nativeShareBtn:hover { border-color: #C4633E; color: #C4633E; }
 
 /* Author attribution */
 .authorRow {

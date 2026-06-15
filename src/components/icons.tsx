@@ -85,3 +85,23 @@ export function EditIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+export function TrophyIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M4.5 2h7v5.5c0 1.93-1.57 3.5-3.5 3.5S4.5 9.43 4.5 7.5V2z" />
+      <path d="M4.5 3.5C3 3.5 2 4.5 2 6s1 2.5 2.5 2.5" />
+      <path d="M11.5 3.5C13 3.5 14 4.5 14 6s-1 2.5-2.5 2.5" />
+      <path d="M8 11v2.5" />
+      <path d="M5.5 13.5h5" />
+    </svg>
+  )
+}
+
+export function StarIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" stroke="none" aria-hidden="true" className={className}>
+      <path d="M8 2l1.65 3.35L13.5 6l-2.75 2.68.65 3.82L8 10.65l-3.4 1.85.65-3.82L2.5 6l3.85-.65L8 2z" />
+    </svg>
+  )
+}

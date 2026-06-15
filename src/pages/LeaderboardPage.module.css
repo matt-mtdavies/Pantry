@@ -36,6 +36,9 @@
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition: color 150ms ease, border-color 150ms ease;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
 .tab:hover { color: #1F1B16; }
@@ -44,6 +47,8 @@
   color: #C4633E;
   border-bottom-color: #C4633E;
 }
+
+.tabIcon { flex-shrink: 0; display: block; }
 
 .list {
   display: flex;
@@ -74,11 +79,42 @@ a.row:hover {
   box-shadow: var(--shadow-sm);
 }
 
+/* Rank badge base */
 .rank {
-  font-size: 1.5rem;
-  min-width: 2rem;
-  text-align: center;
   flex-shrink: 0;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-full);
+}
+
+.rankGold {
+  background: #F59E0B;
+  color: #FFFFFF;
+  width: 32px;
+}
+
+.rankSilver {
+  background: #9CA3AF;
+  color: #FFFFFF;
+  width: 32px;
+}
+
+.rankBronze {
+  background: #CD7F32;
+  color: #FFFFFF;
+  width: 32px;
+}
+
+.rankPlain {
+  color: #9C9189;
+  font-size: var(--text-xs);
+  background: none;
 }
 
 .rowThumb {
@@ -94,7 +130,12 @@ a.row:hover {
 }
 
 .rowImg { width: 100%; height: 100%; object-fit: cover; }
-.rowPlaceholder { font-size: 1.5rem; }
+
+.rowPlaceholder {
+  opacity: 0.4;
+  color: #9C9189;
+  display: block;
+}
 
 .chefAvatar {
   width: 56px;
@@ -133,12 +174,16 @@ a.row:hover {
 
 .rowRating {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 3px;
   flex-shrink: 0;
 }
 
-.rowStar { color: #F59E0B; font-size: 1rem; }
+.rowStar {
+  color: #F59E0B;
+  display: block;
+  flex-shrink: 0;
+}
 
 .rowScore {
   font-family: var(--font-ui);
@@ -162,15 +207,21 @@ a.row:hover {
   font-family: var(--font-body);
   font-size: var(--text-base);
   color: #6B6459;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-5);
 }
 
-.emptyLink {
+.emptyBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-3) var(--sp-6);
+  background: #C4633E;
+  color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: #C4633E;
+  border-radius: var(--radius-full);
   text-decoration: none;
+  transition: background-color 150ms ease;
 }
 
-.emptyLink:hover { text-decoration: underline; }
+.emptyBtn:hover { background: #a8532f; text-decoration: none; }

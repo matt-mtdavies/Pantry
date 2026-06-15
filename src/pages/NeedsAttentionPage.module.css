@@ -151,13 +151,17 @@
 .deleteBtn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
-  text-decoration: underline;
-  transition: color 150ms ease;
-  min-height: 40px;
+  font-weight: 500;
+  color: #B91C1C;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1.5px solid #FECACA;
+  border-radius: var(--radius-full);
+  background: #FEF2F2;
+  cursor: pointer;
+  transition: all 150ms ease;
 }
 
-.deleteBtn:hover { color: #C4633E; }
+.deleteBtn:hover { color: #FFFFFF; background: #B91C1C; border-color: #B91C1C; }
 
 @media (max-width: 600px) {
   .item { flex-wrap: wrap; }

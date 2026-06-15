@@ -4,10 +4,14 @@ import Navigation from '../components/Navigation'
 import { getLeaderboard } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { avatarEmoji } from '../lib/avatars'
+import { TrophyIcon, PersonIcon, DishIcon, StarIcon } from '../components/icons'
 import type { LeaderboardRecipe, LeaderboardChef } from '../types'
 import styles from './LeaderboardPage.module.css'
 
-const MEDALS = ['🥇', '🥈', '🥉']
+function RankBadge({ rank }: { rank: number }) {
+  const cls = rank === 1 ? styles.rankGold : rank === 2 ? styles.rankSilver : rank === 3 ? styles.rankBronze : styles.rankPlain
+  return <span className={`${styles.rank} ${cls}`}>{rank <= 3 ? rank : `#${rank}`}</span>
+}
 
 export default function LeaderboardPage() {
   const [topRecipes, setTopRecipes] = useState<LeaderboardRecipe[]>([])
@@ -42,13 +46,15 @@ export default function LeaderboardPage() {
               className={`${styles.tab} ${tab === 'recipes' ? styles.tabActive : ''}`}
               onClick={() => setTab('recipes')}
             >
-              🏆 Top Recipes
+              <TrophyIcon size={14} className={styles.tabIcon} />
+              Top Recipes
             </button>
             <button
               className={`${styles.tab} ${tab === 'chefs' ? styles.tabActive : ''}`}
               onClick={() => setTab('chefs')}
             >
-              👨‍🍳 Top Chefs
+              <PersonIcon size={14} className={styles.tabIcon} />
+              Top Chefs
             </button>
           </div>
 
@@ -87,11 +93,11 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
 
   return (
     <Link to={`/recipe/${r.id}`} className={styles.row}>
-      <span className={styles.rank}>{MEDALS[rank - 1] ?? `#${rank}`}</span>
+      <RankBadge rank={rank} />
       <div className={styles.rowThumb}>
         {thumb
           ? <img src={thumb} alt={r.title} className={styles.rowImg} />
-          : <span className={styles.rowPlaceholder}>🍽️</span>
+          : <DishIcon size={24} className={styles.rowPlaceholder} />
         }
       </div>
       <div className={styles.rowInfo}>
@@ -102,7 +108,7 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
         </p>
       </div>
       <div className={styles.rowRating}>
-        <span className={styles.rowStar}>★</span>
+        <StarIcon size={14} className={styles.rowStar} />
         <span className={styles.rowScore}>{r.avg_rating.toFixed(1)}</span>
         <span className={styles.rowCount}>({r.rating_count})</span>
       </div>
@@ -113,7 +119,7 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
 function ChefRow({ chef: c, rank }: { chef: LeaderboardChef; rank: number }) {
   return (
     <div className={styles.row}>
-      <span className={styles.rank}>{MEDALS[rank - 1] ?? `#${rank}`}</span>
+      <RankBadge rank={rank} />
       <div className={styles.chefAvatar}>
         {avatarEmoji(c.avatar_id)}
       </div>
@@ -126,7 +132,7 @@ function ChefRow({ chef: c, rank }: { chef: LeaderboardChef; rank: number }) {
         </p>
       </div>
       <div className={styles.rowRating}>
-        <span className={styles.rowStar}>★</span>
+        <StarIcon size={14} className={styles.rowStar} />
         <span className={styles.rowScore}>{c.avg_rating.toFixed(1)}</span>
         <span className={styles.rowCount}>avg</span>
       </div>
@@ -138,7 +144,7 @@ function EmptyState({ text }: { text: string }) {
   return (
     <div className={styles.empty}>
       <p className={styles.emptyText}>{text}</p>
-      <Link to="/explore" className={styles.emptyLink}>Go to Explore →</Link>
+      <Link to="/explore" className={styles.emptyBtn}>Go to Explore</Link>
     </div>
   )
 }

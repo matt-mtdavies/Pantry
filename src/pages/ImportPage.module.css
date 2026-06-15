@@ -571,13 +571,18 @@
 .addRowBtn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
+  font-weight: 500;
   color: #7A8B6F;
-  text-decoration: underline;
-  padding: var(--sp-2) 0;
-  text-align: left;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1.5px dashed #C4D9BC;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-decoration: none;
 }
 
-.addRowBtn:hover { color: #1F1B16; }
+.addRowBtn:hover { border-color: #7A8B6F; background: #F0F5EE; }
 
 .stepsList { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
 

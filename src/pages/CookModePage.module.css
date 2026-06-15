@@ -266,9 +266,18 @@
 .timerReset {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
+  font-weight: 500;
   color: #9C9189;
-  text-decoration: underline;
+  padding: var(--sp-1) var(--sp-3);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-decoration: none;
 }
+
+.timerReset:hover { border-color: #9C9189; color: #6B6459; }
 
 .timerDoneLabel {
   font-family: var(--font-ui);

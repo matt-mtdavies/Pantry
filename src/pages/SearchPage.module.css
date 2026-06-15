@@ -85,12 +85,18 @@
 .clearFilters {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
+  font-weight: 500;
   color: #9C9189;
-  text-decoration: underline;
-  transition: color 150ms ease;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-decoration: none;
 }
 
-.clearFilters:hover { color: #C4633E; }
+.clearFilters:hover { border-color: #9C9189; color: #1F1B16; }
 
 /* Filter panel */
 .filterPanel {
@@ -560,14 +566,19 @@
 .wizardBackBtn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #C4633E;
+  font-weight: 500;
+  color: #6B6459;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  background: transparent;
   cursor: pointer;
-  border: none;
-  background: none;
-  text-decoration: underline;
+  transition: all 150ms ease;
   align-self: flex-start;
-  padding: var(--sp-2) 0;
+  text-decoration: none;
 }
+
+.wizardBackBtn:hover { border-color: #9C9189; color: #1F1B16; }
 
 /* ── Mode toggle ───────────────────────────────────────────────── */
 .wizardModeToggle {
