@@ -216,20 +216,22 @@ export default function ProfilePage() {
                 disabled={avatarUploading}
                 aria-label="Change profile picture"
               >
-                {avatarSrc
-                  ? <img src={avatarSrc} alt="Profile picture" className={styles.avatarPhoto} />
-                  : <span className={styles.avatarEmojiWrap}>{avatarEmoji(user.avatar_id)}</span>
-                }
-                <div className={styles.avatarOverlay} aria-hidden="true">
-                  {avatarUploading
-                    ? <span className={styles.avatarSpinner} />
-                    : <><CameraIcon size={22} /><span className={styles.avatarOverlayLabel}>Change photo</span></>
+                <span className={styles.avatarInner}>
+                  {avatarSrc
+                    ? <img src={avatarSrc} alt="Profile picture" className={styles.avatarPhoto} />
+                    : <span className={styles.avatarEmojiWrap}>{avatarEmoji(user.avatar_id)}</span>
                   }
-                </div>
+                  <span className={styles.avatarOverlay} aria-hidden="true">
+                    {avatarUploading
+                      ? <span className={styles.avatarSpinner} />
+                      : <><CameraIcon size={22} /><span className={styles.avatarOverlayLabel}>Change photo</span></>
+                    }
+                  </span>
+                </span>
                 {!avatarUploading && (
-                  <div className={styles.avatarBadge} aria-hidden="true">
+                  <span className={styles.avatarBadge} aria-hidden="true">
                     <CameraIcon size={12} />
-                  </div>
+                  </span>
                 )}
               </button>
               {(user.avatar_image_key || avatarPreview) && !avatarUploading && (

@@ -19,7 +19,6 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  overflow: hidden;
   border: 2.5px solid #E8E0D4;
   background: #F3EFE8;
   cursor: pointer;
@@ -27,6 +26,16 @@
   display: block;
   flex-shrink: 0;
   padding: 0;
+}
+
+.avatarInner {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatarBtn:hover {
@@ -112,16 +121,18 @@
 .avatarRemoveBtn {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
+  font-weight: 500;
   color: #9C9189;
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
-  text-decoration: underline;
-  transition: color 150ms ease;
-  padding: 0;
+  transition: border-color 150ms ease, color 150ms ease;
+  min-height: 30px;
 }
 
-.avatarRemoveBtn:hover { color: #B91C1C; }
+.avatarRemoveBtn:hover { border-color: #B91C1C; color: #B91C1C; }
 
 .avatarError {
   font-family: var(--font-ui);
