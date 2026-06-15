@@ -63,6 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       r.calories_per_serving, r.cost_per_serving,
       u.display_name                                                              AS author_name,
       u.avatar_id                                                                 AS author_avatar,
+      u.avatar_image_key                                                          AS author_avatar_key,
       ROUND(COALESCE(AVG(rr.rating), 0), 1)                                      AS avg_rating,
       COUNT(rr.recipe_id)                                                         AS rating_count,
       (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?) AS my_rating

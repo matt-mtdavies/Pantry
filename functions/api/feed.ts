@@ -74,7 +74,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   const recentResult = await env.DB.prepare(`
     SELECT r.id, r.title, r.hero_image_key, r.created_at, r.share_token,
            r.prep_time, r.cook_time, r.user_id,
-           u.display_name AS author_name, u.avatar_id
+           u.display_name AS author_name, u.avatar_id, u.avatar_image_key AS author_avatar_key
     FROM recipes r
     LEFT JOIN users u ON r.user_id = u.id
     WHERE u.is_public = 1 AND r.is_deleted = 0
@@ -84,7 +84,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     id: string; title: string; hero_image_key: string | null
     created_at: number; share_token: string; user_id: string
     prep_time: number | null; cook_time: number | null
-    author_name: string | null; avatar_id: string
+    author_name: string | null; avatar_id: string; author_avatar_key: string | null
   }>()
 
   const topResult = await env.DB.prepare(`

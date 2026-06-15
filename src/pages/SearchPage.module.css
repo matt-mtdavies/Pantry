@@ -298,7 +298,7 @@
   border-top: 1px solid #F3EFE8;
 }
 
-.authorAvatar { font-size: 1rem; }
+.authorAvatar { font-size: 1rem; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
 
 .authorName {
   font-family: var(--font-ui);

@@ -6,8 +6,8 @@ import { useWakeLock } from '../hooks/useWakeLock'
 import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
-import { avatarEmoji } from '../lib/avatars'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon } from '../components/icons'
+import { Avatar } from '../components/Avatar'
 import type { Recipe } from '../types'
 import styles from './RecipePage.module.css'
 
@@ -181,7 +181,12 @@ export default function RecipePage() {
             {/* Author attribution for public recipes */}
             {!isOwner && recipe.author_name !== undefined && (
               <Link to={`/user/${recipe.user_id}`} className={styles.authorRow}>
-                <span className={styles.authorAvatar}>{avatarEmoji(recipe.author_avatar)}</span>
+                <Avatar
+                  imageKey={recipe.author_avatar_key}
+                  avatarId={recipe.author_avatar}
+                  size={24}
+                  className={styles.authorAvatar}
+                />
                 <span className={styles.authorName}>by {recipe.author_name ?? 'Anonymous'}</span>
               </Link>
             )}

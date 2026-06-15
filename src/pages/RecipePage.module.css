@@ -476,7 +476,7 @@
 
 .authorRow:hover .authorName { color: #C4633E; }
 
-.authorAvatar { font-size: 1.25rem; }
+.authorAvatar { font-size: 1.25rem; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
 
 .authorName {
   font-family: var(--font-ui);

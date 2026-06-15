@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
-import { backfillNutrition, backfillImages, getPublicProfile } from '../lib/api'
-import { AVATARS, avatarEmoji } from '../lib/avatars'
-import { StarIcon } from '../components/icons'
+import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar } from '../lib/api'
+import { avatarEmoji } from '../lib/avatars'
+import { StarIcon, CameraIcon } from '../components/icons'
+import { imageUrl } from '../lib/utils'
 import styles from './ProfilePage.module.css'
 
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary', 'Other']
@@ -23,8 +24,8 @@ const AGE_OPTIONS = [
 export default function ProfilePage() {
   const { user, refetch, logout } = useAuth()
   const navigate = useNavigate()
+
   const [displayName, setDisplayName] = useState(user?.display_name ?? '')
-  const [avatarId, setAvatarId] = useState(user?.avatar_id ?? 'herb')
   const [defaultServings, setDefaultServings] = useState(user?.default_servings ?? 2)
   const [isPublic, setIsPublic] = useState(user?.is_public ?? true)
   const [country, setCountry] = useState(user?.country ?? '')
@@ -41,6 +42,19 @@ export default function ProfilePage() {
   const [inviteCopied, setInviteCopied] = useState(false)
   const [stats, setStats] = useState<{ recipe_count: number; avg_rating: number | null; total_ratings: number } | null>(null)
 
+  // Avatar upload
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+  const previewUrlRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    }
+  }, [])
+
   useEffect(() => {
     if (!user) return
     getPublicProfile(user.id)
@@ -49,6 +63,56 @@ export default function ProfilePage() {
   }, [user])
 
   if (!user) return null
+
+  const avatarSrc = avatarPreview ?? imageUrl(user.avatar_image_key ?? null)
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarError(null)
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Please choose an image file.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError('Image must be under 5 MB.')
+      return
+    }
+
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    const preview = URL.createObjectURL(file)
+    previewUrlRef.current = preview
+    setAvatarPreview(preview)
+
+    setAvatarUploading(true)
+    try {
+      await uploadAvatar(file)
+      await refetch()
+      setAvatarPreview(null)
+      if (previewUrlRef.current) { URL.revokeObjectURL(previewUrlRef.current); previewUrlRef.current = null }
+    } catch {
+      setAvatarError('Upload failed — please try again.')
+      setAvatarPreview(null)
+      if (previewUrlRef.current) { URL.revokeObjectURL(previewUrlRef.current); previewUrlRef.current = null }
+    } finally {
+      setAvatarUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    setAvatarUploading(true)
+    setAvatarError(null)
+    try {
+      await removeAvatar()
+      await refetch()
+    } catch {
+      setAvatarError('Could not remove photo — please try again.')
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -60,7 +124,7 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           display_name: displayName,
-          avatar_id: avatarId,
+          avatar_id: user.avatar_id,
           default_servings: defaultServings,
           is_public: isPublic,
           country: country || null,
@@ -137,11 +201,53 @@ export default function ProfilePage() {
       <Navigation />
       <main className="page-main">
         <div className="content-col">
-          {/* Profile hero — live preview as you edit */}
+          {/* Profile hero */}
           <div className={styles.profileHero}>
-            <div className={styles.profileAvatarWrap}>
-              <span className={styles.profileAvatarEmoji}>{avatarEmoji(avatarId)}</span>
+            {/* Avatar upload */}
+            <div className={styles.avatarArea}>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleAvatarUpload}
+                aria-hidden="true"
+              />
+              <button
+                className={`${styles.avatarBtn} ${avatarUploading ? styles.avatarBtnLoading : ''}`}
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={avatarUploading}
+                aria-label="Change profile picture"
+              >
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="Profile picture" className={styles.avatarPhoto} />
+                ) : (
+                  <span className={styles.avatarEmoji}>{avatarEmoji(user.avatar_id)}</span>
+                )}
+                <div className={styles.avatarOverlay} aria-hidden="true">
+                  {avatarUploading ? (
+                    <span className={styles.avatarSpinner} />
+                  ) : (
+                    <>
+                      <CameraIcon size={22} />
+                      <span className={styles.avatarOverlayLabel}>Change photo</span>
+                    </>
+                  )}
+                </div>
+                {!avatarUploading && (
+                  <div className={styles.avatarBadge} aria-hidden="true">
+                    <CameraIcon size={12} />
+                  </div>
+                )}
+              </button>
+              {(user.avatar_image_key || avatarPreview) && !avatarUploading && (
+                <button className={styles.avatarRemoveBtn} onClick={handleRemoveAvatar}>
+                  Remove photo
+                </button>
+              )}
+              {avatarError && <p className={styles.avatarError}>{avatarError}</p>}
             </div>
+
             <h1 className={styles.profileName}>{displayName || 'Your profile'}</h1>
             <p className={styles.profileEmail}>{user.email}</p>
 
@@ -188,24 +294,6 @@ export default function ProfilePage() {
                 onChange={e => setDisplayName(e.target.value)}
                 placeholder="e.g. Margaret"
               />
-            </div>
-
-            {/* Avatar */}
-            <div className={styles.field}>
-              <span className={styles.label}>Profile picture</span>
-              <div className={styles.avatars}>
-                {AVATARS.map(a => (
-                  <button
-                    key={a.id}
-                    className={`${styles.avatarBtn} ${avatarId === a.id ? styles.avatarSelected : ''}`}
-                    onClick={() => setAvatarId(a.id)}
-                    aria-label={a.label}
-                    aria-pressed={avatarId === a.id}
-                  >
-                    <span className={styles.avatarEmoji}>{a.emoji}</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Privacy toggle */}

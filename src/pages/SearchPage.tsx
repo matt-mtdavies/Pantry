@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
 import { SearchIcon, DishIcon } from '../components/icons'
+import { Avatar } from '../components/Avatar'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
 import type { GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
-import { avatarEmoji } from '../lib/avatars'
 import type { Recipe } from '../types'
 import styles from './SearchPage.module.css'
 
@@ -278,7 +278,7 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
           </div>
         )}
         <div className={styles.cardAuthor}>
-          <span className={styles.authorAvatar}>{avatarEmoji(r.author_avatar)}</span>
+          <Avatar imageKey={r.author_avatar_key} avatarId={r.author_avatar} size={20} className={styles.authorAvatar} />
           <Link to={`/user/${r.user_id}`} className={styles.authorLink}>
             {r.author_name ?? 'Anonymous'}
           </Link>

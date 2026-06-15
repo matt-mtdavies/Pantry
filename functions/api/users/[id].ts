@@ -11,12 +11,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params }) => {
   const userId = params.id as string
 
   const user = await env.DB.prepare(`
-    SELECT id, display_name, avatar_id, country, created_at
+    SELECT id, display_name, avatar_id, avatar_image_key, country, created_at
     FROM users
     WHERE id = ? AND is_public = 1
   `).bind(userId).first<{
     id: string; display_name: string | null; avatar_id: string
-    country: string | null; created_at: number
+    avatar_image_key: string | null; country: string | null; created_at: number
   }>()
 
   if (!user) return json({ error: 'Profile not found' }, 404)

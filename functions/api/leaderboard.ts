@@ -6,8 +6,9 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       SELECT
         r.id, r.title, r.hero_image_key, r.tags,
         r.prep_time, r.cook_time, r.user_id,
-        u.display_name AS author_name,
-        u.avatar_id    AS author_avatar,
+        u.display_name    AS author_name,
+        u.avatar_id       AS author_avatar,
+        u.avatar_image_key AS author_avatar_key,
         ROUND(AVG(rr.rating), 1) AS avg_rating,
         COUNT(rr.recipe_id)      AS rating_count
       FROM recipes r
@@ -21,7 +22,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
     ctx.env.DB.prepare(`
       SELECT
-        u.id, u.display_name, u.avatar_id, u.country,
+        u.id, u.display_name, u.avatar_id, u.avatar_image_key, u.country,
         COUNT(DISTINCT r.id)     AS recipe_count,
         ROUND(AVG(rr.rating), 1) AS avg_rating,
         COUNT(rr.rowid)          AS total_ratings

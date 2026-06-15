@@ -83,6 +83,18 @@ export async function fetchRecipeImage(recipeId: string, imageUrl: string): Prom
   })
 }
 
+// Upload / remove profile avatar
+
+export async function uploadAvatar(file: File): Promise<{ key: string }> {
+  const form = new FormData()
+  form.append('file', file)
+  return request<{ key: string }>('/api/avatar', { method: 'POST', body: form })
+}
+
+export async function removeAvatar(): Promise<void> {
+  await request('/api/avatar', { method: 'DELETE' })
+}
+
 // Upload image
 
 export async function uploadImage(file: File, recipeId: string, role: 'hero' | 'screenshot'): Promise<{ key: string }> {

@@ -6,6 +6,7 @@ function parseRow(row: Record<string, unknown>) {
     email: row.email,
     display_name: row.display_name,
     avatar_id: row.avatar_id ?? 'herb',
+    avatar_image_key: row.avatar_image_key ?? null,
     default_servings: row.default_servings ?? 2,
     is_public: row.is_public === 1 || row.is_public === true,
     country: row.country ?? null,

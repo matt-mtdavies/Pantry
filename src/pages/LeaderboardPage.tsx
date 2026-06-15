@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getLeaderboard, getFeed } from '../lib/api'
 import { imageUrl, formatTime, timeAgo } from '../lib/utils'
-import { avatarEmoji } from '../lib/avatars'
+import { Avatar } from '../components/Avatar'
 import { TrophyIcon, PersonIcon, DishIcon, StarIcon, SunIcon, ClockIcon } from '../components/icons'
 import type { LeaderboardRecipe, LeaderboardChef, FeedData } from '../types'
 import styles from './LeaderboardPage.module.css'
@@ -241,7 +241,7 @@ function ChefRow({ chef: c, rank }: { chef: LeaderboardChef; rank: number }) {
     <Link to={`/user/${c.id}`} className={styles.row}>
       <RankBadge rank={rank} />
       <div className={styles.chefAvatar}>
-        {avatarEmoji(c.avatar_id)}
+        <Avatar imageKey={c.avatar_image_key} avatarId={c.avatar_id} size={44} />
       </div>
       <div className={styles.rowInfo}>
         <p className={styles.rowTitle}>{c.display_name ?? 'Anonymous'}</p>

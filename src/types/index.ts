@@ -3,6 +3,7 @@ export interface User {
   email: string;
   display_name: string | null;
   avatar_id: string;
+  avatar_image_key: string | null;
   default_servings: number;
   is_public: boolean;
   country: string | null;
@@ -43,6 +44,7 @@ export interface Recipe {
   // Populated on public/search views
   author_name?: string | null;
   author_avatar?: string;
+  author_avatar_key?: string | null;
   avg_rating?: number;
   rating_count?: number;
   my_rating?: number | null;
@@ -81,6 +83,7 @@ export interface LeaderboardRecipe {
   user_id: string;
   author_name: string | null;
   author_avatar: string;
+  author_avatar_key?: string | null;
   avg_rating: number;
   rating_count: number;
 }
@@ -89,6 +92,7 @@ export interface LeaderboardChef {
   id: string;
   display_name: string | null;
   avatar_id: string;
+  avatar_image_key?: string | null;
   country: string | null;
   recipe_count: number;
   avg_rating: number;
@@ -112,6 +116,7 @@ export interface PublicProfile {
   id: string;
   display_name: string | null;
   avatar_id: string;
+  avatar_image_key: string | null;
   country: string | null;
   created_at: number;
   recipe_count: number;
@@ -136,6 +141,7 @@ export interface FeedRecipe {
   author_name: string | null;
   share_token?: string | null;
   avatar_id?: string;
+  author_avatar_key?: string | null;
   prep_time?: number | null;
   cook_time?: number | null;
   avg_rating?: number;

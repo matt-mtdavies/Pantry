@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getPublicProfile } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
-import { avatarEmoji } from '../lib/avatars'
+import { Avatar } from '../components/Avatar'
 import { DishIcon, StarIcon, ClockIcon } from '../components/icons'
 import type { PublicProfile } from '../types'
 import styles from './PublicProfilePage.module.css'
@@ -72,7 +72,12 @@ export default function PublicProfilePage() {
         <div className={styles.hero}>
           <div className="wide-col">
             <div className={styles.avatarWrap}>
-              <span className={styles.avatar}>{avatarEmoji(profile.avatar_id)}</span>
+              <Avatar
+                imageKey={profile.avatar_image_key}
+                avatarId={profile.avatar_id}
+                size={80}
+                className={styles.avatar}
+              />
             </div>
             <h1 className={styles.name}>{profile.display_name ?? 'Anonymous'}</h1>
             {profile.country && <p className={styles.country}>{profile.country}</p>}

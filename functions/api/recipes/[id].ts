@@ -26,6 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     SELECT r.*,
       u.display_name                                                              AS author_name,
       u.avatar_id                                                                 AS author_avatar,
+      u.avatar_image_key                                                          AS author_avatar_key,
       ROUND(COALESCE(AVG(rr.rating), 0), 1)                                      AS avg_rating,
       COUNT(rr.recipe_id)                                                         AS rating_count,
       (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?) AS my_rating
@@ -41,6 +42,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     ...parseRecipe(row),
     author_name: row.author_name,
     author_avatar: row.author_avatar,
+    author_avatar_key: row.author_avatar_key ?? null,
     avg_rating: Number(row.avg_rating),
     rating_count: Number(row.rating_count),
     my_rating: row.my_rating != null ? Number(row.my_rating) : null,
