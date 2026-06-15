@@ -179,3 +179,15 @@ export async function getSharedRecipe(token: string): Promise<Recipe> {
 export async function saveSharedRecipe(token: string): Promise<Recipe> {
   return request<Recipe>(`/api/share/${token}/save`, { method: 'POST' })
 }
+
+export async function getDinnerSuggestions(
+  ingredients: string,
+  servings?: number,
+): Promise<Recipe[]> {
+  const res = await request<{ recipes: Recipe[] }>('/api/dinner-suggestion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ingredients, servings }),
+  })
+  return res.recipes
+}

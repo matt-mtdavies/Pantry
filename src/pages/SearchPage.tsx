@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
-import { searchPublicRecipes } from '../lib/api'
+import { searchPublicRecipes, getDinnerSuggestions } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { avatarEmoji } from '../lib/avatars'
@@ -32,6 +32,7 @@ export default function SearchPage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [results, setResults] = useState<Recipe[]>([])
   const [loading, setLoading] = useState(true)
+  const [wizardOpen, setWizardOpen] = useState(false)
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const doSearch = useCallback((q: string, f: Filters) => {
@@ -92,6 +93,9 @@ export default function SearchPage() {
                 aria-label="Search all recipes"
               />
             </div>
+            <button className={styles.dinnerBtn} onClick={() => setWizardOpen(true)}>
+              🍽 What's for dinner tonight?
+            </button>
           </div>
         </div>
 
@@ -214,6 +218,7 @@ export default function SearchPage() {
           )}
         </div>
       </main>
+      {wizardOpen && <DinnerWizard onClose={() => setWizardOpen(false)} />}
     </div>
   )
 }
@@ -262,5 +267,98 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
         </div>
       </div>
     </Link>
+  )
+}
+
+function DinnerWizard({ onClose }: { onClose: () => void }) {
+  const [ingredients, setIngredients] = useState('')
+  const [servings, setServings] = useState(2)
+  const [stage, setStage] = useState<'form' | 'loading' | 'results'>('form')
+  const [results, setResults] = useState<Recipe[]>([])
+
+  const handleFind = async () => {
+    if (!ingredients.trim()) return
+    setStage('loading')
+    try {
+      const recipes = await getDinnerSuggestions(ingredients, servings)
+      setResults(recipes)
+      setStage('results')
+    } catch {
+      setStage('results')
+      setResults([])
+    }
+  }
+
+  return (
+    <div className={styles.wizardOverlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className={styles.wizardSheet}>
+        <div className={styles.wizardHandle} />
+        <div className={styles.wizardHeader}>
+          <div>
+            <h2 className={styles.wizardTitle}>What's for dinner?</h2>
+            <p className={styles.wizardSub}>Tell us what you have and we'll find something delicious.</p>
+          </div>
+          <button className={styles.wizardClose} onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        {stage === 'form' && (
+          <div className={styles.wizardForm}>
+            <div className={styles.wizardField}>
+              <label className={styles.wizardLabel}>What ingredients do you have?</label>
+              <textarea
+                className={styles.wizardTextarea}
+                placeholder="e.g. chicken, garlic, lemon, pasta…"
+                value={ingredients}
+                onChange={e => setIngredients(e.target.value)}
+                rows={4}
+                autoFocus
+              />
+            </div>
+            <div className={styles.wizardField}>
+              <label className={styles.wizardLabel}>How many people are you cooking for?</label>
+              <div className={styles.wizardServings}>
+                <button className={styles.wizardServingsBtn} onClick={() => setServings(s => Math.max(1, s - 1))}>−</button>
+                <span className={styles.wizardServingsNum}>{servings}</span>
+                <button className={styles.wizardServingsBtn} onClick={() => setServings(s => s + 1)}>+</button>
+              </div>
+            </div>
+            <button
+              className={styles.wizardFindBtn}
+              onClick={handleFind}
+              disabled={!ingredients.trim()}
+            >
+              Find dinner →
+            </button>
+          </div>
+        )}
+
+        {stage === 'loading' && (
+          <div className={styles.wizardLoading}>
+            <div className={styles.wizardSpinner} />
+            <p className={styles.wizardLoadingText}>Finding recipes that match…</p>
+          </div>
+        )}
+
+        {stage === 'results' && (
+          <div className={styles.wizardResults}>
+            {results.length === 0 ? (
+              <div className={styles.wizardEmpty}>
+                <p className={styles.wizardEmptyTitle}>No matches found</p>
+                <p className={styles.wizardEmptySub}>Try different ingredients or fewer of them.</p>
+                <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>Try again</button>
+              </div>
+            ) : (
+              <>
+                <p className={styles.wizardResultCount}>{results.length} recipe{results.length !== 1 ? 's' : ''} match your ingredients</p>
+                <div className={styles.wizardResultList}>
+                  {results.map(r => <SearchCard key={r.id} recipe={r} />)}
+                </div>
+                <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Search again</button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
