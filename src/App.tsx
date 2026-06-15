@@ -13,6 +13,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import SearchPage from './pages/SearchPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import NeedsAttentionPage from './pages/NeedsAttentionPage'
+import PublicProfilePage from './pages/PublicProfilePage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
           <Route path="/needs-attention" element={<ProtectedRoute><NeedsAttentionPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/user/:id" element={<ProtectedRoute><PublicProfilePage /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

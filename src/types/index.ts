@@ -97,6 +97,29 @@ export interface LeaderboardChef {
 
 export type FilterMode = 'all' | 'favourites' | 'needs-attention';
 
+export interface PublicProfileRecipe {
+  id: string;
+  title: string;
+  hero_image_key: string | null;
+  prep_time: number | null;
+  cook_time: number | null;
+  tags: string[];
+  avg_rating: number | null;
+  rating_count: number;
+}
+
+export interface PublicProfile {
+  id: string;
+  display_name: string | null;
+  avatar_id: string;
+  country: string | null;
+  created_at: number;
+  recipe_count: number;
+  avg_rating: number | null;
+  total_ratings: number;
+  recipes: PublicProfileRecipe[];
+}
+
 export interface FeedTip {
   date: string;
   category: string;

@@ -225,7 +225,7 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
 
 function ChefRow({ chef: c, rank }: { chef: LeaderboardChef; rank: number }) {
   return (
-    <div className={styles.row}>
+    <Link to={`/user/${c.id}`} className={styles.row}>
       <RankBadge rank={rank} />
       <div className={styles.chefAvatar}>
         {avatarEmoji(c.avatar_id)}
@@ -243,7 +243,7 @@ function ChefRow({ chef: c, rank }: { chef: LeaderboardChef; rank: number }) {
         <span className={styles.rowScore}>{c.avg_rating.toFixed(1)}</span>
         <span className={styles.rowCount}>avg</span>
       </div>
-    </div>
+    </Link>
   )
 }
 

@@ -1,4 +1,4 @@
-import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData } from '../types'
+import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData, PublicProfile } from '../types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: 'include', ...init })
@@ -141,6 +141,12 @@ export async function searchPublicRecipes(qs: string): Promise<Recipe[]> {
 
 export async function getLeaderboard(): Promise<{ topRecipes: LeaderboardRecipe[]; topChefs: LeaderboardChef[] }> {
   return request('/api/leaderboard')
+}
+
+// Public user profile
+
+export async function getPublicProfile(userId: string): Promise<PublicProfile> {
+  return request<PublicProfile>(`/api/users/${userId}`)
 }
 
 // Community feed
