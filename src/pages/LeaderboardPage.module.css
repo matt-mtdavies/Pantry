@@ -81,6 +81,7 @@
 }
 
 .row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--sp-4);
@@ -88,14 +89,29 @@
   border-radius: var(--radius-lg);
   border: 1px solid #E8E0D4;
   background: #FFFFFF;
-  text-decoration: none;
   transition: background-color 150ms ease, box-shadow 150ms ease;
 }
 
-a.row:hover {
+.row:hover {
   background: #FAF7F2;
   box-shadow: var(--shadow-sm);
 }
+
+.rowOverlay {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: var(--radius-lg);
+}
+
+.rowAuthorLink {
+  position: relative;
+  z-index: 1;
+  color: #9C9189;
+  text-decoration: none;
+}
+
+.rowAuthorLink:hover { color: #C4633E; text-decoration: none; }
 
 /* Rank badge */
 
@@ -292,6 +308,7 @@ a.row:hover {
 }
 
 .feedRow {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
@@ -299,14 +316,26 @@ a.row:hover {
   border-radius: var(--radius-md);
   border: 1px solid #E8E0D4;
   background: #FFFFFF;
-  text-decoration: none;
   transition: background-color 150ms ease;
 }
 
-.feedRow:hover {
-  background: #FAF7F2;
+.feedRow:hover { background: #FAF7F2; }
+
+.feedOverlay {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.feedAuthorLink {
+  position: relative;
+  z-index: 1;
+  color: #9C9189;
   text-decoration: none;
 }
+
+.feedAuthorLink:hover { color: #C4633E; text-decoration: none; }
 
 .feedThumb {
   width: 48px;

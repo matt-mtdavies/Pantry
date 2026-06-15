@@ -180,10 +180,10 @@ export default function RecipePage() {
 
             {/* Author attribution for public recipes */}
             {!isOwner && recipe.author_name !== undefined && (
-              <div className={styles.authorRow}>
+              <Link to={`/user/${recipe.user_id}`} className={styles.authorRow}>
                 <span className={styles.authorAvatar}>{avatarEmoji(recipe.author_avatar)}</span>
                 <span className={styles.authorName}>by {recipe.author_name ?? 'Anonymous'}</span>
-              </div>
+              </Link>
             )}
 
             {recipe.description && <p className={styles.description}>{recipe.description}</p>}

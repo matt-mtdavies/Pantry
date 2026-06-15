@@ -73,7 +73,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 
   const recentResult = await env.DB.prepare(`
     SELECT r.id, r.title, r.hero_image_key, r.created_at, r.share_token,
-           r.prep_time, r.cook_time,
+           r.prep_time, r.cook_time, r.user_id,
            u.display_name AS author_name, u.avatar_id
     FROM recipes r
     LEFT JOIN users u ON r.user_id = u.id
@@ -82,13 +82,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     LIMIT 8
   `).all<{
     id: string; title: string; hero_image_key: string | null
-    created_at: number; share_token: string
+    created_at: number; share_token: string; user_id: string
     prep_time: number | null; cook_time: number | null
     author_name: string | null; avatar_id: string
   }>()
 
   const topResult = await env.DB.prepare(`
-    SELECT r.id, r.title, r.hero_image_key, r.created_at,
+    SELECT r.id, r.title, r.hero_image_key, r.created_at, r.user_id,
            ROUND(AVG(CAST(rr.rating AS REAL)), 1) AS avg_rating,
            COUNT(rr.recipe_id) AS rating_count,
            u.display_name AS author_name
@@ -101,7 +101,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     LIMIT 4
   `).all<{
     id: string; title: string; hero_image_key: string | null
-    created_at: number; avg_rating: number; rating_count: number
+    created_at: number; user_id: string; avg_rating: number; rating_count: number
     author_name: string | null
   }>()
 

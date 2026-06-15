@@ -132,6 +132,7 @@ export interface FeedRecipe {
   title: string;
   hero_image_key: string | null;
   created_at: number;
+  user_id?: string;
   author_name: string | null;
   share_token?: string | null;
   avatar_id?: string;

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { SearchIcon } from '../components/icons'
+import { SearchIcon, DishIcon } from '../components/icons'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
 import type { DinnerResult, GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
@@ -243,11 +243,12 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
   const totalTime = (r.prep_time ?? 0) + (r.cook_time ?? 0)
 
   return (
-    <Link to={`/recipe/${r.id}`} className={styles.card}>
+    <div className={styles.card}>
+      <Link to={`/recipe/${r.id}`} className={styles.cardOverlay} aria-label={r.title} />
       <div className={styles.cardImg}>
         {thumb
           ? <img src={thumb} alt={r.title} className={styles.cardPhoto} />
-          : <span className={styles.cardPlaceholder}>🍽️</span>
+          : <DishIcon size={36} className={styles.cardPlaceholder} />
         }
         {(r.rating_count ?? 0) > 0 && (
           <div className={styles.cardBadge}>
@@ -278,10 +279,12 @@ function SearchCard({ recipe: r }: { recipe: Recipe }) {
         )}
         <div className={styles.cardAuthor}>
           <span className={styles.authorAvatar}>{avatarEmoji(r.author_avatar)}</span>
-          <span className={styles.authorName}>{r.author_name ?? 'Anonymous'}</span>
+          <Link to={`/user/${r.user_id}`} className={styles.authorLink}>
+            {r.author_name ?? 'Anonymous'}
+          </Link>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
 

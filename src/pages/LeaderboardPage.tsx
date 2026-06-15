@@ -121,7 +121,8 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
           <h2 className={styles.feedSectionTitle}>Recently Added</h2>
           <div className={styles.feedList}>
             {feed.recentShared.map(r => (
-              <Link key={r.id} to={`/recipe/${r.id}`} className={styles.feedRow}>
+              <div key={r.id} className={styles.feedRow}>
+                <Link to={`/recipe/${r.id}`} className={styles.feedOverlay} aria-label={r.title} />
                 <div className={styles.feedThumb}>
                   {r.hero_image_key
                     ? <img src={imageUrl(r.hero_image_key)!} alt={r.title} className={styles.feedImg} />
@@ -131,7 +132,11 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
                 <div className={styles.feedInfo}>
                   <p className={styles.feedTitle}>{r.title}</p>
                   <p className={styles.feedMeta}>
-                    {r.author_name ? `by ${r.author_name}` : 'Anonymous'}
+                    {r.user_id ? (
+                      <Link to={`/user/${r.user_id}`} className={styles.feedAuthorLink}>
+                        {r.author_name ?? 'Anonymous'}
+                      </Link>
+                    ) : (r.author_name ?? 'Anonymous')}
                     {' · '}
                     {timeAgo(r.created_at)}
                     {(r.prep_time ?? 0) + (r.cook_time ?? 0) > 0 && (
@@ -142,7 +147,7 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
                     )}
                   </p>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -154,7 +159,8 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
           <h2 className={styles.feedSectionTitle}>Hot This Week</h2>
           <div className={styles.feedList}>
             {feed.topThisWeek.map(r => (
-              <Link key={r.id} to={`/recipe/${r.id}`} className={styles.feedRow}>
+              <div key={r.id} className={styles.feedRow}>
+                <Link to={`/recipe/${r.id}`} className={styles.feedOverlay} aria-label={r.title} />
                 <div className={styles.feedThumb}>
                   {r.hero_image_key
                     ? <img src={imageUrl(r.hero_image_key)!} alt={r.title} className={styles.feedImg} />
@@ -164,7 +170,11 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
                 <div className={styles.feedInfo}>
                   <p className={styles.feedTitle}>{r.title}</p>
                   <p className={styles.feedMeta}>
-                    {r.author_name ? `by ${r.author_name}` : 'Anonymous'}
+                    {r.user_id ? (
+                      <Link to={`/user/${r.user_id}`} className={styles.feedAuthorLink}>
+                        {r.author_name ?? 'Anonymous'}
+                      </Link>
+                    ) : (r.author_name ?? 'Anonymous')}
                   </p>
                 </div>
                 {r.avg_rating != null && (
@@ -174,7 +184,7 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
                     <span className={styles.rowCount}>({r.rating_count})</span>
                   </div>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -199,7 +209,8 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
   const totalTime = (r.prep_time ?? 0) + (r.cook_time ?? 0)
 
   return (
-    <Link to={`/recipe/${r.id}`} className={styles.row}>
+    <div className={styles.row}>
+      <Link to={`/recipe/${r.id}`} className={styles.rowOverlay} aria-label={r.title} />
       <RankBadge rank={rank} />
       <div className={styles.rowThumb}>
         {thumb
@@ -210,7 +221,9 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
       <div className={styles.rowInfo}>
         <p className={styles.rowTitle}>{r.title}</p>
         <p className={styles.rowMeta}>
-          by {r.author_name ?? 'Anonymous'}
+          <Link to={`/user/${r.user_id}`} className={styles.rowAuthorLink}>
+            by {r.author_name ?? 'Anonymous'}
+          </Link>
           {totalTime > 0 && ` · ${formatTime(totalTime)}`}
         </p>
       </div>
@@ -219,7 +232,7 @@ function RecipeRow({ recipe: r, rank }: { recipe: LeaderboardRecipe; rank: numbe
         <span className={styles.rowScore}>{r.avg_rating.toFixed(1)}</span>
         <span className={styles.rowCount}>({r.rating_count})</span>
       </div>
-    </Link>
+    </div>
   )
 }
 
