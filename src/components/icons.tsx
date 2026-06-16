@@ -127,3 +127,14 @@ export function DiceIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+export function CollectionIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M1.5 5.5h13" />
+      <path d="M1.5 5.5v7a1 1 0 001 1h11a1 1 0 001-1v-7" />
+      <path d="M1.5 5.5l1.5-3h9l1.5 3" />
+      <path d="M6 8.5h4" />
+    </svg>
+  )
+}

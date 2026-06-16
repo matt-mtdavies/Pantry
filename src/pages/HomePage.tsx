@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
-import { SearchIcon, DishIcon, WarningIcon } from '../components/icons'
+import { SearchIcon, DishIcon, WarningIcon, CollectionIcon, HeartIcon } from '../components/icons'
 import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection } from '../lib/api'
 import type { Recipe, Collection } from '../types'
 import styles from './HomePage.module.css'
@@ -124,7 +124,10 @@ export default function HomePage() {
                 className={`${styles.filter} ${filter === 'favourites' ? styles.filterActive : ''}`}
                 onClick={() => setFilter('favourites')}
                 aria-pressed={filter === 'favourites'}
-              >♥ Favourites</button>
+              >
+                <HeartIcon size={13} />
+                Favourites
+              </button>
               <button
                 className={`${styles.filter} ${activeCollection ? styles.filterActive : ''}`}
                 onClick={() => setCollectionsOpen(o => !o)}
@@ -140,7 +143,12 @@ export default function HomePage() {
                       onClick={e => { e.stopPropagation(); setFilter('all') }}
                     >✕</span>
                   </span>
-                ) : '📁 Collections'}
+                ) : (
+                  <span className={styles.filterColLabel}>
+                    <CollectionIcon size={14} />
+                    Collections
+                  </span>
+                )}
               </button>
             </div>
 
