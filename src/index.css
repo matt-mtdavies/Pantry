@@ -193,9 +193,11 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
 
 .page-main {
   flex: 1;
-  padding-top: var(--nav-height);
+  padding-top: calc(var(--nav-height) + var(--banner-height, 0px));
   padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-8));
 }
+
+body.has-verify-banner { --banner-height: 40px; }
 
 @media (max-width: 640px) {
   .page-main {

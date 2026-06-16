@@ -149,8 +149,14 @@ export async function resetPassword(token: string, password: string): Promise<{ 
 
 // Search public recipes
 
-export async function searchPublicRecipes(qs: string): Promise<Recipe[]> {
-  return request<Recipe[]>(`/api/search?${qs}`)
+export async function searchPublicRecipes(qs: string): Promise<{ results: Recipe[]; has_more: boolean; page: number }> {
+  return request<{ results: Recipe[]; has_more: boolean; page: number }>(`/api/search?${qs}`)
+}
+
+// Email verification
+
+export async function resendVerificationEmail(): Promise<void> {
+  await request('/api/auth/resend-verification', { method: 'POST' })
 }
 
 // Leaderboard

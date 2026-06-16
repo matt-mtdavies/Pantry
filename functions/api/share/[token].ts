@@ -22,9 +22,10 @@ function generateId(): string {
 // GET /api/share/:token — public, no auth needed
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const { token } = ctx.params as { token: string }
+  const now = Math.floor(Date.now() / 1000)
   const row = await ctx.env.DB.prepare(
-    'SELECT * FROM recipes WHERE share_token = ? AND is_deleted = 0'
-  ).bind(token).first<Record<string, unknown>>()
+    'SELECT * FROM recipes WHERE share_token = ? AND is_deleted = 0 AND (share_token_expires_at IS NULL OR share_token_expires_at > ?)'
+  ).bind(token, now).first<Record<string, unknown>>()
 
   if (!row) {
     return new Response(JSON.stringify({ error: 'Not found' }), {

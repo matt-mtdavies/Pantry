@@ -1,6 +1,46 @@
-.nav {
+.verifyBanner {
   position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  height: 40px;
+  background: #92400E;
+  color: #FEF3C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  padding-inline: var(--sp-4);
+}
+
+.verifyBannerText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verifyBannerBtn {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #FEF3C7;
+  text-decoration: underline;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.verifyBannerBtn:hover { color: #FFFFFF; }
+.verifyBannerBtn:disabled { opacity: 0.6; cursor: default; text-decoration: none; }
+
+.nav {
+  position: fixed;
+  top: var(--banner-height, 0px);
   left: 0;
   right: 0;
   z-index: 100;

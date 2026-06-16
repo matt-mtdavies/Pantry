@@ -34,12 +34,14 @@ export default function SearchPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [results, setResults] = useState<Recipe[]>([])
+  const [hasMore, setHasMore] = useState(false)
+  const [page, setPage] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [wizardOpen, setWizardOpen] = useState(false)
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const doSearch = useCallback((q: string, f: Filters) => {
-    setLoading(true)
+  const buildParams = (q: string, f: Filters, pg: number) => {
     const params = new URLSearchParams({ q })
     if (f.author)      params.set('author', f.author)
     if (f.country)     params.set('country', f.country)
@@ -47,11 +49,31 @@ export default function SearchPage() {
     if (f.age_bracket) params.set('age_bracket', f.age_bracket)
     if (f.cal_max)     params.set('cal_max', f.cal_max)
     if (f.cost_max)    params.set('cost_max', f.cost_max)
-    searchPublicRecipes(params.toString())
-      .then(setResults)
-      .catch(() => setResults([]))
+    if (pg > 0)        params.set('page', String(pg))
+    return params.toString()
+  }
+
+  const doSearch = useCallback((q: string, f: Filters) => {
+    setLoading(true)
+    setPage(0)
+    searchPublicRecipes(buildParams(q, f, 0))
+      .then(data => { setResults(data.results); setHasMore(data.has_more) })
+      .catch(() => { setResults([]); setHasMore(false) })
       .finally(() => setLoading(false))
   }, [])
+
+  const loadMore = () => {
+    const nextPage = page + 1
+    setLoadingMore(true)
+    searchPublicRecipes(buildParams(query, filters, nextPage))
+      .then(data => {
+        setResults(prev => [...prev, ...data.results])
+        setHasMore(data.has_more)
+        setPage(nextPage)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false))
+  }
 
   useEffect(() => {
     doSearch('', EMPTY_FILTERS)
@@ -225,10 +247,17 @@ export default function SearchPage() {
             </div>
           ) : (
             <>
-              <p className={styles.count}>{results.length} recipe{results.length !== 1 ? 's' : ''}</p>
+              <p className={styles.count}>{results.length}{hasMore ? '+' : ''} recipe{results.length !== 1 ? 's' : ''}</p>
               <div className={styles.grid}>
                 {results.map(r => <SearchCard key={r.id} recipe={r} />)}
               </div>
+              {hasMore && (
+                <div className={styles.loadMore}>
+                  <button className={styles.loadMoreBtn} onClick={loadMore} disabled={loadingMore}>
+                    {loadingMore ? 'Loading…' : 'Load more'}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>

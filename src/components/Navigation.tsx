@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Avatar } from './Avatar'
+import { resendVerificationEmail } from '../lib/api'
 import styles from './Navigation.module.css'
 
 // ── SVG Tab Icons ─────────────────────────────────────────────────────────────
@@ -78,6 +80,25 @@ export default function Navigation() {
   const location = useLocation()
   const navigate = useNavigate()
   const p = location.pathname
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
+
+  const showBanner = user != null && user.email_verified === false
+
+  useEffect(() => {
+    document.body.classList.toggle('has-verify-banner', showBanner)
+    return () => { document.body.classList.remove('has-verify-banner') }
+  }, [showBanner])
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await resendVerificationEmail()
+      setResent(true)
+    } catch { /* ignore */ } finally {
+      setResending(false)
+    }
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -86,6 +107,26 @@ export default function Navigation() {
 
   return (
     <>
+      {showBanner && (
+        <div className={styles.verifyBanner} role="alert">
+          <span className={styles.verifyBannerText}>
+            Please verify your email address to access all features.
+          </span>
+          {resent ? (
+            <span className={styles.verifyBannerBtn} style={{ cursor: 'default', textDecoration: 'none' }}>
+              Email sent ✓
+            </span>
+          ) : (
+            <button
+              className={styles.verifyBannerBtn}
+              onClick={handleResend}
+              disabled={resending}
+            >
+              {resending ? 'Sending…' : 'Resend email'}
+            </button>
+          )}
+        </div>
+      )}
       <header className={styles.nav}>
         <div className={styles.inner}>
           <Link to="/" className={styles.brand}>

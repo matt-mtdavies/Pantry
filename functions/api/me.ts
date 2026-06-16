@@ -13,6 +13,7 @@ function parseRow(row: Record<string, unknown>) {
     gender: row.gender ?? null,
     age_bracket: row.age_bracket ?? null,
     unit_system: (row.unit_system as string) ?? 'metric',
+    email_verified: row.email_verified === 1 || row.email_verified === true,
     created_at: row.created_at,
   }
 }

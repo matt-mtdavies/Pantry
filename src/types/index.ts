@@ -10,6 +10,7 @@ export interface User {
   gender: string | null;
   age_bracket: string | null;
   unit_system: 'metric' | 'imperial';
+  email_verified: boolean;
   created_at: number;
 }
 

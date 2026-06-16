@@ -87,9 +87,12 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     if (!user) {
       const userId = generateId()
       await ctx.env.DB.prepare(
-        'INSERT INTO users (id, email, avatar_id, default_servings) VALUES (?, ?, ?, ?)'
+        'INSERT INTO users (id, email, avatar_id, default_servings, email_verified) VALUES (?, ?, ?, ?, 1)'
       ).bind(userId, magicToken.email, 'herb', 2).run()
       user = { id: userId }
+    } else {
+      // Magic link confirms email ownership — mark verified
+      await ctx.env.DB.prepare('UPDATE users SET email_verified = 1 WHERE id = ?').bind(user.id).run()
     }
 
     const sessionId = generateId()

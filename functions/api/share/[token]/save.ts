@@ -24,9 +24,10 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const params = ctx.params as { token: string }
   const token = params.token
 
+  const now = Math.floor(Date.now() / 1000)
   const row = await ctx.env.DB.prepare(
-    'SELECT * FROM recipes WHERE share_token = ? AND is_deleted = 0'
-  ).bind(token).first<Record<string, unknown>>()
+    'SELECT * FROM recipes WHERE share_token = ? AND is_deleted = 0 AND (share_token_expires_at IS NULL OR share_token_expires_at > ?)'
+  ).bind(token, now).first<Record<string, unknown>>()
 
   if (!row) {
     return new Response(JSON.stringify({ error: 'Not found' }), {
@@ -36,7 +37,6 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   }
 
   const id = generateId()
-  const now = Math.floor(Date.now() / 1000)
 
   await ctx.env.DB.prepare(`
     INSERT INTO recipes (id, user_id, title, description, servings, prep_time, cook_time,

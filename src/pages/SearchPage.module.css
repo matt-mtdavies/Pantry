@@ -1025,3 +1025,33 @@
 }
 
 .wizardTryAgain:hover { background: #a8532f; }
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-8) 0 var(--sp-4);
+}
+
+.loadMoreBtn {
+  padding: var(--sp-3) var(--sp-8);
+  background: none;
+  border: 1.5px solid #C4633E;
+  color: #C4633E;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  min-height: 44px;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.loadMoreBtn:hover {
+  background: #C4633E;
+  color: #FFFFFF;
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

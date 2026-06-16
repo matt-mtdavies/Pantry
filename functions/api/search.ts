@@ -1,5 +1,7 @@
 import type { Env } from '../env'
 
+const PAGE_SIZE = 24
+
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
   const url = new URL(ctx.request.url)
@@ -13,6 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const calMax     = toInt(url.searchParams.get('cal_max'))
   const costMin    = toFloat(url.searchParams.get('cost_min'))
   const costMax    = toFloat(url.searchParams.get('cost_max'))
+  const page       = Math.max(0, toInt(url.searchParams.get('page')) ?? 0)
 
   // Build dynamic WHERE clause
   const wheres: string[] = ['u.is_public = 1', 'r.is_deleted = 0']
@@ -73,10 +76,12 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     WHERE ${wheres.join(' AND ')}
     GROUP BY r.id
     ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC
-    LIMIT 48
-  `).bind(...binds).all<Record<string, unknown>>()
+    LIMIT ? OFFSET ?
+  `).bind(...binds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
 
-  const results = (rows.results ?? []).map(r => ({
+  const allRows = rows.results ?? []
+  const has_more = allRows.length > PAGE_SIZE
+  const results = allRows.slice(0, PAGE_SIZE).map(r => ({
     ...r,
     tags: JSON.parse((r.tags as string) || '[]'),
     avg_rating: Number(r.avg_rating),
@@ -84,7 +89,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     my_rating: r.my_rating != null ? Number(r.my_rating) : null,
   }))
 
-  return json(results)
+  return json({ results, has_more, page })
 }
 
 function toInt(v: string | null): number | null {
