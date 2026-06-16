@@ -82,6 +82,7 @@ export default function Navigation() {
   const p = location.pathname
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
+  const [resendError, setResendError] = useState(false)
 
   const showBanner = user != null && user.email_verified === false
 
@@ -92,10 +93,13 @@ export default function Navigation() {
 
   const handleResend = async () => {
     setResending(true)
+    setResendError(false)
     try {
       await resendVerificationEmail()
       setResent(true)
-    } catch { /* ignore */ } finally {
+    } catch {
+      setResendError(true)
+    } finally {
       setResending(false)
     }
   }
@@ -110,11 +114,11 @@ export default function Navigation() {
       {showBanner && (
         <div className={styles.verifyBanner} role="alert">
           <span className={styles.verifyBannerText}>
-            Please verify your email address to access all features.
+            {resendError ? 'Failed to send — please try again.' : 'Verify your email to unlock all features.'}
           </span>
           {resent ? (
             <span className={styles.verifyBannerBtn} style={{ cursor: 'default', textDecoration: 'none' }}>
-              Email sent ✓
+              Sent ✓
             </span>
           ) : (
             <button
@@ -122,7 +126,7 @@ export default function Navigation() {
               onClick={handleResend}
               disabled={resending}
             >
-              {resending ? 'Sending…' : 'Resend email'}
+              {resending ? 'Sending…' : 'Resend'}
             </button>
           )}
         </div>

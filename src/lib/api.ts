@@ -156,7 +156,7 @@ export async function searchPublicRecipes(qs: string): Promise<{ results: Recipe
 // Email verification
 
 export async function resendVerificationEmail(): Promise<void> {
-  await request('/api/auth/resend-verification', { method: 'POST' })
+  await request('/api/resend-verification', { method: 'POST' })
 }
 
 // Leaderboard
