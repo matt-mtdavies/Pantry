@@ -59,8 +59,8 @@ export default function ProfilePage() {
 
   const avatarSrc = avatarPreview ?? imageUrl(user.avatar_image_key ?? null)
 
-  // Step 1: file selected → open crop modal
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Step 1: file selected → normalise EXIF orientation, then open crop modal
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
@@ -76,9 +76,32 @@ export default function ProfilePage() {
     }
 
     if (cropUrlRef.current) URL.revokeObjectURL(cropUrlRef.current)
-    const src = URL.createObjectURL(file)
-    cropUrlRef.current = src
-    setCropSrc(src)
+
+    try {
+      // createImageBitmap applies EXIF rotation; re-encoding to a canvas blob
+      // bakes the correct orientation into pixel data so drawImage sees it correctly.
+      const bitmap = await createImageBitmap(file)
+      const MAX = 2400
+      const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height))
+      const w = Math.round(bitmap.width * scale)
+      const h = Math.round(bitmap.height * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h)
+      bitmap.close()
+      const blob = await new Promise<Blob>((res, rej) =>
+        canvas.toBlob(b => b ? res(b) : rej(new Error('encode failed')), 'image/jpeg', 0.92)
+      )
+      const src = URL.createObjectURL(blob)
+      cropUrlRef.current = src
+      setCropSrc(src)
+    } catch {
+      // Fallback: use the raw file directly
+      const src = URL.createObjectURL(file)
+      cropUrlRef.current = src
+      setCropSrc(src)
+    }
   }
 
   // Step 2: crop confirmed → upload blob
