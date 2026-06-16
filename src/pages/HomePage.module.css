@@ -163,6 +163,54 @@
 
 .attentionArrow { margin-left: auto; }
 
+.inviteBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: #FFFFFF;
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+
+.inviteBannerText {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #6B6459;
+}
+
+.inviteBannerBtn {
+  flex-shrink: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #FFFFFF;
+  background: #C4633E;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.inviteBannerBtn:hover { background: #a8532f; }
+
+.inviteBannerDismiss {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #9C9189;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--sp-1);
+  line-height: 1;
+  transition: color 150ms ease;
+}
+
+.inviteBannerDismiss:hover { color: #1F1B16; }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
