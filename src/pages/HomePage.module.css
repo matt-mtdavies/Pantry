@@ -94,9 +94,13 @@
   border: 1.5px solid #E8E0D4;
   border-radius: var(--radius-full);
   background: #FFFFFF;
-  transition: all 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
   min-height: 48px;
   white-space: nowrap;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .filter:hover {

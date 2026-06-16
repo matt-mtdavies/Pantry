@@ -108,7 +108,17 @@ body {
 img, video { max-width: 100%; height: auto; display: block; }
 a { color: #C4633E; text-decoration: none; }
 a:hover { text-decoration: underline; }
-button { cursor: pointer; border: none; background: none; font-family: inherit; }
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  /* Prevent iOS Safari text-disappearing-after-tap repaint bug */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
 
 :focus-visible {
