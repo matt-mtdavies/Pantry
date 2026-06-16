@@ -532,20 +532,20 @@
 .signOutBtn:hover { border-color: #9C9189; color: #1F1B16; }
 
 .exportBtn {
-  display: block;
-  margin-top: var(--sp-3);
   font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: #9C9189;
-  background: none;
-  border: none;
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: #6B6459;
+  padding: var(--sp-3) var(--sp-5);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  background: #FFFFFF;
   cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  transition: all 150ms ease;
+  margin-top: var(--sp-3);
 }
 
-.exportBtn:hover { color: #6B6459; }
+.exportBtn:hover { border-color: #9C9189; color: #1F1B16; }
 
 /* Danger zone */
 .dangerZone {
