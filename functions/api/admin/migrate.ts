@@ -1,6 +1,6 @@
 import type { Env } from '../../env'
 
-export const onRequestPost: PagesFunction<Env> = async (ctx) => {
+async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>>): Promise<Response> {
   const userEmail = ctx.data.email as string
 
   if (ctx.env.ADMIN_EMAILS) {
@@ -54,6 +54,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   return json({ steps, errors, ok: errors.length === 0 })
 }
+
+export const onRequestGet: PagesFunction<Env> = (ctx) => runMigrate(ctx)
+export const onRequestPost: PagesFunction<Env> = (ctx) => runMigrate(ctx)
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
