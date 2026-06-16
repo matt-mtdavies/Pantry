@@ -103,37 +103,44 @@ export default function Onboarding({ onClose }: Props) {
 function WelcomeIllustration() {
   return (
     <svg viewBox="0 0 300 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="150" cy="130" r="96" fill="#F3EFE8" />
-      {/* Bowl body */}
-      <path d="M62 155 Q62 98 150 98 Q238 98 238 155" fill="#FFFFFF" stroke="#C4633E" strokeWidth="2" strokeLinecap="round" />
-      <ellipse cx="150" cy="155" rx="88" ry="20" fill="#F5E8E2" stroke="#C4633E" strokeWidth="2" />
-      {/* Inner bowl */}
-      <path d="M80 155 Q80 112 150 112 Q220 112 220 155" fill="#FEF7F4" />
-      {/* Pasta swirls */}
-      <path d="M118 138 Q128 126 138 138 Q148 150 158 138 Q168 126 178 138" stroke="#DFA088" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M122 148 Q132 136 142 148 Q152 160 162 148 Q172 136 182 148" stroke="#DFA088" strokeWidth="2.5" strokeLinecap="round" />
-      {/* Herb left */}
-      <line x1="105" y1="148" x2="108" y2="130" stroke="#7A8B6F" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M108 130 C104 122 108 116 112 124" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
-      <path d="M108 130 C112 122 116 116 112 124" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
-      {/* Herb right */}
-      <line x1="194" y1="144" x2="197" y2="126" stroke="#7A8B6F" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M197 126 C193 118 197 112 201 120" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
-      <path d="M197 126 C201 118 205 112 201 120" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
-      {/* Steam */}
-      <path d="M122 94 C120 84 124 74 122 64" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" opacity="0.35" />
-      <path d="M150 90 C148 80 152 70 150 60" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" opacity="0.45" />
-      <path d="M178 94 C176 84 180 74 178 64" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" opacity="0.35" />
-      {/* Spoon */}
-      <line x1="233" y1="172" x2="252" y2="132" stroke="#9C9189" strokeWidth="2" strokeLinecap="round" />
-      <ellipse cx="248.5" cy="127" rx="8.5" ry="6" fill="#F3EFE8" stroke="#9C9189" strokeWidth="1.5" transform="rotate(-58 248.5 127)" />
+      {/* Background circle */}
+      <circle cx="150" cy="122" r="92" fill="#F3EFE8" />
+      {/* Plate shadow */}
+      <ellipse cx="152" cy="192" rx="66" ry="9" fill="#E8E0D4" opacity="0.5" />
+      {/* Plate */}
+      <circle cx="150" cy="126" r="72" fill="#FFFFFF" stroke="#E8E0D4" strokeWidth="1.5" />
+      {/* Inner rim */}
+      <circle cx="150" cy="126" r="60" fill="none" stroke="#F3EFE8" strokeWidth="2" />
+      {/* Food area */}
+      <ellipse cx="150" cy="126" rx="42" ry="32" fill="#FEF7F4" />
+      {/* Elegant pasta swirls */}
+      <path d="M130 118 Q140 107 152 118 Q164 129 174 118" stroke="#DFA088" strokeWidth="2.25" strokeLinecap="round" />
+      <path d="M126 128 Q136 117 148 128 Q160 139 172 128" stroke="#DFA088" strokeWidth="2.25" strokeLinecap="round" />
+      <path d="M132 138 Q142 127 154 138 Q164 147 172 140" stroke="#DFA088" strokeWidth="2" strokeLinecap="round" />
+      {/* Sauce dots */}
+      <circle cx="138" cy="113" r="3" fill="#C4633E" opacity="0.4" />
+      <circle cx="164" cy="140" r="2.5" fill="#C4633E" opacity="0.35" />
+      <circle cx="158" cy="112" r="2" fill="#C4633E" opacity="0.3" />
+      {/* Herb garnish */}
+      <line x1="148" y1="107" x2="152" y2="118" stroke="#7A8B6F" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M152 118 C147 109 151 104 154 111" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M152 118 C157 109 161 105 156 112" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
+      {/* Fork */}
+      <line x1="90" y1="84" x2="90" y2="168" stroke="#C4B8AC" strokeWidth="2" strokeLinecap="round" />
+      <line x1="86" y1="84" x2="86" y2="98" stroke="#C4B8AC" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="90" y1="84" x2="90" y2="98" stroke="#C4B8AC" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="94" y1="84" x2="94" y2="98" stroke="#C4B8AC" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M86 98 Q90 105 94 98" stroke="#C4B8AC" strokeWidth="1.5" fill="none" />
+      {/* Knife */}
+      <line x1="210" y1="84" x2="210" y2="168" stroke="#C4B8AC" strokeWidth="2" strokeLinecap="round" />
+      <path d="M210 84 Q218 94 210 112" stroke="#C4B8AC" strokeWidth="1.5" fill="none" strokeLinecap="round" />
       {/* Decorative dots */}
-      <circle cx="66" cy="86" r="5" fill="#EBF0E8" />
-      <circle cx="243" cy="84" r="4" fill="#F5E8E2" />
-      <circle cx="50" cy="158" r="3.5" fill="#F5E8E2" />
-      <circle cx="262" cy="168" r="3" fill="#EBF0E8" />
-      <circle cx="80" cy="60" r="3" fill="#E8E0D4" />
-      <circle cx="222" cy="57" r="4" fill="#E8E0D4" />
+      <circle cx="58" cy="78" r="4.5" fill="#EBF0E8" />
+      <circle cx="250" cy="74" r="3.5" fill="#F5E8E2" />
+      <circle cx="50" cy="166" r="3" fill="#F5E8E2" />
+      <circle cx="256" cy="172" r="3.5" fill="#EBF0E8" />
+      <circle cx="76" cy="58" r="3" fill="#E8E0D4" />
+      <circle cx="230" cy="56" r="3.5" fill="#E8E0D4" />
     </svg>
   )
 }
