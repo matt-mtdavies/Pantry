@@ -832,59 +832,26 @@
 
 .createdSavedLink:hover { background: #235c43; }
 
-/* ── Surprise me card ────────────────────────────────────────────── */
-.surpriseCard {
+/* ── Surprise me pill ────────────────────────────────────────────── */
+.surprisePill {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  justify-content: center;
+  gap: var(--sp-2);
   width: 100%;
-  padding: var(--sp-4) var(--sp-5);
-  background: #F3EFE8;
-  border: 2px solid #E8E0D4;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 150ms ease, background-color 150ms ease;
-}
-
-.surpriseCard:hover {
-  border-color: #C4633E;
-  background: #F5E8E2;
-}
-
-.surpriseCardActive {
-  border-color: #C4633E;
-  background: #F5E8E2;
-}
-
-.surpriseDice { font-size: 1.75rem; line-height: 1; flex-shrink: 0; }
-
-.surpriseText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.surpriseTitle {
+  padding: var(--sp-4) var(--sp-6);
+  background: #1F1B16;
+  color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: 600;
-  color: #1F1B16;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  letter-spacing: 0.01em;
 }
 
-.surpriseSub {
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  color: #9C9189;
-}
-
-.surpriseCheck {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: #C4633E;
-  flex-shrink: 0;
-}
+.surprisePill:hover { background: #3A342B; }
 
 .wizardDivider {
   display: flex;

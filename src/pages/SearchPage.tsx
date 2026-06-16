@@ -301,7 +301,6 @@ type WizardStage = 'form' | 'loading' | 'summaries' | 'detail' | 'error'
 
 function DinnerWizard({ onClose }: { onClose: () => void }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [surpriseMe, setSurpriseMe] = useState(false)
   const [mode, setMode] = useState<'match' | 'create'>('create')
   const [stage, setStage] = useState<WizardStage>('form')
   const [recipes, setRecipes] = useState<GeneratedRecipe[]>([])
@@ -311,7 +310,6 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
   const [saving, setSaving] = useState(false)
 
   const toggleChip = (item: string) => {
-    setSurpriseMe(false)
     setSelected(prev => {
       const next = new Set(prev)
       if (next.has(item)) { next.delete(item) } else { next.add(item) }
@@ -319,16 +317,11 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
     })
   }
 
-  const toggleSurprise = () => {
-    setSurpriseMe(s => !s)
-    setSelected(new Set())
-  }
-
-  const runWizard = async () => {
+  const runWizard = async (ingredientOverride?: string[]) => {
     setStage('loading')
     setSummaryImages([null, null, null])
     try {
-      const ingredientList = Array.from(selected)
+      const ingredientList = ingredientOverride ?? Array.from(selected)
       const result = await getDinnerSuggestions(ingredientList, mode)
       setRecipes(result.recipes.slice(0, 3))
       setStage('summaries')
@@ -390,17 +383,8 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
 
         {stage === 'form' && (
           <div className={styles.wizardForm}>
-            <button
-              className={`${styles.surpriseCard} ${surpriseMe ? styles.surpriseCardActive : ''}`}
-              onClick={toggleSurprise}
-              aria-pressed={surpriseMe}
-            >
-              <span className={styles.surpriseDice}>🎲</span>
-              <div className={styles.surpriseText}>
-                <span className={styles.surpriseTitle}>Surprise me</span>
-                <span className={styles.surpriseSub}>Skip the list — just show me something good</span>
-              </div>
-              {surpriseMe && <span className={styles.surpriseCheck}>✓</span>}
+            <button className={styles.surprisePill} onClick={() => runWizard([])}>
+              🎲 Surprise me
             </button>
 
             <div className={styles.wizardDivider}><span>or pick what you have</span></div>
@@ -440,7 +424,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
 
             <button
               className={styles.wizardFindBtn}
-              onClick={runWizard}
+              onClick={() => runWizard()}
             >
               Find recipes →
             </button>
@@ -458,7 +442,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
           <div className={styles.wizardEmpty}>
             <p className={styles.wizardEmptyTitle}>Something went wrong</p>
             <p className={styles.wizardEmptySub}>Couldn't generate recipes — please try again.</p>
-            <button className={styles.wizardBackBtn} onClick={runWizard}>Try again</button>
+            <button className={styles.wizardBackBtn} onClick={() => runWizard()}>Try again</button>
             <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
           </div>
         )}
@@ -490,7 +474,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
               ))}
             </div>
             <div className={styles.summaryActions}>
-              <button className={styles.wizardTryAgain} onClick={runWizard}>Try different ideas</button>
+              <button className={styles.wizardTryAgain} onClick={() => runWizard()}>Try different ideas</button>
               <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
             </div>
           </div>
