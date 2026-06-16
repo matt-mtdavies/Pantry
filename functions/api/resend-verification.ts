@@ -1,5 +1,5 @@
-import type { Env } from '../../env'
-import { checkRateLimit } from '../../lib/rateLimit'
+import type { Env } from '../env'
+import { checkRateLimit } from '../lib/rateLimit'
 
 function toHex(buf: Uint8Array): string {
   return Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('')
