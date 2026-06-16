@@ -203,6 +203,7 @@
   inset: 0;
   display: block;
   border-radius: var(--radius-xl);
+  z-index: 1;
 }
 
 .cardImg {
