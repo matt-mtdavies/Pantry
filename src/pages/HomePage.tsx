@@ -125,28 +125,22 @@ export default function HomePage() {
                 onClick={() => setFilter('favourites')}
                 aria-pressed={filter === 'favourites'}
               >♥ Favourites</button>
-              {collections.map(c => (
-                <button
-                  key={c.id}
-                  className={`${styles.filter} ${filter === c.id ? styles.filterActive : ''}`}
-                  onClick={() => setFilter(c.id)}
-                  aria-pressed={filter === c.id}
-                >
-                  {c.name}
-                </button>
-              ))}
               <button
-                className={`${styles.filter} ${styles.filterCollections}`}
+                className={`${styles.filter} ${activeCollection ? styles.filterActive : ''}`}
                 onClick={() => setCollectionsOpen(o => !o)}
-                aria-label="Manage collections"
-                title="Manage collections"
+                aria-pressed={!!activeCollection}
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                  <rect x="1" y="1" width="5" height="5" rx="1"/>
-                  <rect x="8" y="1" width="5" height="5" rx="1"/>
-                  <rect x="1" y="8" width="5" height="5" rx="1"/>
-                  <path d="M10.5 8v5M8 10.5h5"/>
-                </svg>
+                {activeCollection ? (
+                  <span className={styles.filterColLabel}>
+                    {activeCollection.name}
+                    <span
+                      className={styles.filterColClear}
+                      role="button"
+                      aria-label="Clear collection filter"
+                      onClick={e => { e.stopPropagation(); setFilter('all') }}
+                    >✕</span>
+                  </span>
+                ) : '📁 Collections'}
               </button>
             </div>
 
@@ -162,9 +156,14 @@ export default function HomePage() {
                 <p className={styles.collectionsEmpty}>No collections yet — create one below.</p>
               )}
               {collections.map(c => (
-                <div key={c.id} className={styles.collectionRow}>
-                  <span className={styles.collectionRowName}>{c.name}</span>
-                  <span className={styles.collectionRowCount}>{c.recipe_ids.length}</span>
+                <div key={c.id} className={`${styles.collectionRow} ${filter === c.id ? styles.collectionRowActive : ''}`}>
+                  <button
+                    className={styles.collectionRowSelect}
+                    onClick={() => { setFilter(c.id); setCollectionsOpen(false) }}
+                  >
+                    <span className={styles.collectionRowName}>{c.name}</span>
+                    <span className={styles.collectionRowCount}>{c.recipe_ids.length}</span>
+                  </button>
                   <button
                     className={styles.collectionRowDelete}
                     onClick={() => handleDeleteCollection(c.id)}

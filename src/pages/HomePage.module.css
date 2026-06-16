@@ -84,13 +84,7 @@
   gap: var(--sp-2);
   flex: 1;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px; /* keep focus outlines visible */
 }
-
-.filters::-webkit-scrollbar { display: none; }
 
 .filter {
   font-family: var(--font-ui);
@@ -104,10 +98,6 @@
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
   min-height: 48px;
   white-space: nowrap;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .filter:hover {
@@ -119,6 +109,7 @@
   background: #C4633E;
   border-color: #C4633E;
   color: #FFFFFF;
+  -webkit-text-fill-color: #FFFFFF;
 }
 
 .addBtn {
@@ -250,16 +241,21 @@
 
 /* ── Collections panel ─────────────────────────────────────────────────────── */
 
-.filterCollections {
-  color: #9C9189;
-  padding: 0;
-  width: 48px;
-  height: 48px;
+.filterColLabel {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: var(--sp-2);
 }
+
+.filterColClear {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: var(--radius-full);
+}
+
+.filterColClear:hover { opacity: 1; }
 
 .collectionsPanel {
   background: #FFFFFF;
@@ -290,8 +286,23 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  padding: var(--sp-2) 0;
   border-bottom: 1px solid #F3EFE8;
+  border-radius: var(--radius-sm);
+}
+
+.collectionRowActive { background: #F5E8E2; }
+
+.collectionRowSelect {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
 }
 
 .collectionRowName {

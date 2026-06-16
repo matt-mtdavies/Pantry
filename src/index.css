@@ -113,11 +113,7 @@ button {
   border: none;
   background: none;
   font-family: inherit;
-  /* Prevent iOS Safari text-disappearing-after-tap repaint bug */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
 
