@@ -1,5 +1,7 @@
 import type { Env } from '../env'
 
+const CACHE_TTL = 60 // 1 minute
+
 const TIP_CATEGORIES = ['Technique', 'Ingredient', 'Storage', 'Flavour', 'Kitchen']
 
 const FALLBACK_TIP = {
@@ -8,7 +10,15 @@ const FALLBACK_TIP = {
   emoji: '🧂',
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+export const onRequestGet: PagesFunction<Env> = async ({ env, waitUntil, request }) => {
+  const today = new Date().toISOString().split('T')[0]
+  const cacheKey = new Request(`https://cache.internal/feed/${today}`)
+  const cfCache = (caches as unknown as { default: Cache }).default
+  try {
+    const cached = await cfCache.match(cacheKey)
+    if (cached) return cached
+  } catch { /* cache unavailable in local dev */ }
+
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS daily_tips (
       date TEXT PRIMARY KEY,
@@ -18,8 +28,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       created_at INTEGER NOT NULL DEFAULT (unixepoch())
     )
   `).run()
-
-  const today = new Date().toISOString().split('T')[0]
 
   let tip = await env.DB
     .prepare('SELECT date, category, tip, emoji FROM daily_tips WHERE date = ?')
@@ -105,9 +113,20 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     author_name: string | null
   }>()
 
-  return Response.json({
+  const response = new Response(JSON.stringify({
     tip,
     recentShared: recentResult.results,
     topThisWeek: topResult.results,
+  }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': `public, max-age=${CACHE_TTL}`,
+    },
   })
+
+  try {
+    waitUntil(cfCache.put(cacheKey, response.clone()))
+  } catch { /* cache unavailable in local dev */ }
+
+  return response
 }

@@ -4,19 +4,25 @@ import Fuse from 'fuse.js'
 import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
 import { SearchIcon, DishIcon, WarningIcon } from '../components/icons'
-import { listRecipes, toggleFavourite } from '../lib/api'
-import type { Recipe, FilterMode } from '../types'
+import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection } from '../lib/api'
+import type { Recipe, Collection } from '../types'
 import styles from './HomePage.module.css'
+
+type FilterMode = 'all' | 'favourites' | string // string = collection id
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
+  const [collectionsOpen, setCollectionsOpen] = useState(false)
+  const [newColName, setNewColName] = useState('')
+  const [creatingCol, setCreatingCol] = useState(false)
 
   useEffect(() => {
-    listRecipes()
-      .then(setRecipes)
+    Promise.all([listRecipes(), listCollections()])
+      .then(([r, c]) => { setRecipes(r); setCollections(c) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -27,18 +33,20 @@ export default function HomePage() {
       includeScore: true,
     }), [recipes])
 
+  const activeCollection = collections.find(c => c.id === filter)
+
   const filtered = useMemo(() => {
     let list = recipes
     if (filter === 'favourites') list = list.filter(r => r.is_favourite)
-    if (filter === 'needs-attention') list = list.filter(r => r.needs_attention)
+    else if (filter !== 'all') {
+      const col = collections.find(c => c.id === filter)
+      if (col) list = list.filter(r => col.recipe_ids.includes(r.id))
+    }
     if (query.trim()) {
-      list = fuse.search(query).map(r => r.item).filter(r =>
-        filter === 'favourites' ? r.is_favourite :
-        filter === 'needs-attention' ? r.needs_attention : true
-      )
+      list = fuse.search(query).map(r => r.item).filter(r => list.includes(r))
     }
     return list
-  }, [recipes, filter, query, fuse])
+  }, [recipes, collections, filter, query, fuse])
 
   const handleToggleFavourite = async (id: string, value: boolean) => {
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: value } : r))
@@ -47,6 +55,25 @@ export default function HomePage() {
     } catch {
       setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: !value } : r))
     }
+  }
+
+  const handleCreateCollection = async () => {
+    const name = newColName.trim()
+    if (!name) return
+    setCreatingCol(true)
+    try {
+      const col = await createCollection(name)
+      setCollections(prev => [...prev, col])
+      setNewColName('')
+    } catch { /* ignore */ } finally {
+      setCreatingCol(false)
+    }
+  }
+
+  const handleDeleteCollection = async (id: string) => {
+    await deleteCollection(id)
+    setCollections(prev => prev.filter(c => c.id !== id))
+    if (filter === id) setFilter('all')
   }
 
   const needsAttentionCount = recipes.filter(r => r.needs_attention).length
@@ -88,22 +115,82 @@ export default function HomePage() {
             </div>
 
             <div className={styles.filters} role="group" aria-label="Filter recipes">
-              {(['all', 'favourites'] as FilterMode[]).map(f => (
+              <button
+                className={`${styles.filter} ${filter === 'all' ? styles.filterActive : ''}`}
+                onClick={() => setFilter('all')}
+                aria-pressed={filter === 'all'}
+              >All</button>
+              <button
+                className={`${styles.filter} ${filter === 'favourites' ? styles.filterActive : ''}`}
+                onClick={() => setFilter('favourites')}
+                aria-pressed={filter === 'favourites'}
+              >♥ Favourites</button>
+              {collections.map(c => (
                 <button
-                  key={f}
-                  className={`${styles.filter} ${filter === f ? styles.filterActive : ''}`}
-                  onClick={() => setFilter(f)}
-                  aria-pressed={filter === f}
+                  key={c.id}
+                  className={`${styles.filter} ${filter === c.id ? styles.filterActive : ''}`}
+                  onClick={() => setFilter(c.id)}
+                  aria-pressed={filter === c.id}
                 >
-                  {f === 'all' ? 'All' : '♥ Favourites'}
+                  {c.name}
                 </button>
               ))}
+              <button
+                className={`${styles.filter} ${styles.filterCollections}`}
+                onClick={() => setCollectionsOpen(o => !o)}
+                aria-label="Manage collections"
+                title="Manage collections"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                  <rect x="1" y="1" width="5" height="5" rx="1"/>
+                  <rect x="8" y="1" width="5" height="5" rx="1"/>
+                  <rect x="1" y="8" width="5" height="5" rx="1"/>
+                  <path d="M10.5 8v5M8 10.5h5"/>
+                </svg>
+              </button>
             </div>
 
             <Link to="/import" className={styles.addBtn}>
               + Add recipe
             </Link>
           </div>
+
+          {collectionsOpen && (
+            <div className={styles.collectionsPanel}>
+              <p className={styles.collectionsPanelTitle}>Collections</p>
+              {collections.length === 0 && (
+                <p className={styles.collectionsEmpty}>No collections yet — create one below.</p>
+              )}
+              {collections.map(c => (
+                <div key={c.id} className={styles.collectionRow}>
+                  <span className={styles.collectionRowName}>{c.name}</span>
+                  <span className={styles.collectionRowCount}>{c.recipe_ids.length}</span>
+                  <button
+                    className={styles.collectionRowDelete}
+                    onClick={() => handleDeleteCollection(c.id)}
+                    aria-label={`Delete ${c.name}`}
+                  >✕</button>
+                </div>
+              ))}
+              <div className={styles.collectionCreate}>
+                <input
+                  className={styles.collectionInput}
+                  placeholder="New collection name…"
+                  value={newColName}
+                  onChange={e => setNewColName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleCreateCollection() }}
+                  maxLength={80}
+                />
+                <button
+                  className={styles.collectionCreateBtn}
+                  onClick={handleCreateCollection}
+                  disabled={!newColName.trim() || creatingCol}
+                >
+                  {creatingCol ? '…' : 'Create'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {needsAttentionCount > 0 && (
             <Link to="/needs-attention" className={styles.attentionBanner}>
@@ -137,11 +224,15 @@ export default function HomePage() {
               ) : (
                 <>
                   <h2 className={styles.emptyTitle}>
-                    {filter === 'favourites' ? 'No favourites yet' : 'No recipes yet'}
+                    {filter === 'favourites' ? 'No favourites yet'
+                      : activeCollection ? `No recipes in "${activeCollection.name}" yet`
+                      : 'No recipes yet'}
                   </h2>
                   <p className={styles.emptySub}>
                     {filter === 'favourites'
                       ? 'Tap the ♡ heart on any recipe to save it here.'
+                      : activeCollection
+                      ? 'Open a recipe and tap "Add to collection" to add it here.'
                       : 'Import your first recipe from a screenshot, or add one by hand.'}
                   </p>
                   {filter === 'all' && (

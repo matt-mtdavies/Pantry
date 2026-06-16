@@ -1,6 +1,16 @@
 import type { Env } from '../env'
 
+const CACHE_TTL = 300 // 5 minutes
+
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
+  // Serve from cache when available
+  const cacheKey = new Request('https://cache.internal/leaderboard')
+  const cfCache = (caches as unknown as { default: Cache }).default
+  try {
+    const cached = await cfCache.match(cacheKey)
+    if (cached) return cached
+  } catch { /* cache unavailable in local dev */ }
+
   const [topRecipesRes, topChefsRes] = await Promise.all([
     ctx.env.DB.prepare(`
       SELECT
@@ -36,7 +46,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     `).all<Record<string, unknown>>(),
   ])
 
-  return json({
+  const response = new Response(JSON.stringify({
     topRecipes: (topRecipesRes.results ?? []).map(r => ({
       ...r,
       tags: JSON.parse((r.tags as string) || '[]'),
@@ -49,12 +59,16 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       avg_rating: Number(u.avg_rating),
       total_ratings: Number(u.total_ratings),
     })),
+  }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': `public, max-age=${CACHE_TTL}`,
+    },
   })
-}
 
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
+  try {
+    ctx.waitUntil(cfCache.put(cacheKey, response.clone()))
+  } catch { /* cache unavailable in local dev */ }
+
+  return response
 }

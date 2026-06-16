@@ -283,6 +283,24 @@
   line-height: var(--leading-relaxed);
 }
 
+.progressDots {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-6);
+}
+
+.progressDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: #E8E0D4;
+  transition: background-color 400ms ease;
+}
+
+.progressDotActive {
+  background: #C4633E;
+}
+
 /* Error */
 .errorBox {
   background: #F5E8E2;

@@ -80,6 +80,11 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
     await ctx.env.DB.prepare('UPDATE magic_tokens SET used = 1 WHERE token = ?').bind(token).run()
 
+    // Non-blocking cleanup of expired/used tokens
+    ctx.waitUntil(
+      ctx.env.DB.prepare('DELETE FROM magic_tokens WHERE used = 1 OR expires_at < ?').bind(now).run()
+    )
+
     let user = await ctx.env.DB.prepare(
       'SELECT id FROM users WHERE email = ?'
     ).bind(magicToken.email).first<{ id: string }>()

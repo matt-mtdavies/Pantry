@@ -1,4 +1,4 @@
-import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData, PublicProfile } from '../types'
+import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData, PublicProfile, Collection } from '../types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: 'include', ...init })
@@ -238,4 +238,36 @@ export async function getDinnerSuggestions(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ingredients, mode }),
   })
+}
+
+// Collections
+
+export async function listCollections(): Promise<Collection[]> {
+  return request<Collection[]>('/api/collections')
+}
+
+export async function createCollection(name: string): Promise<Collection> {
+  return request<Collection>('/api/collections', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+}
+
+export async function deleteCollection(id: string): Promise<void> {
+  await request<void>(`/api/collections/${id}`, { method: 'DELETE' })
+}
+
+export async function toggleRecipeInCollection(collectionId: string, recipeId: string): Promise<{ action: 'added' | 'removed' }> {
+  return request<{ action: 'added' | 'removed' }>(`/api/collections/${collectionId}/toggle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipe_id: recipeId }),
+  })
+}
+
+// Data export
+
+export function downloadExport(): void {
+  window.location.href = '/api/me/export'
 }

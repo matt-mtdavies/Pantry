@@ -54,9 +54,9 @@ export interface Recipe {
 
 export interface Collection {
   id: string;
-  user_id: string;
   name: string;
   created_at: number;
+  recipe_ids: string[];
 }
 
 export interface ExtractedRecipe {

@@ -8,6 +8,24 @@ import type { ExtractedRecipe, Ingredient } from '../types'
 import styles from './ImportPage.module.css'
 
 type Stage = 'upload' | 'extracting' | 'review' | 'saving' | 'error'
+type ExtractMode = 'screenshot' | 'url'
+
+const PROGRESS_MSGS: Record<ExtractMode, string[]> = {
+  screenshot: [
+    'Analysing your screenshot…',
+    'Spotting the ingredients…',
+    'Reading the cooking steps…',
+    'Checking amounts and timings…',
+    'Almost ready…',
+  ],
+  url: [
+    'Fetching the recipe page…',
+    'Reading the ingredients…',
+    'Extracting the cooking steps…',
+    'Checking amounts and timings…',
+    'Almost ready…',
+  ],
+}
 
 export default function ImportPage() {
   const navigate = useNavigate()
@@ -15,10 +33,22 @@ export default function ImportPage() {
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [stage, setStage] = useState<Stage>('upload')
+  const [extractMode, setExtractMode] = useState<ExtractMode>('screenshot')
+  const [progressIdx, setProgressIdx] = useState(0)
   const [extracted, setExtracted] = useState<ExtractedRecipe | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [dragOver, setDragOver] = useState(false)
   const [urlInput, setUrlInput] = useState('')
+
+  useEffect(() => {
+    if (stage !== 'extracting') return
+    setProgressIdx(0)
+    const msgs = PROGRESS_MSGS[extractMode]
+    const id = setInterval(() => {
+      setProgressIdx(i => Math.min(i + 1, msgs.length - 1))
+    }, 3500)
+    return () => clearInterval(id)
+  }, [stage, extractMode])
 
   const handleFiles = useCallback((selected: File[]) => {
     const valid = selected.filter(f => f.type.startsWith('image/'))
@@ -39,6 +69,7 @@ export default function ImportPage() {
 
   const handleExtract = async () => {
     if (!files.length) return
+    setExtractMode('screenshot')
     setStage('extracting')
     try {
       const result = await extractFromScreenshots(files)
@@ -53,6 +84,7 @@ export default function ImportPage() {
   const handleExtractUrl = async () => {
     const url = urlInput.trim()
     if (!url) return
+    setExtractMode('url')
     setStage('extracting')
     try {
       const result = await extractFromUrl(url)
@@ -82,17 +114,23 @@ export default function ImportPage() {
   }
 
   if (stage === 'extracting') {
+    const msgs = PROGRESS_MSGS[extractMode]
     return (
       <div className="page-shell">
         <Navigation />
         <main className="page-main">
           <div className={styles.extracting}>
             <SaltGrinder size={64} />
-            <h2 className={styles.extractingTitle}>Reading your recipe…</h2>
+            <h2 className={styles.extractingTitle}>{msgs[progressIdx]}</h2>
             <p className={styles.extractingText}>
               Claude is pulling out all the ingredients and steps.
               This takes about 10–15 seconds.
             </p>
+            <div className={styles.progressDots}>
+              {msgs.map((_, i) => (
+                <span key={i} className={`${styles.progressDot} ${i <= progressIdx ? styles.progressDotActive : ''}`} />
+              ))}
+            </div>
           </div>
         </main>
       </div>

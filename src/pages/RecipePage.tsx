@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useWakeLock } from '../hooks/useWakeLock'
-import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage, deleteHeroImage } from '../lib/api'
+import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage, deleteHeroImage, listCollections, toggleRecipeInCollection, createCollection } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { convertIngredient, convertStepText } from '../lib/units'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon } from '../components/icons'
 import { Avatar } from '../components/Avatar'
-import type { Recipe } from '../types'
+import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
 
 export default function RecipePage() {
@@ -30,6 +30,10 @@ export default function RecipePage() {
   const [photoUploading, setPhotoUploading] = useState(false)
   const [photoDeleting, setPhotoDeleting] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const [collectionsOpen, setCollectionsOpen] = useState(false)
+  const [collections, setCollections] = useState<Collection[]>([])
+  const [newColName, setNewColName] = useState('')
+  const [creatingCol, setCreatingCol] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -39,6 +43,11 @@ export default function RecipePage() {
       .finally(() => setLoading(false))
     return () => releaseWakeLock()
   }, [id, navigate, acquireWakeLock, releaseWakeLock])
+
+  useEffect(() => {
+    if (!collectionsOpen) return
+    listCollections().then(setCollections).catch(() => {})
+  }, [collectionsOpen])
 
   const isOwner = !!user && !!recipe && recipe.user_id === user.id
 
@@ -275,7 +284,67 @@ export default function RecipePage() {
                   aria-pressed={recipe.is_favourite}
                 ><HeartIcon filled={recipe.is_favourite} size={20} /></button>
                 <button className={styles.iconBtn} onClick={handleShare} disabled={sharing} aria-label="Share recipe"><ShareIcon size={18} /></button>
+                <button className={styles.iconBtn} onClick={() => setCollectionsOpen(o => !o)} aria-label="Add to collection" title="Add to collection">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+                    <rect x="1.5" y="4.5" width="6" height="6" rx="1.5"/>
+                    <rect x="10.5" y="4.5" width="6" height="6" rx="1.5"/>
+                    <rect x="1.5" y="13" width="6" height="3.5" rx="1"/>
+                    <path d="M13.5 13v3.5M11.5 15h4"/>
+                  </svg>
+                </button>
                 <Link to={`/recipe/${recipe.id}/edit`} className={styles.iconBtn} aria-label="Edit recipe"><EditIcon size={18} /></Link>
+              </div>
+            )}
+
+            {/* Collection panel */}
+            {isOwner && collectionsOpen && recipe && (
+              <div className={styles.collectionPanel}>
+                <p className={styles.collectionPanelTitle}>Add to collection</p>
+                {collections.length === 0 && !creatingCol && (
+                  <p className={styles.collectionPanelEmpty}>No collections yet.</p>
+                )}
+                {collections.map(col => {
+                  const inCol = col.recipe_ids.includes(recipe.id)
+                  return (
+                    <button
+                      key={col.id}
+                      className={`${styles.collectionItem} ${inCol ? styles.collectionItemIn : ''}`}
+                      onClick={async () => {
+                        const res = await toggleRecipeInCollection(col.id, recipe.id)
+                        setCollections(prev => prev.map(c => c.id === col.id ? {
+                          ...c,
+                          recipe_ids: res.action === 'added'
+                            ? [...c.recipe_ids, recipe.id]
+                            : c.recipe_ids.filter(rid => rid !== recipe.id),
+                        } : c))
+                      }}
+                    >
+                      <span className={styles.collectionItemName}>{col.name}</span>
+                      <span className={styles.collectionItemCheck}>{inCol ? '✓' : '+'}</span>
+                    </button>
+                  )
+                })}
+                <div className={styles.collectionCreate}>
+                  <input
+                    className={styles.collectionInput}
+                    placeholder="New collection…"
+                    value={newColName}
+                    onChange={e => setNewColName(e.target.value)}
+                    onKeyDown={async e => {
+                      if (e.key !== 'Enter') return
+                      const name = newColName.trim()
+                      if (!name) return
+                      setCreatingCol(true)
+                      try {
+                        const col = await createCollection(name)
+                        const toggled = await toggleRecipeInCollection(col.id, recipe.id)
+                        setCollections(prev => [...prev, { ...col, recipe_ids: toggled.action === 'added' ? [recipe.id] : [] }])
+                        setNewColName('')
+                      } catch { /* ignore */ } finally { setCreatingCol(false) }
+                    }}
+                    maxLength={80}
+                  />
+                </div>
               </div>
             )}
 
