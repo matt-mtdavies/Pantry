@@ -328,7 +328,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
     setStage('loading')
     setSummaryImages([null, null, null])
     try {
-      const ingredientList = surpriseMe ? [] : Array.from(selected)
+      const ingredientList = Array.from(selected)
       const result = await getDinnerSuggestions(ingredientList, mode)
       setRecipes(result.recipes.slice(0, 3))
       setStage('summaries')
@@ -390,8 +390,22 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
 
         {stage === 'form' && (
           <div className={styles.wizardForm}>
+            <button
+              className={`${styles.surpriseCard} ${surpriseMe ? styles.surpriseCardActive : ''}`}
+              onClick={toggleSurprise}
+              aria-pressed={surpriseMe}
+            >
+              <span className={styles.surpriseDice}>🎲</span>
+              <div className={styles.surpriseText}>
+                <span className={styles.surpriseTitle}>Surprise me</span>
+                <span className={styles.surpriseSub}>Skip the list — just show me something good</span>
+              </div>
+              {surpriseMe && <span className={styles.surpriseCheck}>✓</span>}
+            </button>
+
+            <div className={styles.wizardDivider}><span>or pick what you have</span></div>
+
             <div className={styles.wizardField}>
-              <label className={styles.wizardLabel}>What's in your pantry?</label>
               <div className={styles.chipGrid}>
                 {PANTRY_CHIPS.map(item => (
                   <button
@@ -403,13 +417,6 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                     {item}
                   </button>
                 ))}
-                <button
-                  className={`${styles.chip} ${styles.chipNone} ${surpriseMe ? styles.chipNoneActive : ''}`}
-                  onClick={toggleSurprise}
-                  aria-pressed={surpriseMe}
-                >
-                  🎲 Surprise me
-                </button>
               </div>
             </div>
 
@@ -434,7 +441,6 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
             <button
               className={styles.wizardFindBtn}
               onClick={runWizard}
-              disabled={selected.size === 0 && !surpriseMe}
             >
               Find recipes →
             </button>
