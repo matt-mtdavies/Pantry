@@ -349,7 +349,7 @@
   flex: 1;
   height: 40px;
   padding: 0 var(--sp-3);
-  border: 1px solid #E8E0D4;
+  border: 1.5px solid #E8E0D4;
   border-radius: var(--radius-md);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
