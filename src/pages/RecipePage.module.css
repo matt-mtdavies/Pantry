@@ -18,8 +18,9 @@
   bottom: var(--sp-3);
   right: var(--sp-4);
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: var(--sp-2);
-  align-items: center;
 }
 
 .heroPhotoBtn {
@@ -42,22 +43,36 @@
 .heroPhotoBtn:hover { background: rgba(31, 27, 22, 0.75); }
 .heroPhotoBtn:disabled { opacity: 0.6; }
 
-.heroDeleteBtn {
-  background: rgba(31, 27, 22, 0.55);
-  color: rgba(255, 255, 255, 0.75);
+.photoMenu {
+  background: rgba(25, 22, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-width: 160px;
+}
+
+.photoMenuItem {
+  display: block;
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 500;
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius-full);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: background-color 150ms ease, color 150ms ease;
+  color: #FFFFFF;
+  text-align: left;
+  background: none;
   cursor: pointer;
+  transition: background-color 120ms ease;
 }
 
-.heroDeleteBtn:hover { background: rgba(185, 28, 28, 0.7); color: #FFFFFF; }
-.heroDeleteBtn:disabled { opacity: 0.6; }
+.photoMenuItem + .photoMenuItem {
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.photoMenuItem:hover { background: rgba(255,255,255,0.1); }
+
+.photoMenuItemDanger { color: #FF6B6B; }
 
 .heroEmpty {
   display: flex;

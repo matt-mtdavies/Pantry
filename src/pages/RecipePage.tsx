@@ -29,7 +29,20 @@ export default function RecipePage() {
   const [hoverStar, setHoverStar] = useState<number | null>(null)
   const [photoUploading, setPhotoUploading] = useState(false)
   const [photoDeleting, setPhotoDeleting] = useState(false)
+  const [photoMenuOpen, setPhotoMenuOpen] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const photoMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!photoMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (photoMenuRef.current && !photoMenuRef.current.contains(e.target as Node)) {
+        setPhotoMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [photoMenuOpen])
   const [collectionsOpen, setCollectionsOpen] = useState(false)
   const [collections, setCollections] = useState<Collection[]>([])
   const [newColName, setNewColName] = useState('')
@@ -165,23 +178,34 @@ export default function RecipePage() {
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
             {isOwner && (
-              <div className={styles.heroBtnRow}>
+              <div className={styles.heroBtnRow} ref={photoMenuRef}>
                 <button
                   className={styles.heroPhotoBtn}
-                  onClick={() => photoInputRef.current?.click()}
+                  onClick={() => setPhotoMenuOpen(o => !o)}
                   disabled={photoUploading || photoDeleting}
                   aria-label="Change recipe photo"
+                  aria-expanded={photoMenuOpen}
                 >
-                  {photoUploading ? 'Uploading…' : <><CameraIcon size={14} /> Change photo</>}
+                  {photoUploading ? 'Uploading…' : photoDeleting ? 'Removing…' : <><CameraIcon size={14} /> Change photo</>}
                 </button>
-                <button
-                  className={styles.heroDeleteBtn}
-                  onClick={handlePhotoDelete}
-                  disabled={photoUploading || photoDeleting}
-                  aria-label="Remove recipe photo"
-                >
-                  {photoDeleting ? 'Removing…' : 'Remove photo'}
-                </button>
+                {photoMenuOpen && (
+                  <div className={styles.photoMenu} role="menu">
+                    <button
+                      className={styles.photoMenuItem}
+                      role="menuitem"
+                      onClick={() => { setPhotoMenuOpen(false); photoInputRef.current?.click() }}
+                    >
+                      Choose photo
+                    </button>
+                    <button
+                      className={`${styles.photoMenuItem} ${styles.photoMenuItemDanger}`}
+                      role="menuitem"
+                      onClick={() => { setPhotoMenuOpen(false); handlePhotoDelete() }}
+                    >
+                      Remove photo
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
