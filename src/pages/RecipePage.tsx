@@ -70,9 +70,10 @@ export default function RecipePage() {
     try {
       const { url } = await getShareLink(recipe.id)
       setShareUrl(url)
-      setSharePanel(true)
       if (navigator.share) {
         await navigator.share({ title: recipe.title, url }).catch(() => {})
+      } else {
+        setSharePanel(true)
       }
     } catch { /* ignore */ } finally { setSharing(false) }
   }
@@ -177,6 +178,15 @@ export default function RecipePage() {
         {recipe.hero_image_key ? (
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
+            <button
+              className={styles.heroShareBtn}
+              onClick={handleShare}
+              disabled={sharing}
+              aria-label="Share recipe"
+            >
+              <ShareIcon size={14} />
+              {sharing ? 'Sharing…' : 'Share'}
+            </button>
             {isOwner && (
               <div className={styles.heroBtnRow} ref={photoMenuRef}>
                 <button
@@ -307,7 +317,6 @@ export default function RecipePage() {
                   aria-label={recipe.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
                   aria-pressed={recipe.is_favourite}
                 ><HeartIcon filled={recipe.is_favourite} size={20} /></button>
-                <button className={styles.iconBtn} onClick={handleShare} disabled={sharing} aria-label="Share recipe"><ShareIcon size={18} /></button>
                 <button className={styles.iconBtn} onClick={() => setCollectionsOpen(o => !o)} aria-label="Add to collection" title="Add to collection">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
                     <rect x="1.5" y="4.5" width="6" height="6" rx="1.5"/>

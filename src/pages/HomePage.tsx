@@ -4,7 +4,7 @@ import Fuse from 'fuse.js'
 import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
 import { SearchIcon, DishIcon, WarningIcon, CollectionIcon, HeartIcon } from '../components/icons'
-import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection } from '../lib/api'
+import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection, backfillImages } from '../lib/api'
 import type { Recipe, Collection } from '../types'
 import styles from './HomePage.module.css'
 
@@ -22,7 +22,15 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([listRecipes(), listCollections()])
-      .then(([r, c]) => { setRecipes(r); setCollections(c) })
+      .then(([r, c]) => {
+        setRecipes(r)
+        setCollections(c)
+        if (r.some(recipe => !recipe.hero_image_key)) {
+          backfillImages()
+            .then(({ updated }) => { if (updated > 0) listRecipes().then(setRecipes) })
+            .catch(() => {})
+        }
+      })
       .finally(() => setLoading(false))
   }, [])
 

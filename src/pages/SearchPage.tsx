@@ -260,6 +260,26 @@ export default function SearchPage() {
               )}
             </>
           )}
+
+          <div className={styles.inviteCard}>
+            <div className={styles.inviteCardText}>
+              <p className={styles.inviteCardTitle}>Know someone who loves cooking?</p>
+              <p className={styles.inviteCardSub}>Invite them to Pantry — it's free.</p>
+            </div>
+            <button
+              className={styles.inviteCardBtn}
+              onClick={() => {
+                const url = window.location.origin
+                if (typeof navigator.share === 'function') {
+                  navigator.share({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url }).catch(() => {})
+                } else {
+                  navigator.clipboard.writeText(url).catch(() => {})
+                }
+              }}
+            >
+              Invite friends
+            </button>
+          </div>
         </div>
       </main>
       {wizardOpen && <DinnerWizard onClose={() => setWizardOpen(false)} />}

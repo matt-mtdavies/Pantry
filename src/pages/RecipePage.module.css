@@ -13,6 +13,29 @@
   max-height: 480px;
 }
 
+.heroShareBtn {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-4);
+  background: rgba(31, 27, 22, 0.55);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  transition: background-color 150ms ease;
+  cursor: pointer;
+}
+
+.heroShareBtn:hover { background: rgba(31, 27, 22, 0.75); }
+.heroShareBtn:disabled { opacity: 0.6; }
+
 .heroBtnRow {
   position: absolute;
   bottom: var(--sp-3);
