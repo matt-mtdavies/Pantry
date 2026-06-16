@@ -30,8 +30,7 @@
 
 .searchWrap {
   position: relative;
-  flex: 1;
-  min-width: 200px;
+  flex: 0 0 100%;
 }
 
 .searchIcon {
@@ -83,7 +82,15 @@
 .filters {
   display: flex;
   gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px; /* keep focus outlines visible */
 }
+
+.filters::-webkit-scrollbar { display: none; }
 
 .filter {
   font-family: var(--font-ui);
@@ -237,7 +244,7 @@
 @media (max-width: 600px) {
   .heroTitle { font-size: var(--text-3xl); }
   .toolbar { gap: var(--sp-2); }
-  .addBtn { padding: var(--sp-2) var(--sp-4); }
+  .addBtn { padding: var(--sp-2) var(--sp-4); flex-shrink: 0; }
   .grid { grid-template-columns: 1fr; }
 }
 
