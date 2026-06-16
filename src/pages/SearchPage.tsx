@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { SearchIcon, DishIcon } from '../components/icons'
+import { SearchIcon, DishIcon, DiceIcon } from '../components/icons'
 import { Avatar } from '../components/Avatar'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
 import type { GeneratedRecipe } from '../lib/api'
@@ -384,7 +384,7 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
         {stage === 'form' && (
           <div className={styles.wizardForm}>
             <button className={styles.surprisePill} onClick={() => runWizard([])}>
-              🎲 Surprise me
+              <DiceIcon size={17} /> Surprise me
             </button>
 
             <div className={styles.wizardDivider}><span>or pick what you have</span></div>

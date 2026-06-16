@@ -114,3 +114,16 @@ export function StarIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+export function DiceIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+      <rect x="1.75" y="1.75" width="12.5" height="12.5" rx="3" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="5.25" cy="5.25" r="1.1" fill="currentColor" />
+      <circle cx="10.75" cy="5.25" r="1.1" fill="currentColor" />
+      <circle cx="8" cy="8" r="1.1" fill="currentColor" />
+      <circle cx="5.25" cy="10.75" r="1.1" fill="currentColor" />
+      <circle cx="10.75" cy="10.75" r="1.1" fill="currentColor" />
+    </svg>
+  )
+}
