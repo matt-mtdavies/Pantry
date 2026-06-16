@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useWakeLock } from '../hooks/useWakeLock'
-import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage } from '../lib/api'
+import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage, deleteHeroImage } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon } from '../components/icons'
@@ -27,6 +27,7 @@ export default function RecipePage() {
   const [ratingLoading, setRatingLoading] = useState(false)
   const [hoverStar, setHoverStar] = useState<number | null>(null)
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoDeleting, setPhotoDeleting] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -95,6 +96,15 @@ export default function RecipePage() {
     }
   }
 
+  const handlePhotoDelete = async () => {
+    if (!recipe) return
+    setPhotoDeleting(true)
+    try {
+      await deleteHeroImage(recipe.id)
+      setRecipe(r => r ? { ...r, hero_image_key: null } : r)
+    } catch { /* ignore */ } finally { setPhotoDeleting(false) }
+  }
+
   const handleRate = async (rating: number) => {
     if (!recipe || ratingLoading) return
     setRatingLoading(true)
@@ -145,14 +155,24 @@ export default function RecipePage() {
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
             {isOwner && (
-              <button
-                className={styles.heroPhotoBtn}
-                onClick={() => photoInputRef.current?.click()}
-                disabled={photoUploading}
-                aria-label="Change recipe photo"
-              >
-                {photoUploading ? 'Uploading…' : <><CameraIcon size={14} /> Change photo</>}
-              </button>
+              <div className={styles.heroBtnRow}>
+                <button
+                  className={styles.heroPhotoBtn}
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={photoUploading || photoDeleting}
+                  aria-label="Change recipe photo"
+                >
+                  {photoUploading ? 'Uploading…' : <><CameraIcon size={14} /> Change photo</>}
+                </button>
+                <button
+                  className={styles.heroDeleteBtn}
+                  onClick={handlePhotoDelete}
+                  disabled={photoUploading || photoDeleting}
+                  aria-label="Remove recipe photo"
+                >
+                  {photoDeleting ? 'Removing…' : 'Remove photo'}
+                </button>
+              </div>
             )}
           </div>
         ) : isOwner ? (

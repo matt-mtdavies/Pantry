@@ -13,10 +13,16 @@
   max-height: 480px;
 }
 
-.heroPhotoBtn {
+.heroBtnRow {
   position: absolute;
   bottom: var(--sp-3);
   right: var(--sp-4);
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.heroPhotoBtn {
   background: rgba(31, 27, 22, 0.55);
   color: #FFFFFF;
   font-family: var(--font-ui);
@@ -35,6 +41,23 @@
 
 .heroPhotoBtn:hover { background: rgba(31, 27, 22, 0.75); }
 .heroPhotoBtn:disabled { opacity: 0.6; }
+
+.heroDeleteBtn {
+  background: rgba(31, 27, 22, 0.55);
+  color: rgba(255, 255, 255, 0.75);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background-color 150ms ease, color 150ms ease;
+  cursor: pointer;
+}
+
+.heroDeleteBtn:hover { background: rgba(185, 28, 28, 0.7); color: #FFFFFF; }
+.heroDeleteBtn:disabled { opacity: 0.6; }
 
 .heroEmpty {
   display: flex;

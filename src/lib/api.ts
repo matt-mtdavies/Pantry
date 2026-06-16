@@ -39,6 +39,10 @@ export async function deleteRecipe(id: string): Promise<void> {
   await request<void>(`/api/recipes/${id}`, { method: 'DELETE' })
 }
 
+export async function deleteHeroImage(id: string): Promise<void> {
+  await request<void>(`/api/recipes/${id}/hero-image`, { method: 'DELETE' })
+}
+
 export async function toggleFavourite(id: string, value: boolean): Promise<Recipe> {
   return updateRecipe(id, { is_favourite: value } as Partial<Recipe>)
 }

@@ -282,9 +282,12 @@ function ReviewScreen({
   // Revoke blob URLs when the component unmounts to avoid memory leaks
   useEffect(() => () => screenshotOptions.forEach(o => URL.revokeObjectURL(o.url)), []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Only use an uploaded file as the initial hero if it's actually an image
+  const firstImageOption = screenshotOptions.find(o => o.file.type.startsWith('image/'))
+
   // Image picker state — pre-select the first uploaded screenshot when no extracted image URL
   const [selectedImage, setSelectedImage] = useState<string | null>(
-    initial.source_image_url ?? screenshotOptions[0]?.url ?? null
+    initial.source_image_url ?? firstImageOption?.url ?? null
   )
   const [imageOptions, setImageOptions] = useState<{ url: string; thumb: string }[]>([])
   const [searchingImages, setSearchingImages] = useState(false)
@@ -342,15 +345,22 @@ function ReviewScreen({
         cost_currency: recipe.cost_currency ?? 'USD',
       } as Parameters<typeof createRecipe>[0])
 
-      // If the user chose one of their uploaded screenshots as the hero, upload it as 'hero';
-      // upload the rest as 'screenshot'. Otherwise fetch the external URL as the hero.
-      const heroScreenshot = screenshotOptions.find(o => o.url === selectedImage)
-      for (const opt of screenshotOptions) {
+      // Only upload files that are actual images; non-image uploads (PDFs, text, etc.) are skipped
+      const imageFiles = screenshotOptions.filter(o => o.file.type.startsWith('image/'))
+      const heroScreenshot = imageFiles.find(o => o.url === selectedImage)
+      for (const opt of imageFiles) {
         const role = opt === heroScreenshot ? 'hero' : 'screenshot'
         try { await uploadImage(opt.file, created.id, role) } catch { /* non-fatal */ }
       }
       if (!heroScreenshot && selectedImage) {
         try { await fetchRecipeImage(created.id, selectedImage) } catch { /* non-fatal */ }
+      }
+      // If still no hero (non-image file uploaded, no external URL chosen), search for one
+      if (!heroScreenshot && !selectedImage) {
+        try {
+          const imgs = await searchImages(recipe.title)
+          if (imgs.length > 0) await fetchRecipeImage(created.id, imgs[0].url)
+        } catch { /* non-fatal */ }
       }
 
       navigate(`/recipe/${created.id}`)
