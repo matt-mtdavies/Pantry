@@ -95,23 +95,28 @@ export default function HomePage() {
 
         <div className="wide-col">
           <div className={styles.toolbar}>
-            <div className={styles.searchWrap}>
-              <SearchIcon size={15} className={styles.searchIcon} />
-              <input
-                type="search"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="Search recipes, ingredients…"
-                className={styles.search}
-                aria-label="Search recipes"
-              />
-              {query && (
-                <button
-                  className={styles.searchClear}
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                >✕</button>
-              )}
+            <div className={styles.searchRow}>
+              <div className={styles.searchWrap}>
+                <SearchIcon size={15} className={styles.searchIcon} />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="Search recipes, ingredients…"
+                  className={styles.search}
+                  aria-label="Search recipes"
+                />
+                {query && (
+                  <button
+                    className={styles.searchClear}
+                    onClick={() => setQuery('')}
+                    aria-label="Clear search"
+                  >✕</button>
+                )}
+              </div>
+              <Link to="/import" className={styles.addBtn}>
+                + Add recipe
+              </Link>
             </div>
 
             <div className={styles.filters} role="group" aria-label="Filter recipes">
@@ -151,10 +156,6 @@ export default function HomePage() {
                 )}
               </button>
             </div>
-
-            <Link to="/import" className={styles.addBtn}>
-              + Add recipe
-            </Link>
           </div>
 
           {collectionsOpen && (
