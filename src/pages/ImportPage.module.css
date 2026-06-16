@@ -93,6 +93,8 @@
 .preview {
   height: 160px;
   width: auto;
+  max-width: 260px;
+  flex-shrink: 0;
   border-radius: var(--radius-md);
   object-fit: contain;
   background: #F3EFE8;
@@ -344,18 +346,20 @@
   padding: var(--sp-3) 0;
 }
 
-.imgSelected {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
+.imgPreviewWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #1F1B16;
+  flex-shrink: 0;
 }
 
 .imgPreview {
   width: 100%;
-  max-height: 240px;
+  height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-lg);
-  background: #F3EFE8;
+  display: block;
 }
 
 .imgThumbs {
@@ -691,15 +695,18 @@
 
 .previewHero {
   width: 100%;
-  height: 260px;
+  aspect-ratio: 16 / 9;
+  max-height: 360px;
   overflow: hidden;
-  background: #F3EFE8;
+  background: #1F1B16;
+  flex-shrink: 0;
 }
 
 .previewHeroImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .previewHeroPlaceholder {

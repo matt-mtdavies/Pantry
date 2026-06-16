@@ -494,7 +494,7 @@ function ReviewScreen({
                 <label className={styles.label}>Recipe photo</label>
 
                 {selectedImage && (
-                  <div className={styles.imgSelected}>
+                  <div className={styles.imgPreviewWrap}>
                     <img src={selectedImage} alt="Recipe" className={styles.imgPreview} />
                   </div>
                 )}
