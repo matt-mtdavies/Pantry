@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [country, setCountry] = useState(user?.country ?? '')
   const [gender, setGender] = useState(user?.gender ?? 'Prefer not to say')
   const [ageBracket, setAgeBracket] = useState(user?.age_bracket ?? 'Prefer not to say')
+  const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>(user?.unit_system ?? 'metric')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -165,6 +166,7 @@ export default function ProfilePage() {
           country: country || null,
           gender: gender === 'Prefer not to say' ? null : gender,
           age_bracket: ageBracket === 'Prefer not to say' ? null : ageBracket,
+          unit_system: unitSystem,
         }),
       })
       await refetch()
@@ -331,6 +333,15 @@ export default function ProfilePage() {
               <select id="age-bracket" className={styles.select} value={ageBracket} onChange={e => setAgeBracket(e.target.value)}>
                 {AGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
+            </div>
+
+            <div className={styles.field}>
+              <span className={styles.label}>Unit system</span>
+              <p className={styles.hint}>Measurements across the app will be shown in your preferred units.</p>
+              <div className={styles.toggle}>
+                <button className={`${styles.toggleBtn} ${unitSystem === 'metric' ? styles.toggleBtnActive : ''}`} onClick={() => setUnitSystem('metric')} aria-pressed={unitSystem === 'metric'}>Metric</button>
+                <button className={`${styles.toggleBtn} ${unitSystem === 'imperial' ? styles.toggleBtnActive : ''}`} onClick={() => setUnitSystem('imperial')} aria-pressed={unitSystem === 'imperial'}>Imperial</button>
+              </div>
             </div>
 
             <div className={styles.field}>

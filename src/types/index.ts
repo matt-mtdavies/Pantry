@@ -9,6 +9,7 @@ export interface User {
   country: string | null;
   gender: string | null;
   age_bracket: string | null;
+  unit_system: 'metric' | 'imperial';
   created_at: number;
 }
 

@@ -5,6 +5,7 @@ import { DishIcon } from '../components/icons'
 import { getSharedRecipe, saveSharedRecipe } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
+import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe } from '../types'
 import styles from './SharePage.module.css'
 
@@ -142,12 +143,16 @@ export default function SharePage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Ingredients</h2>
             <ul className={styles.ingredients}>
-              {recipe.ingredients.map((ing, i) => (
-                <li key={i} className={styles.ingredient}>
-                  <span className={styles.ingAmount}>{ing.amount} {ing.unit}</span>
-                  <span className={styles.ingName}>{ing.name}</span>
-                </li>
-              ))}
+              {recipe.ingredients.map((ing, i) => {
+                const unitPref = user?.unit_system ?? 'metric'
+                const c = convertIngredient(ing.amount, ing.unit, unitPref)
+                return (
+                  <li key={i} className={styles.ingredient}>
+                    <span className={styles.ingAmount}>{c.amount} {c.unit}</span>
+                    <span className={styles.ingName}>{ing.name}</span>
+                  </li>
+                )
+              })}
             </ul>
           </section>
 
@@ -156,12 +161,16 @@ export default function SharePage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Method</h2>
             <ol className={styles.steps}>
-              {recipe.steps.map((step, i) => (
-                <li key={i} className={styles.step}>
-                  <span className={styles.stepNumber}>{i + 1}</span>
-                  <p className={styles.stepText}>{step}</p>
-                </li>
-              ))}
+              {recipe.steps.map((step, i) => {
+                const unitPref = user?.unit_system ?? 'metric'
+                const text = convertStepText(step, unitPref)
+                return (
+                  <li key={i} className={styles.step}>
+                    <span className={styles.stepNumber}>{i + 1}</span>
+                    <p className={styles.stepText}>{text}</p>
+                  </li>
+                )
+              })}
             </ol>
           </section>
 

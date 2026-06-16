@@ -4,6 +4,8 @@ import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
 import { detectTimerMinutes, scaleIngredient, formatTime } from '../lib/utils'
 import { useWakeLock } from '../hooks/useWakeLock'
+import { useAuth } from '../hooks/useAuth'
+import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe, Ingredient } from '../types'
 import styles from './CookModePage.module.css'
 
@@ -70,6 +72,7 @@ export default function CookModePage() {
   const [servings, setServings] = useState<number>(2)
   const [showIngredients, setShowIngredients] = useState(true)
   const { isActive, acquire, release, supported } = useWakeLock()
+  const { user } = useAuth()
 
   useEffect(() => {
     if (!id) return
@@ -90,8 +93,13 @@ export default function CookModePage() {
   const scaledIngredients = useMemo<Ingredient[]>(() => {
     if (!recipe) return []
     const base = recipe.servings ?? servings
-    return recipe.ingredients.map(ing => scaleIngredient(ing, base, servings))
-  }, [recipe, servings])
+    const unitPref = user?.unit_system ?? 'metric'
+    return recipe.ingredients.map(ing => {
+      const scaled = scaleIngredient(ing, base, servings)
+      const c = convertIngredient(scaled.amount, scaled.unit, unitPref)
+      return { ...scaled, amount: c.amount, unit: c.unit }
+    })
+  }, [recipe, servings, user?.unit_system])
 
   const stepTimers = useMemo(() => {
     if (!recipe) return []
@@ -117,7 +125,7 @@ export default function CookModePage() {
 
   if (!recipe) return null
 
-  const step = recipe.steps[currentStep]
+  const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
   const timers = stepTimers[currentStep]
 
   return (

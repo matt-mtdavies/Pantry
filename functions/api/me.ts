@@ -12,6 +12,7 @@ function parseRow(row: Record<string, unknown>) {
     country: row.country ?? null,
     gender: row.gender ?? null,
     age_bracket: row.age_bracket ?? null,
+    unit_system: (row.unit_system as string) ?? 'metric',
     created_at: row.created_at,
   }
 }
@@ -33,11 +34,14 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     country?: string
     gender?: string
     age_bracket?: string
+    unit_system?: string
   }
+  // Lazily add column if not yet migrated
+  try { await ctx.env.DB.prepare('ALTER TABLE users ADD COLUMN unit_system TEXT DEFAULT \'metric\'').run() } catch { /* exists */ }
   await ctx.env.DB.prepare(
     `UPDATE users SET
       display_name = ?, avatar_id = ?, default_servings = ?,
-      is_public = ?, country = ?, gender = ?, age_bracket = ?
+      is_public = ?, country = ?, gender = ?, age_bracket = ?, unit_system = ?
     WHERE id = ?`
   ).bind(
     body.display_name ?? null,
@@ -47,6 +51,7 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     body.country ?? null,
     body.gender ?? null,
     body.age_bracket ?? null,
+    body.unit_system === 'imperial' ? 'imperial' : 'metric',
     userId,
   ).run()
   const user = await ctx.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()
