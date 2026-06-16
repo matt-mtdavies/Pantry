@@ -9,8 +9,9 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
   if (!q.trim() || !ctx.env.UNSPLASH_ACCESS_KEY) return json([])
 
+  const foodQuery = `${q} food dish`
   const res = await fetch(
-    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=4&orientation=landscape`,
+    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(foodQuery)}&per_page=4&orientation=landscape`,
     { headers: { Authorization: `Client-ID ${ctx.env.UNSPLASH_ACCESS_KEY}` } }
   )
 

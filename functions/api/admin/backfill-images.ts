@@ -65,7 +65,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     let imageUrl: string | null = null
     try {
       const searchRes = await fetch(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(recipe.title)}&per_page=1&orientation=landscape`,
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(recipe.title + ' food dish')}&per_page=1&orientation=landscape`,
         { headers: { Authorization: `Client-ID ${ctx.env.UNSPLASH_ACCESS_KEY}` } }
       )
       if (searchRes.ok) {
