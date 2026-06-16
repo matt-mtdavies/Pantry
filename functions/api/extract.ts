@@ -96,6 +96,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: AbortSignal.timeout(60_000),
     headers: {
       'x-api-key': ctx.env.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',

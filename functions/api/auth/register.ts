@@ -1,4 +1,5 @@
 import type { Env } from '../../env'
+import { checkRateLimit, getClientIp } from '../../lib/rateLimit'
 
 const ITERATIONS = 100_000
 
@@ -18,6 +19,11 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
+  // Rate limit: 5 registrations per hour per IP
+  const ip = getClientIp(ctx.request)
+  const allowed = await checkRateLimit(ctx.env.DB, `register:${ip}`, 5, 60 * 60)
+  if (!allowed) return json({ error: 'Too many registration attempts. Please try again later.' }, 429)
+
   let email: string, password: string, displayName: string
   try {
     const body = await ctx.request.json() as { email?: string; password?: string; display_name?: string }

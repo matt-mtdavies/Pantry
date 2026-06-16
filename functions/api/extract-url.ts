@@ -107,6 +107,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   let sourceImageUrl: string | null = null
   try {
     const pageRes = await fetch(parsedUrl.toString(), {
+      signal: AbortSignal.timeout(15_000),
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml',
@@ -135,6 +136,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: AbortSignal.timeout(30_000),
     headers: {
       'x-api-key': ctx.env.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',

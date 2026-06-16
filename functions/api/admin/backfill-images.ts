@@ -1,4 +1,5 @@
 import type { Env } from '../../env'
+import { checkRateLimit } from '../../lib/rateLimit'
 
 interface UnsplashPhoto {
   urls: { regular: string }
@@ -21,6 +22,7 @@ async function fetchAndStoreImage(
 ): Promise<string | null> {
   try {
     const res = await fetch(imageUrl, {
+      signal: AbortSignal.timeout(15_000),
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Pantry/1.0)' },
     })
     if (!res.ok) return null
@@ -39,6 +41,19 @@ async function fetchAndStoreImage(
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
+  const userEmail = ctx.data.email as string
+
+  // If ADMIN_EMAILS is configured, only those accounts can trigger this
+  if (ctx.env.ADMIN_EMAILS) {
+    const admins = ctx.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase())
+    if (!admins.includes(userEmail.toLowerCase())) {
+      return json({ error: 'Forbidden' }, 403)
+    }
+  }
+
+  // Rate limit: 5 backfill calls per hour per user
+  const allowed = await checkRateLimit(ctx.env.DB, `backfill-images:${userId}`, 5, 60 * 60)
+  if (!allowed) return json({ error: 'Too many requests. Please wait before running again.' }, 429)
 
   if (!ctx.env.UNSPLASH_ACCESS_KEY) {
     return json({ error: 'Image search not configured (UNSPLASH_ACCESS_KEY missing)' }, 503)
@@ -66,7 +81,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     try {
       const searchRes = await fetch(
         `https://api.unsplash.com/search/photos?query=${encodeURIComponent(recipe.title + ' food dish')}&per_page=1&orientation=landscape`,
-        { headers: { Authorization: `Client-ID ${ctx.env.UNSPLASH_ACCESS_KEY}` } }
+        { signal: AbortSignal.timeout(10_000), headers: { Authorization: `Client-ID ${ctx.env.UNSPLASH_ACCESS_KEY}` } }
       )
       if (searchRes.ok) {
         const data = await searchRes.json() as { results: UnsplashPhoto[] }

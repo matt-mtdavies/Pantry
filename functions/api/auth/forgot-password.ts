@@ -1,4 +1,5 @@
 import type { Env } from '../../env'
+import { checkRateLimit, getClientIp } from '../../lib/rateLimit'
 
 function toHex(buf: Uint8Array): string {
   return Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('')
@@ -14,6 +15,14 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   }
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: true })
+
+  // Rate limit: 3 requests per hour per email, 5 per hour per IP
+  const ip = getClientIp(ctx.request)
+  const [emailOk, ipOk] = await Promise.all([
+    checkRateLimit(ctx.env.DB, `forgot:email:${email}`, 3, 60 * 60),
+    checkRateLimit(ctx.env.DB, `forgot:ip:${ip}`, 5, 60 * 60),
+  ])
+  if (!emailOk || !ipOk) return json({ ok: true }) // silent — same response as success
 
   // Allow any user (including those without a password yet) to set/reset via email
   const user = await ctx.env.DB.prepare(
@@ -38,6 +47,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const resendRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
+    signal: AbortSignal.timeout(10_000),
     headers: {
       Authorization: `Bearer ${ctx.env.RESEND_API_KEY}`,
       'Content-Type': 'application/json',

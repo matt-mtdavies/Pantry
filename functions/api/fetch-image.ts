@@ -40,6 +40,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   let contentType: string
   try {
     const imgRes = await fetch(parsedUrl.toString(), {
+      signal: AbortSignal.timeout(15_000),
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Pantry/1.0)' },
     })
     if (!imgRes.ok) return json({ error: `Image fetch failed (${imgRes.status})` }, 422)

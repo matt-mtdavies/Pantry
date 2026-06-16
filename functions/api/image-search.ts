@@ -12,7 +12,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const foodQuery = `${q} food dish`
   const res = await fetch(
     `https://api.unsplash.com/search/photos?query=${encodeURIComponent(foodQuery)}&per_page=4&orientation=landscape`,
-    { headers: { Authorization: `Client-ID ${ctx.env.UNSPLASH_ACCESS_KEY}` } }
+    { signal: AbortSignal.timeout(10_000), headers: { Authorization: `Client-ID ${ctx.env.UNSPLASH_ACCESS_KEY}` } }
   )
 
   if (!res.ok) return json([])

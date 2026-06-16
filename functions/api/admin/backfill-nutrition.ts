@@ -1,5 +1,6 @@
 import type { Env } from '../../env'
 import { getCurrency, getCurrencySymbol } from '../../lib/currency'
+import { checkRateLimit } from '../../lib/rateLimit'
 
 interface ClaudeMessage {
   content: Array<{ text: string }>
@@ -48,6 +49,7 @@ Rules:
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: AbortSignal.timeout(30_000),
     headers: {
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
@@ -80,6 +82,19 @@ Rules:
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
+  const userEmail = ctx.data.email as string
+
+  // If ADMIN_EMAILS is configured, only those accounts can trigger expensive AI operations
+  if (ctx.env.ADMIN_EMAILS) {
+    const admins = ctx.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase())
+    if (!admins.includes(userEmail.toLowerCase())) {
+      return json({ error: 'Forbidden' }, 403)
+    }
+  }
+
+  // Rate limit: 5 backfill calls per hour per user
+  const allowed = await checkRateLimit(ctx.env.DB, `backfill-nutrition:${userId}`, 5, 60 * 60)
+  if (!allowed) return json({ error: 'Too many requests. Please wait before running again.' }, 429)
 
   if (!ctx.env.ANTHROPIC_API_KEY) {
     return json({ error: 'AI not configured' }, 503)

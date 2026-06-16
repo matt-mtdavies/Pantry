@@ -6,6 +6,7 @@ export interface Env {
   RESEND_FROM_EMAIL: string
   APP_URL: string
   UNSPLASH_ACCESS_KEY?: string
+  ADMIN_EMAILS?: string  // comma-separated list; if set, only these can use /api/admin/* endpoints
 }
 
 export interface SessionData {

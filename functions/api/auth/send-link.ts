@@ -1,4 +1,5 @@
 import type { Env } from '../../env'
+import { checkRateLimit, getClientIp } from '../../lib/rateLimit'
 
 function generateToken(): string {
   const arr = new Uint8Array(32)
@@ -13,6 +14,14 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ error: 'Valid email required' }, 400)
   }
+
+  // Rate limit: 3 magic links per 15 minutes per email, 5 per 15 minutes per IP
+  const ip = getClientIp(ctx.request)
+  const [emailOk, ipOk] = await Promise.all([
+    checkRateLimit(ctx.env.DB, `sendlink:email:${email}`, 3, 15 * 60),
+    checkRateLimit(ctx.env.DB, `sendlink:ip:${ip}`, 5, 15 * 60),
+  ])
+  if (!emailOk || !ipOk) return json({ error: 'Too many requests. Please wait before requesting another link.' }, 429)
 
   const token = generateToken()
   const expiresAt = Math.floor(Date.now() / 1000) + 60 * 15 // 15 minutes
@@ -30,6 +39,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const emailRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
+    signal: AbortSignal.timeout(10_000),
     headers: {
       'Authorization': `Bearer ${ctx.env.RESEND_API_KEY}`,
       'Content-Type': 'application/json',
