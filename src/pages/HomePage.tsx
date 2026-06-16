@@ -102,7 +102,7 @@ export default function HomePage() {
                   type="search"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Search recipes, ingredients…"
+                  placeholder="Search recipes"
                   className={styles.search}
                   aria-label="Search recipes"
                 />
