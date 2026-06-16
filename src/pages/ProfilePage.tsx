@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
+import { useOnboarding } from '../App'
 import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, downloadExport } from '../lib/api'
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
@@ -14,6 +15,7 @@ const AGE_OPTIONS = ['Prefer not to say', 'Under 18', '18–24', '25–34', '35�
 export default function ProfilePage() {
   const { user, refetch, logout } = useAuth()
   const navigate = useNavigate()
+  const onboarding = useOnboarding()
 
   const [displayName, setDisplayName] = useState(user?.display_name ?? '')
   const [defaultServings, setDefaultServings] = useState(user?.default_servings ?? 2)
@@ -384,6 +386,9 @@ export default function ProfilePage() {
             <button className={styles.exportBtn} onClick={downloadExport}>Download my data</button>
             <button className={styles.inviteLinkBtn} onClick={typeof navigator.share === 'function' ? handleInviteShare : handleInviteCopy}>
               {inviteCopied ? '✓ Link copied' : 'Invite a friend'}
+            </button>
+            <button className={styles.inviteLinkBtn} onClick={() => onboarding?.open()}>
+              How Pantry works
             </button>
           </div>
 

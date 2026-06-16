@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import HomePage from './pages/HomePage'
 import RecipePage from './pages/RecipePage'
@@ -14,6 +15,10 @@ import SearchPage from './pages/SearchPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import NeedsAttentionPage from './pages/NeedsAttentionPage'
 import PublicProfilePage from './pages/PublicProfilePage'
+import Onboarding from './components/Onboarding'
+
+export const OnboardingContext = createContext<{ open: () => void } | null>(null)
+export function useOnboarding() { return useContext(OnboardingContext) }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -22,9 +27,24 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-export default function App() {
+function AppRoutes() {
+  const { user } = useAuth()
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  useEffect(() => {
+    if (user && !localStorage.getItem('onboarding-complete')) {
+      setShowOnboarding(true)
+    }
+  }, [user])
+
+  const openOnboarding = () => setShowOnboarding(true)
+  const closeOnboarding = () => {
+    localStorage.setItem('onboarding-complete', '1')
+    setShowOnboarding(false)
+  }
+
   return (
-    <AuthProvider>
+    <OnboardingContext.Provider value={{ open: openOnboarding }}>
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
@@ -46,6 +66,15 @@ export default function App() {
           <Route path="/user/:id" element={<ProtectedRoute><PublicProfilePage /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
+      {showOnboarding && <Onboarding onClose={closeOnboarding} />}
+    </OnboardingContext.Provider>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
     </AuthProvider>
   )
 }
