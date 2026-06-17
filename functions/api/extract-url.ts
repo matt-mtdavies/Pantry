@@ -1,5 +1,9 @@
 import type { Env } from '../env'
 import { getCurrency, getCurrencySymbol } from '../lib/currency'
+import { checkRateLimit } from '../lib/rateLimit'
+
+const DAILY_EXTRACTION_LIMIT = 10
+const ONE_DAY_SECONDS = 86_400
 
 function buildPrompt(currency: string, countryCtx: string): string {
   const priceCtx = countryCtx
@@ -90,8 +94,16 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return json({ error: 'AI extraction not configured' }, 503)
   }
 
-  // Determine user's currency from their country
   const userId = ctx.data.userId as string | undefined
+
+  if (userId) {
+    const allowed = await checkRateLimit(ctx.env.DB, `extract:${userId}`, DAILY_EXTRACTION_LIMIT, ONE_DAY_SECONDS)
+    if (!allowed) {
+      return json({ error: `You've reached the daily limit of ${DAILY_EXTRACTION_LIMIT} recipe imports. Try again tomorrow.` }, 429)
+    }
+  }
+
+  // Determine user's currency from their country
   let currency = 'USD'
   let countryCtx = ''
   if (userId) {
