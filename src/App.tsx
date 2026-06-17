@@ -15,6 +15,8 @@ import SearchPage from './pages/SearchPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import NeedsAttentionPage from './pages/NeedsAttentionPage'
 import PublicProfilePage from './pages/PublicProfilePage'
+import TermsPage from './pages/TermsPage'
+import PrivacyPage from './pages/PrivacyPage'
 import Onboarding from './components/Onboarding'
 
 export const OnboardingContext = createContext<{ open: () => void } | null>(null)
@@ -53,6 +55,8 @@ function AppRoutes() {
           <Route path="/api/auth/verify" element={<AuthPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/share/:token" element={<SharePage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/recipe/new" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id" element={<ProtectedRoute><RecipePage /></ProtectedRoute>} />

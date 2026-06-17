@@ -1,0 +1,128 @@
+.page {
+  min-height: 100vh;
+  background: #FAF7F2;
+  padding-bottom: var(--sp-20);
+}
+
+.hero {
+  padding: var(--sp-10) 0 var(--sp-8);
+  border-bottom: 1px solid #E8E0D4;
+  margin-bottom: var(--sp-10);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #C4633E;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: var(--sp-4);
+}
+
+.brand:hover { color: #a8532f; text-decoration: none; }
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  color: #1F1B16;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  margin-bottom: var(--sp-3);
+}
+
+.updated {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: #9C9189;
+}
+
+.body {
+  max-width: 720px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.75;
+  color: #3D3630;
+}
+
+.body h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: #1F1B16;
+  margin-top: var(--sp-10);
+  margin-bottom: var(--sp-3);
+  letter-spacing: -0.01em;
+}
+
+.body h3 {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: #1F1B16;
+  margin-top: var(--sp-6);
+  margin-bottom: var(--sp-2);
+}
+
+.body p {
+  margin-bottom: var(--sp-4);
+}
+
+.body ul, .body ol {
+  margin-bottom: var(--sp-4);
+  padding-left: var(--sp-6);
+}
+
+.body li {
+  margin-bottom: var(--sp-2);
+}
+
+.body a {
+  color: #C4633E;
+  text-decoration: underline;
+}
+
+.body a:hover { color: #a8532f; }
+
+.body strong {
+  color: #1F1B16;
+  font-weight: 600;
+}
+
+.notice {
+  background: #F5E8E2;
+  border: 1px solid #DFA088;
+  border-radius: var(--radius-md);
+  padding: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-8);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #7A3B20;
+  line-height: 1.6;
+}
+
+.footer {
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-8);
+  border-top: 1px solid #E8E0D4;
+  display: flex;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+}
+
+.footerLink {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #9C9189;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.footerLink:hover { color: #C4633E; text-decoration: none; }
+
+@media (max-width: 600px) {
+  .title { font-size: var(--text-3xl); }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { login, register, forgotPassword } from '../lib/api'
 import styles from './AuthPage.module.css'
@@ -167,6 +167,15 @@ export default function AuthPage() {
 
           {status === 'error' && (
             <p className={styles.error} role="alert">{error}</p>
+          )}
+
+          {mode === 'register' && (
+            <p className={styles.legalNote}>
+              By creating an account you agree to our{' '}
+              <Link to="/terms" className={styles.legalLink} target="_blank">Terms of Service</Link>
+              {' '}and{' '}
+              <Link to="/privacy" className={styles.legalLink} target="_blank">Privacy Policy</Link>.
+            </p>
           )}
 
           <button

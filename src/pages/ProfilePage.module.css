@@ -860,3 +860,21 @@
   gap: var(--sp-3);
   width: 100%;
 }
+
+.legalFooter {
+  display: flex;
+  gap: var(--sp-6);
+  padding: var(--sp-10) 0 var(--sp-6);
+  border-top: 1px solid #E8E0D4;
+  margin-top: var(--sp-8);
+}
+
+.legalFooterLink {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #9C9189;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.legalFooterLink:hover { color: #C4633E; }

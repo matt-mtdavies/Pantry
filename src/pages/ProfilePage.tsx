@@ -434,6 +434,11 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+
+          <div className={styles.legalFooter}>
+            <Link to="/terms" className={styles.legalFooterLink}>Terms of Service</Link>
+            <Link to="/privacy" className={styles.legalFooterLink}>Privacy Policy</Link>
+          </div>
         </div>
       </main>
 
