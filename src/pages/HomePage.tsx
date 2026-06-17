@@ -223,7 +223,7 @@ export default function HomePage() {
                 <div key={c.id} className={`${styles.collectionRow} ${filter === c.id ? styles.collectionRowActive : ''}`}>
                   <button
                     className={styles.collectionRowSelect}
-                    onClick={() => { setFilter(c.id); setCollectionsOpen(false) }}
+                    onClick={() => setFilter(c.id)}
                   >
                     <span className={styles.collectionRowName}>{c.name}</span>
                     <span className={styles.collectionRowCount}>{c.recipe_ids.length}</span>
