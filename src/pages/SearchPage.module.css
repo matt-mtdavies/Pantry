@@ -52,6 +52,32 @@
   border-color: #C4633E;
 }
 
+.searchHasValue {
+  padding-right: calc(var(--sp-4) + 2rem);
+}
+
+.searchClear {
+  position: absolute;
+  right: var(--sp-4);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #E8E0D4;
+  color: #6B6459;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 150ms ease, color 150ms ease;
+  flex-shrink: 0;
+}
+
+.searchClear:hover {
+  background: #C4633E;
+  color: #FFFFFF;
+}
+
 /* Filter bar */
 .filterBar {
   display: flex;
