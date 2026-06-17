@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, lazy, Suspense } from 'react'
+
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import HomePage from './pages/HomePage'
 import RecipePage from './pages/RecipePage'
@@ -68,6 +70,13 @@ function AppRoutes() {
           <Route path="/needs-attention" element={<ProtectedRoute><NeedsAttentionPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/user/:id" element={<ProtectedRoute><PublicProfilePage /></ProtectedRoute>} />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <Suspense fallback={<div className="page-shell"><div className="page-main" /></div>}>
+                <AdminPage />
+              </Suspense>
+            </ProtectedRoute>
+          } />
         </Routes>
       </BrowserRouter>
       {showOnboarding && <Onboarding onClose={closeOnboarding} />}

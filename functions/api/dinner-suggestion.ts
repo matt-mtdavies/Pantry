@@ -1,5 +1,6 @@
 import type { Env } from '../env'
 import { checkRateLimit } from '../lib/rateLimit'
+import { logAiUsage } from '../lib/logAiUsage'
 
 const DAILY_SUGGESTION_LIMIT = 5
 const ONE_DAY_SECONDS = 86_400
@@ -79,6 +80,7 @@ Respond with ONLY a valid JSON object (no markdown, no code fences, no explanati
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return json({ error: 'Could not parse generated recipes' }, 500)
     const parsed = JSON.parse(jsonMatch[0]) as { recipes: GeneratedRecipe[] }
+    await logAiUsage(ctx.env.DB, 'dinner')
     return json({ recipes: parsed.recipes ?? [] })
   } catch {
     return json({ error: 'Failed to generate recipes' }, 500)

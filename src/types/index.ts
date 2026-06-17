@@ -12,6 +12,7 @@ export interface User {
   unit_system: 'metric' | 'imperial';
   email_verified: boolean;
   created_at: number;
+  is_admin?: boolean;
 }
 
 export interface Ingredient {

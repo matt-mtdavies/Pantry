@@ -171,6 +171,16 @@ export default function Navigation() {
             <ShareIcon size={18} />
           </button>
 
+          {user?.is_admin && (
+            <Link
+              to="/admin"
+              className={`${styles.link} ${p === '/admin' ? styles.active : ''}`}
+              style={{ fontSize: '0.75rem', opacity: 0.7 }}
+            >
+              Admin
+            </Link>
+          )}
+
           {user && (
             <div className={styles.user}>
               <Link to="/profile" className={styles.profileLink} aria-label="My profile">

@@ -7,6 +7,8 @@ export interface Env {
   APP_URL: string
   UNSPLASH_ACCESS_KEY?: string
   ADMIN_EMAILS?: string  // comma-separated list; if set, only these can use /api/admin/* endpoints
+  CF_ZONE_ID?: string   // Cloudflare zone ID for analytics
+  CF_API_TOKEN?: string // Cloudflare API token with Zone Analytics Read permission
 }
 
 export interface SessionData {

@@ -68,6 +68,16 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
   // Indexes: rate_limits
   await run('idx_rate_window', `CREATE INDEX IF NOT EXISTS idx_rate_window ON rate_limits (window_start)`)
 
+  // AI usage tracking for admin dashboard
+  await run('ai_usage_daily table', `
+    CREATE TABLE IF NOT EXISTS ai_usage_daily (
+      date TEXT NOT NULL,
+      type TEXT NOT NULL,
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (date, type)
+    )
+  `)
+
   return json({ steps, errors, ok: errors.length === 0 })
 }
 

@@ -1,9 +1,11 @@
 import type { Env } from '../env'
 
-function parseRow(row: Record<string, unknown>) {
+function parseRow(row: Record<string, unknown>, adminEmails?: string) {
+  const email = String(row.email ?? '')
+  const admins = adminEmails ? adminEmails.split(',').map(e => e.trim().toLowerCase()) : []
   return {
     id: row.id,
-    email: row.email,
+    email,
     display_name: row.display_name,
     avatar_id: row.avatar_id ?? 'herb',
     avatar_image_key: row.avatar_image_key ?? null,
@@ -15,6 +17,7 @@ function parseRow(row: Record<string, unknown>) {
     unit_system: (row.unit_system as string) ?? 'metric',
     email_verified: row.email_verified !== 0,
     created_at: row.created_at,
+    is_admin: admins.length > 0 && admins.includes(email.toLowerCase()),
   }
 }
 
@@ -22,7 +25,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
   const user = await ctx.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()
   if (!user) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: json })
-  return new Response(JSON.stringify(parseRow(user as Record<string, unknown>)), { headers: json })
+  return new Response(JSON.stringify(parseRow(user as Record<string, unknown>, ctx.env.ADMIN_EMAILS)), { headers: json })
 }
 
 export const onRequestPut: PagesFunction<Env> = async (ctx) => {
@@ -56,7 +59,7 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     userId,
   ).run()
   const user = await ctx.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()
-  return new Response(JSON.stringify(parseRow(user as Record<string, unknown>)), { headers: json })
+  return new Response(JSON.stringify(parseRow(user as Record<string, unknown>, ctx.env.ADMIN_EMAILS)), { headers: json })
 }
 
 export const onRequestDelete: PagesFunction<Env> = async (ctx) => {

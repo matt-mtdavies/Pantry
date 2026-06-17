@@ -1,6 +1,7 @@
 import type { Env } from '../env'
 import { getCurrency, getCurrencySymbol } from '../lib/currency'
 import { checkRateLimit } from '../lib/rateLimit'
+import { logAiUsage } from '../lib/logAiUsage'
 
 const DAILY_EXTRACTION_LIMIT = 10
 const ONE_DAY_SECONDS = 86_400
@@ -188,6 +189,8 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   if (extracted.error) {
     return json({ error: String(extracted.error) }, 422)
   }
+
+  await logAiUsage(ctx.env.DB, 'url')
 
   return json({
     title: String(extracted.title ?? 'Untitled'),
