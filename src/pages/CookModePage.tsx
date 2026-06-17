@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
@@ -64,6 +64,17 @@ function Timer({ initialMinutes, label }: { initialMinutes: number; label: strin
 
 const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
+const BURST = [
+  { tx: '0px',   ty: '-80px', color: '#C4633E', size: 10 },
+  { tx: '57px',  ty: '-57px', color: '#E8A87C', size: 8  },
+  { tx: '80px',  ty: '0px',   color: '#7A8B6F', size: 9  },
+  { tx: '57px',  ty: '57px',  color: '#C4A882', size: 7  },
+  { tx: '0px',   ty: '80px',  color: '#C4633E', size: 9  },
+  { tx: '-57px', ty: '57px',  color: '#E8A87C', size: 8  },
+  { tx: '-80px', ty: '0px',   color: '#7A8B6F', size: 7  },
+  { tx: '-57px', ty: '-57px', color: '#C4A882', size: 10 },
+]
+
 export default function CookModePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -74,6 +85,7 @@ export default function CookModePage() {
   const [servings, setServings] = useState<number>(2)
   const [showIngredients, setShowIngredients] = useState(true)
   const [ttsEnabled, setTtsEnabled] = useState(false)
+  const [showCelebration, setShowCelebration] = useState(false)
   const { isActive, acquire, release, supported } = useWakeLock()
   const { user } = useAuth()
 
@@ -285,9 +297,12 @@ export default function CookModePage() {
                 Next →
               </button>
             ) : (
-              <Link to={`/recipe/${recipe.id}`} className={`${styles.navBtn} ${styles.navBtnDone}`}>
+              <button
+                className={`${styles.navBtn} ${styles.navBtnDone}`}
+                onClick={() => setShowCelebration(true)}
+              >
                 All done! ✓
-              </Link>
+              </button>
             )}
           </div>
 
@@ -306,6 +321,46 @@ export default function CookModePage() {
           </div>
         </section>
       </div>
+
+      {showCelebration && (
+        <div className={styles.celebration} role="dialog" aria-modal="true" aria-label="Recipe complete">
+          <div className={styles.celebGraphic}>
+            {BURST.map((p, i) => (
+              <span
+                key={i}
+                className={styles.particle}
+                style={{
+                  '--tx': p.tx,
+                  '--ty': p.ty,
+                  width: `${p.size}px`,
+                  height: `${p.size}px`,
+                  background: p.color,
+                  animationDelay: `${400 + i * 15}ms`,
+                } as CSSProperties}
+              />
+            ))}
+            <svg viewBox="0 0 100 100" className={styles.celebSvg} aria-hidden="true">
+              <circle
+                cx="50" cy="50" r="40"
+                fill="none" stroke="#C4633E" strokeWidth="3"
+                className={styles.celebCircle}
+                transform="rotate(-90 50 50)"
+              />
+              <path
+                d="M 28 52 L 43 66 L 72 32"
+                fill="none" stroke="#C4633E" strokeWidth="3.5"
+                strokeLinecap="round" strokeLinejoin="round"
+                className={styles.celebCheck}
+              />
+            </svg>
+          </div>
+          <h2 className={styles.celebHeading}>Nicely done!</h2>
+          <p className={styles.celebSub}>{recipe.title}</p>
+          <Link to={`/recipe/${recipe.id}`} className={styles.celebBtn}>
+            Back to recipe →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

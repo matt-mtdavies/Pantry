@@ -4,6 +4,7 @@
   color: #FAF7F2;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .header {
@@ -380,6 +381,118 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ── Celebration overlay ──────────────────────────────────────────────── */
+
+.celebration {
+  position: absolute;
+  inset: 0;
+  background: #1F1B16;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  z-index: 20;
+  padding: var(--sp-8);
+  animation: celebFadeIn 0.35s ease-out;
+}
+
+@keyframes celebFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.celebGraphic {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin-bottom: var(--sp-4);
+}
+
+.celebSvg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Circle draws itself in from the top, 600ms */
+.celebCircle {
+  stroke-dasharray: 252;
+  stroke-dashoffset: 252;
+  animation: drawCircle 0.6s ease-out forwards;
+}
+
+@keyframes drawCircle {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Check draws itself in after circle is ~75% done */
+.celebCheck {
+  stroke-dasharray: 70;
+  stroke-dashoffset: 70;
+  animation: drawCheck 0.35s 0.45s ease-out forwards;
+}
+
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Particles burst outward from centre then fade */
+.particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  animation: particleBurst 0.65s ease-out forwards;
+}
+
+@keyframes particleBurst {
+  0%   { transform: translate(-50%, -50%); opacity: 1; }
+  55%  { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))); opacity: 0; }
+}
+
+.celebHeading {
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-2xl), 6vw, 2.75rem);
+  font-weight: 700;
+  color: #FAF7F2;
+  text-align: center;
+  animation: celebTextIn 0.5s 0.6s ease-out both;
+}
+
+.celebSub {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: #9C9189;
+  text-align: center;
+  max-width: 28ch;
+  animation: celebTextIn 0.5s 0.72s ease-out both;
+}
+
+@keyframes celebTextIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.celebBtn {
+  margin-top: var(--sp-4);
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: #FFFFFF;
+  padding: var(--sp-4) var(--sp-8);
+  background: #C4633E;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: background-color 150ms ease;
+  animation: celebTextIn 0.5s 0.84s ease-out both;
+}
+
+.celebBtn:hover { background: #a8532f; color: #FFFFFF; text-decoration: none; }
 
 @media (max-width: 768px) {
   .body {
