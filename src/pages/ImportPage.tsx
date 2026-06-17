@@ -320,27 +320,32 @@ function ReviewScreen({
   // Revoke blob URLs when the component unmounts to avoid memory leaks
   useEffect(() => () => screenshotOptions.forEach(o => URL.revokeObjectURL(o.url)), []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Only use an uploaded file as the initial hero if it's actually an image
-  const firstImageOption = screenshotOptions.find(o => o.file.type.startsWith('image/'))
+  // Use the screenshot Claude identified as containing actual food photography.
+  // If Claude found none (food_image_index is null), we fall back to Unsplash.
+  // Never default to a screenshot that might just be text/a receipt.
+  const foodImageOption =
+    initial.food_image_index != null
+      ? (screenshotOptions[initial.food_image_index] ?? null)
+      : null
 
-  // Image picker state — pre-select the first uploaded screenshot when no extracted image URL
+  // Image picker state
   const [selectedImage, setSelectedImage] = useState<string | null>(
-    initial.source_image_url ?? firstImageOption?.url ?? null
+    foodImageOption?.url ?? initial.source_image_url ?? null
   )
   const [imageOptions, setImageOptions] = useState<{ url: string; thumb: string }[]>([])
   const [searchingImages, setSearchingImages] = useState(false)
 
-  // Always search Unsplash for alternatives (don't auto-select if we already have an image)
+  // Search Unsplash for alternatives; auto-select the first result only when
+  // there is no food screenshot and no source image (i.e. the hero would be blank).
   useEffect(() => {
     if (initial.source_image_url) return
     const title = initial.title.trim()
     if (!title) return
     setSearchingImages(true)
-    const hasInitialSelection = !!initial.source_image_url || screenshotOptions.length > 0
     searchImages(title)
       .then(imgs => {
         setImageOptions(imgs)
-        if (imgs.length && !hasInitialSelection) setSelectedImage(imgs[0].url)
+        if (imgs.length && !foodImageOption) setSelectedImage(imgs[0].url)
       })
       .catch(() => {})
       .finally(() => setSearchingImages(false))

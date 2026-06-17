@@ -75,6 +75,7 @@ export interface ExtractedRecipe {
   calories_per_serving?: number | null;
   cost_per_serving?: number | null;
   cost_currency?: string;
+  food_image_index?: number | null;
 }
 
 export interface LeaderboardRecipe {

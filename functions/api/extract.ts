@@ -27,7 +27,8 @@ Return exactly this schema:
   "tags": ["baking", "vegetarian"],
   "source_guess": "Name of website or publication if visible, otherwise null",
   "calories_per_serving": 450,
-  "cost_per_serving": 3.50
+  "cost_per_serving": 3.50,
+  "food_image_index": 0
 }
 
 Rules:
@@ -39,6 +40,7 @@ Rules:
 - tags should be lowercase, short, helpful (e.g. dinner, baking, quick, vegetarian, chicken, pasta)
 - calories_per_serving: integer, estimated kcal per serving based on the ingredients. Use null if you cannot estimate.
 - cost_per_serving: float, estimated ingredient cost per serving in ${priceCtx}. Use null if you cannot estimate.
+- food_image_index: 0-based index of whichever provided image best shows the finished dish as an actual food photograph (not a screenshot of text, a webpage, a receipt, or a recipe card — only genuine food/meal photography). Use null if none of the images show actual cooked food.
 - If you cannot read the image or it doesn't contain a recipe, return: {"error": "Cannot extract recipe from this image"}`
 }
 
@@ -152,6 +154,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     calories_per_serving: typeof extracted.calories_per_serving === 'number' ? Math.round(extracted.calories_per_serving) : null,
     cost_per_serving: typeof extracted.cost_per_serving === 'number' ? extracted.cost_per_serving : null,
     cost_currency: currency,
+    food_image_index: typeof extracted.food_image_index === 'number' ? extracted.food_image_index : null,
   })
 }
 
