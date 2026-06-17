@@ -21,14 +21,22 @@ function parseRecipe(row: Record<string, unknown>) {
 
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
-  const { results } = await ctx.env.DB.prepare(`
-    SELECT r.*,
-      (SELECT 1 FROM user_favourites WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav
-    FROM recipes r
-    WHERE r.user_id = ? AND r.is_deleted = 0
-    ORDER BY r.updated_at DESC
-  `).bind(userId, userId).all<Record<string, unknown>>()
-  return json(results.map(parseRecipe))
+  try {
+    const { results } = await ctx.env.DB.prepare(`
+      SELECT r.*,
+        (SELECT 1 FROM user_favourites WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav
+      FROM recipes r
+      WHERE r.user_id = ? AND r.is_deleted = 0
+      ORDER BY r.updated_at DESC
+    `).bind(userId, userId).all<Record<string, unknown>>()
+    return json(results.map(parseRecipe))
+  } catch {
+    // user_favourites not yet created — fall back to legacy column
+    const { results } = await ctx.env.DB.prepare(
+      'SELECT * FROM recipes WHERE user_id = ? AND is_deleted = 0 ORDER BY updated_at DESC'
+    ).bind(userId).all<Record<string, unknown>>()
+    return json(results.map(r => parseRecipe({ ...r, uf_fav: r.is_favourite })))
+  }
 }
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {

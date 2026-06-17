@@ -59,28 +59,54 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     binds.push(costMax)
   }
 
-  const rows = await ctx.env.DB.prepare(`
-    SELECT
-      r.id, r.title, r.description, r.tags, r.hero_image_key,
-      r.prep_time, r.cook_time, r.servings, r.user_id,
-      r.calories_per_serving, r.cost_per_serving,
-      u.display_name                                                                  AS author_name,
-      u.avatar_id                                                                     AS author_avatar,
-      u.avatar_image_key                                                              AS author_avatar_key,
-      ROUND(COALESCE(AVG(rr.rating), 0), 1)                                          AS avg_rating,
-      COUNT(rr.recipe_id)                                                             AS rating_count,
-      (SELECT 1    FROM user_favourites  WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS is_favourite,
-      (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?)     AS my_rating
-    FROM recipes r
-    JOIN users u ON r.user_id = u.id
-    LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
-    WHERE ${wheres.join(' AND ')}
-    GROUP BY r.id
-    ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC
-    LIMIT ? OFFSET ?
-  `).bind(...binds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
+  let allRows: Record<string, unknown>[]
+  try {
+    const rows = await ctx.env.DB.prepare(`
+      SELECT
+        r.id, r.title, r.description, r.tags, r.hero_image_key,
+        r.prep_time, r.cook_time, r.servings, r.user_id,
+        r.calories_per_serving, r.cost_per_serving,
+        u.display_name                                                                  AS author_name,
+        u.avatar_id                                                                     AS author_avatar,
+        u.avatar_image_key                                                              AS author_avatar_key,
+        ROUND(COALESCE(AVG(rr.rating), 0), 1)                                          AS avg_rating,
+        COUNT(rr.recipe_id)                                                             AS rating_count,
+        (SELECT 1    FROM user_favourites  WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS is_favourite,
+        (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?)     AS my_rating
+      FROM recipes r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
+      WHERE ${wheres.join(' AND ')}
+      GROUP BY r.id
+      ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(...binds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
+    allRows = rows.results ?? []
+  } catch {
+    // user_favourites not yet created — fall back without is_favourite subquery
+    const fallbackBinds = [binds[1], ...binds.slice(2)] // drop first userId (was for uf_fav)
+    const rows = await ctx.env.DB.prepare(`
+      SELECT
+        r.id, r.title, r.description, r.tags, r.hero_image_key,
+        r.prep_time, r.cook_time, r.servings, r.user_id,
+        r.calories_per_serving, r.cost_per_serving,
+        u.display_name                                                              AS author_name,
+        u.avatar_id                                                                 AS author_avatar,
+        u.avatar_image_key                                                          AS author_avatar_key,
+        ROUND(COALESCE(AVG(rr.rating), 0), 1)                                      AS avg_rating,
+        COUNT(rr.recipe_id)                                                         AS rating_count,
+        (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?) AS my_rating
+      FROM recipes r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
+      WHERE ${wheres.join(' AND ')}
+      GROUP BY r.id
+      ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(...fallbackBinds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
+    allRows = rows.results ?? []
+  }
 
-  const allRows = rows.results ?? []
   const has_more = allRows.length > PAGE_SIZE
   const results = allRows.slice(0, PAGE_SIZE).map(r => ({
     ...r,

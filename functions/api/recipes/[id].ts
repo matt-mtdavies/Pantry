@@ -19,25 +19,49 @@ function generateToken(): string {
   return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
+async function fetchRecipeRow(db: Env['DB'], userId: string, id: string): Promise<Record<string, unknown> | null> {
+  try {
+    return await db.prepare(`
+      SELECT r.*,
+        u.display_name                                                                  AS author_name,
+        u.avatar_id                                                                     AS author_avatar,
+        u.avatar_image_key                                                              AS author_avatar_key,
+        ROUND(COALESCE(AVG(rr.rating), 0), 1)                                          AS avg_rating,
+        COUNT(rr.recipe_id)                                                             AS rating_count,
+        (SELECT 1    FROM user_favourites  WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav,
+        (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?)     AS my_rating
+      FROM recipes r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
+      WHERE r.id = ? AND r.is_deleted = 0
+        AND (r.user_id = ? OR u.is_public = 1)
+      GROUP BY r.id
+    `).bind(userId, userId, id, userId).first<Record<string, unknown>>()
+  } catch {
+    // user_favourites not yet created — fall back to legacy column
+    const row = await db.prepare(`
+      SELECT r.*,
+        u.display_name                                                              AS author_name,
+        u.avatar_id                                                                 AS author_avatar,
+        u.avatar_image_key                                                          AS author_avatar_key,
+        ROUND(COALESCE(AVG(rr.rating), 0), 1)                                      AS avg_rating,
+        COUNT(rr.recipe_id)                                                         AS rating_count,
+        (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?) AS my_rating
+      FROM recipes r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
+      WHERE r.id = ? AND r.is_deleted = 0
+        AND (r.user_id = ? OR u.is_public = 1)
+      GROUP BY r.id
+    `).bind(userId, id, userId).first<Record<string, unknown>>()
+    return row ? { ...row, uf_fav: row.is_favourite } : null
+  }
+}
+
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
   const { id } = ctx.params as { id: string }
-  const row = await ctx.env.DB.prepare(`
-    SELECT r.*,
-      u.display_name                                                                  AS author_name,
-      u.avatar_id                                                                     AS author_avatar,
-      u.avatar_image_key                                                              AS author_avatar_key,
-      ROUND(COALESCE(AVG(rr.rating), 0), 1)                                          AS avg_rating,
-      COUNT(rr.recipe_id)                                                             AS rating_count,
-      (SELECT 1    FROM user_favourites  WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav,
-      (SELECT rating FROM recipe_ratings WHERE recipe_id = r.id AND user_id = ?)     AS my_rating
-    FROM recipes r
-    JOIN users u ON r.user_id = u.id
-    LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
-    WHERE r.id = ? AND r.is_deleted = 0
-      AND (r.user_id = ? OR u.is_public = 1)
-    GROUP BY r.id
-  `).bind(userId, userId, id, userId).first<Record<string, unknown>>()
+  const row = await fetchRecipeRow(ctx.env.DB, userId, id)
   if (!row) return json({ error: 'Not found' }, 404)
   return json({
     ...parseRecipe(row),
