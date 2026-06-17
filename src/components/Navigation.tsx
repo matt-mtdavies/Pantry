@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Avatar } from './Avatar'
+import { ShareIcon } from './icons'
 import { resendVerificationEmail } from '../lib/api'
 import styles from './Navigation.module.css'
 
@@ -109,6 +110,15 @@ export default function Navigation() {
     navigate('/auth')
   }
 
+  const handleInvite = () => {
+    const url = window.location.origin
+    if (typeof navigator.share === 'function') {
+      navigator.share({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url }).catch(() => {})
+    } else {
+      navigator.clipboard.writeText(url).catch(() => {})
+    }
+  }
+
   return (
     <>
       {showBanner && (
@@ -151,6 +161,15 @@ export default function Navigation() {
               Add Recipe
             </Link>
           </nav>
+
+          <button
+            className={styles.inviteBtn}
+            onClick={handleInvite}
+            aria-label="Invite someone to Pantry"
+            title="Invite others"
+          >
+            <ShareIcon size={18} />
+          </button>
 
           {user && (
             <div className={styles.user}>

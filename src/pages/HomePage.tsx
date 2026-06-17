@@ -28,7 +28,6 @@ export default function HomePage() {
   const [cuisineFilter, setCuisineFilter] = useState('')
   const [newColName, setNewColName] = useState('')
   const [creatingCol, setCreatingCol] = useState(false)
-  const [inviteDismissed, setInviteDismissed] = useState(() => localStorage.getItem('invite-dismissed') === '1')
 
   useEffect(() => {
     Promise.all([listRecipes(), listCollections()])
@@ -261,32 +260,6 @@ export default function HomePage() {
               <span>{needsAttentionCount} screenshot{needsAttentionCount > 1 ? 's need' : ' needs'} attention</span>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={styles.attentionArrow}><path d="M2 7h10M8 3l4 4-4 4"/></svg>
             </Link>
-          )}
-
-          {!loading && ownRecipes.length >= 3 && !inviteDismissed && (
-            <div className={styles.inviteBanner}>
-              <span className={styles.inviteBannerText}>Know someone who loves cooking? Invite them to Pantry.</span>
-              <button
-                className={styles.inviteBannerBtn}
-                onClick={() => {
-                  const url = window.location.origin
-                  if (typeof navigator.share === 'function') {
-                    navigator.share({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url }).catch(() => {})
-                  } else {
-                    navigator.clipboard.writeText(url).catch(() => {})
-                  }
-                  localStorage.setItem('invite-dismissed', '1')
-                  setInviteDismissed(true)
-                }}
-              >
-                Invite
-              </button>
-              <button
-                className={styles.inviteBannerDismiss}
-                onClick={() => { localStorage.setItem('invite-dismissed', '1'); setInviteDismissed(true) }}
-                aria-label="Dismiss"
-              >✕</button>
-            </div>
           )}
 
           {loading ? (
