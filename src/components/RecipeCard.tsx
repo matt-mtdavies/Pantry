@@ -9,9 +9,11 @@ interface Props {
   recipe: Recipe
   onToggleFavourite?: (id: string, value: boolean) => void
   currentUserId?: string
+  inCollection?: boolean
+  onToggleCollection?: (id: string, add: boolean) => void
 }
 
-export default function RecipeCard({ recipe, onToggleFavourite, currentUserId }: Props) {
+export default function RecipeCard({ recipe, onToggleFavourite, currentUserId, inCollection, onToggleCollection }: Props) {
   const isExternal = !!currentUserId && recipe.user_id !== currentUserId
   const heroSrc = imageUrl(recipe.hero_image_key)
 
@@ -26,6 +28,17 @@ export default function RecipeCard({ recipe, onToggleFavourite, currentUserId }:
           </div>
         )}
       </Link>
+
+      {onToggleCollection && (
+        <button
+          className={`${styles.colToggle} ${inCollection ? styles.colToggleIn : ''}`}
+          onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleCollection(recipe.id, !inCollection) }}
+          aria-label={inCollection ? 'Remove from collection' : 'Add to collection'}
+          aria-pressed={inCollection}
+        >
+          {inCollection ? '✓' : '+'}
+        </button>
+      )}
 
       {onToggleFavourite && (
         <button

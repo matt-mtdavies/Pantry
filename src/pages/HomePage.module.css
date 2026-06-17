@@ -164,6 +164,31 @@
 .attentionArrow { margin-left: auto; }
 
 
+.collectionMode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: #F5E8E2;
+  border: 1px solid #DFA088;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.collectionModeCount {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #7A3B20;
+}
+
+.collectionModeHint {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #9C7060;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

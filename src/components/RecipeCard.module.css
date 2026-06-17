@@ -172,3 +172,43 @@
 .author:hover .authorName {
   color: #C4633E;
 }
+
+/* ── Collection toggle overlay ───────────────────────────────────────────── */
+
+.colToggle {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #E8E0D4;
+  color: #9C9189;
+  font-size: 18px;
+  line-height: 1;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+  cursor: pointer;
+}
+
+.colToggle:hover {
+  transform: scale(1.1);
+  border-color: #C4633E;
+  color: #C4633E;
+}
+
+.colToggleIn {
+  background: #C4633E;
+  border-color: #C4633E;
+  color: #FFFFFF;
+}
+
+.colToggleIn:hover {
+  background: #a8532f;
+  border-color: #a8532f;
+  color: #FFFFFF;
+}

@@ -4,7 +4,7 @@ import Fuse from 'fuse.js'
 import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
 import { SearchIcon, DishIcon, WarningIcon, CollectionIcon, HeartIcon } from '../components/icons'
-import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection, backfillImages } from '../lib/api'
+import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection, backfillImages, toggleRecipeInCollection } from '../lib/api'
 import { useAuth } from '../hooks/useAuth'
 import type { Recipe, Collection } from '../types'
 import styles from './HomePage.module.css'
@@ -72,10 +72,9 @@ export default function HomePage() {
     let list: Recipe[]
     if (filter === 'favourites') {
       list = recipes.filter(r => r.is_favourite)
-    } else if (filter !== 'all') {
-      const col = collections.find(c => c.id === filter)
-      list = col ? ownRecipes.filter(r => col.recipe_ids.includes(r.id)) : ownRecipes
     } else {
+      // For collections and 'all', always start from ownRecipes so
+      // the collection toggle mode can show everything.
       list = ownRecipes
     }
     if (cuisineFilter) {
@@ -85,7 +84,7 @@ export default function HomePage() {
       list = fuse.search(query).map(r => r.item).filter(r => list.includes(r))
     }
     return list
-  }, [recipes, ownRecipes, collections, filter, cuisineFilter, query, fuse])
+  }, [recipes, ownRecipes, filter, cuisineFilter, query, fuse])
 
   const handleToggleFavourite = async (id: string, value: boolean) => {
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: value } : r))
@@ -113,6 +112,27 @@ export default function HomePage() {
     await deleteCollection(id)
     setCollections(prev => prev.filter(c => c.id !== id))
     if (filter === id) setFilter('all')
+  }
+
+  const handleToggleInCollection = async (recipeId: string, add: boolean) => {
+    if (!activeCollection) return
+    const colId = activeCollection.id
+    setCollections(prev => prev.map(c => c.id !== colId ? c : {
+      ...c,
+      recipe_ids: add
+        ? [...c.recipe_ids, recipeId]
+        : c.recipe_ids.filter(id => id !== recipeId),
+    }))
+    try {
+      await toggleRecipeInCollection(colId, recipeId)
+    } catch {
+      setCollections(prev => prev.map(c => c.id !== colId ? c : {
+        ...c,
+        recipe_ids: add
+          ? c.recipe_ids.filter(id => id !== recipeId)
+          : [...c.recipe_ids, recipeId],
+      }))
+    }
   }
 
   const needsAttentionCount = ownRecipes.filter(r => r.needs_attention).length
@@ -304,16 +324,28 @@ export default function HomePage() {
               )}
             </div>
           ) : (
-            <div className={styles.grid}>
-              {filtered.map(recipe => (
-                <RecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  onToggleFavourite={handleToggleFavourite}
-                  currentUserId={user?.id}
-                />
-              ))}
-            </div>
+            <>
+              {activeCollection && (
+                <div className={styles.collectionMode}>
+                  <span className={styles.collectionModeCount}>
+                    <strong>{activeCollection.recipe_ids.length}</strong> recipe{activeCollection.recipe_ids.length !== 1 ? 's' : ''} in "{activeCollection.name}"
+                  </span>
+                  <span className={styles.collectionModeHint}>Tap + to add, ✓ to remove</span>
+                </div>
+              )}
+              <div className={styles.grid}>
+                {filtered.map(recipe => (
+                  <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    onToggleFavourite={activeCollection ? undefined : handleToggleFavourite}
+                    currentUserId={user?.id}
+                    inCollection={activeCollection ? activeCollection.recipe_ids.includes(recipe.id) : undefined}
+                    onToggleCollection={activeCollection ? handleToggleInCollection : undefined}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </main>
