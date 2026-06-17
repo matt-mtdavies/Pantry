@@ -68,15 +68,15 @@ export default function Onboarding({ onClose }: Props) {
         <button className={styles.skip} onClick={onClose}>Skip</button>
       </div>
 
+      <div className={styles.content} key={`c-${slide}`}>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.sub}>{sub}</p>
+      </div>
+
       <div className={styles.illustrationWrap}>
         <div className={styles.illustrationInner} key={slide}>
           <Illustration />
         </div>
-      </div>
-
-      <div className={styles.content} key={`c-${slide}`}>
-        <h2 className={styles.title}>{title}</h2>
-        <p className={styles.sub}>{sub}</p>
       </div>
 
       <div className={styles.footer}>

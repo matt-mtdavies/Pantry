@@ -56,14 +56,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sp-4) var(--sp-8);
+  padding: 0 var(--sp-8);
   min-height: 0;
 }
 
 .illustrationInner {
   width: 100%;
   max-width: 320px;
-  animation: slideUpFade 380ms var(--ease-out) both;
+  animation: slideUpFade 380ms var(--ease-out) 60ms both;
 }
 
 .illustrationInner svg {
@@ -74,10 +74,10 @@
 /* ── Content ─────────────────────────────────────────────────────────── */
 
 .content {
-  padding: 0 var(--sp-8) var(--sp-6);
+  padding: var(--sp-2) var(--sp-8) var(--sp-4);
   text-align: center;
   flex-shrink: 0;
-  animation: slideUpFade 380ms var(--ease-out) 60ms both;
+  animation: slideUpFade 380ms var(--ease-out) both;
 }
 
 .title {
