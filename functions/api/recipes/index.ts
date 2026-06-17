@@ -27,8 +27,17 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
         (SELECT 1 FROM user_favourites WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav
       FROM recipes r
       WHERE r.user_id = ? AND r.is_deleted = 0
-      ORDER BY r.updated_at DESC
-    `).bind(userId, userId).all<Record<string, unknown>>()
+
+      UNION ALL
+
+      SELECT r.*, 1 AS uf_fav
+      FROM recipes r
+      JOIN user_favourites uf ON uf.recipe_id = r.id AND uf.user_id = ?
+      JOIN users u ON r.user_id = u.id
+      WHERE r.user_id != ? AND r.is_deleted = 0 AND u.is_public = 1
+
+      ORDER BY updated_at DESC
+    `).bind(userId, userId, userId, userId).all<Record<string, unknown>>()
     return json(results.map(parseRecipe))
   } catch {
     // user_favourites not yet created — fall back to legacy column

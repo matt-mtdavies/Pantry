@@ -5,12 +5,14 @@ import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
 import { SearchIcon, DishIcon, WarningIcon, CollectionIcon, HeartIcon } from '../components/icons'
 import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection, backfillImages } from '../lib/api'
+import { useAuth } from '../hooks/useAuth'
 import type { Recipe, Collection } from '../types'
 import styles from './HomePage.module.css'
 
 type FilterMode = 'all' | 'favourites' | string // string = collection id
 
 export default function HomePage() {
+  const { user } = useAuth()
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,18 +46,28 @@ export default function HomePage() {
 
   const activeCollection = collections.find(c => c.id === filter)
 
+  // Own recipes only (excludes external favourites from Explore)
+  const ownRecipes = useMemo(
+    () => recipes.filter(r => r.user_id === user?.id),
+    [recipes, user?.id]
+  )
+
   const filtered = useMemo(() => {
-    let list = recipes
-    if (filter === 'favourites') list = list.filter(r => r.is_favourite)
-    else if (filter !== 'all') {
+    let list: Recipe[]
+    if (filter === 'favourites') {
+      // Show own favourites + any recipes favourited from Explore
+      list = recipes.filter(r => r.is_favourite)
+    } else if (filter !== 'all') {
       const col = collections.find(c => c.id === filter)
-      if (col) list = list.filter(r => col.recipe_ids.includes(r.id))
+      list = col ? ownRecipes.filter(r => col.recipe_ids.includes(r.id)) : ownRecipes
+    } else {
+      list = ownRecipes
     }
     if (query.trim()) {
       list = fuse.search(query).map(r => r.item).filter(r => list.includes(r))
     }
     return list
-  }, [recipes, collections, filter, query, fuse])
+  }, [recipes, ownRecipes, collections, filter, query, fuse])
 
   const handleToggleFavourite = async (id: string, value: boolean) => {
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: value } : r))
@@ -85,7 +97,7 @@ export default function HomePage() {
     if (filter === id) setFilter('all')
   }
 
-  const needsAttentionCount = recipes.filter(r => r.needs_attention).length
+  const needsAttentionCount = ownRecipes.filter(r => r.needs_attention).length
 
   return (
     <div className="page-shell">
@@ -95,9 +107,9 @@ export default function HomePage() {
           <div className="wide-col">
             <h1 className={styles.heroTitle}>Your recipes</h1>
             <p className={styles.heroSub}>
-              {recipes.length === 0 && !loading
+              {ownRecipes.length === 0 && !loading
                 ? 'Your collection is waiting — add your first recipe below.'
-                : `${recipes.length} recipe${recipes.length === 1 ? '' : 's'} in your collection`}
+                : `${ownRecipes.length} recipe${ownRecipes.length === 1 ? '' : 's'} in your collection`}
             </p>
           </div>
         </div>
@@ -217,7 +229,7 @@ export default function HomePage() {
             </Link>
           )}
 
-          {!loading && recipes.length >= 3 && !inviteDismissed && (
+          {!loading && ownRecipes.length >= 3 && !inviteDismissed && (
             <div className={styles.inviteBanner}>
               <span className={styles.inviteBannerText}>Know someone who loves cooking? Invite them to Pantry.</span>
               <button
