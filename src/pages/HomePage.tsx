@@ -9,6 +9,12 @@ import { useAuth } from '../hooks/useAuth'
 import type { Recipe, Collection } from '../types'
 import styles from './HomePage.module.css'
 
+const KNOWN_CUISINES = new Set([
+  'italian', 'greek', 'indian', 'mexican', 'japanese', 'thai', 'french',
+  'chinese', 'spanish', 'turkish', 'american', 'british', 'vietnamese',
+  'korean', 'moroccan', 'lebanese', 'persian', 'mediterranean',
+])
+
 type FilterMode = 'all' | 'favourites' | string // string = collection id
 
 export default function HomePage() {
@@ -19,6 +25,7 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
   const [collectionsOpen, setCollectionsOpen] = useState(false)
+  const [cuisineFilter, setCuisineFilter] = useState('')
   const [newColName, setNewColName] = useState('')
   const [creatingCol, setCreatingCol] = useState(false)
   const [inviteDismissed, setInviteDismissed] = useState(() => localStorage.getItem('invite-dismissed') === '1')
@@ -52,10 +59,19 @@ export default function HomePage() {
     [recipes, user?.id]
   )
 
+  const availableCuisines = useMemo(() => {
+    const seen = new Set<string>()
+    for (const r of ownRecipes) {
+      for (const tag of r.tags) {
+        if (KNOWN_CUISINES.has(tag)) seen.add(tag)
+      }
+    }
+    return [...seen].sort()
+  }, [ownRecipes])
+
   const filtered = useMemo(() => {
     let list: Recipe[]
     if (filter === 'favourites') {
-      // Show own favourites + any recipes favourited from Explore
       list = recipes.filter(r => r.is_favourite)
     } else if (filter !== 'all') {
       const col = collections.find(c => c.id === filter)
@@ -63,11 +79,14 @@ export default function HomePage() {
     } else {
       list = ownRecipes
     }
+    if (cuisineFilter) {
+      list = list.filter(r => r.tags.includes(cuisineFilter))
+    }
     if (query.trim()) {
       list = fuse.search(query).map(r => r.item).filter(r => list.includes(r))
     }
     return list
-  }, [recipes, ownRecipes, collections, filter, query, fuse])
+  }, [recipes, ownRecipes, collections, filter, cuisineFilter, query, fuse])
 
   const handleToggleFavourite = async (id: string, value: boolean) => {
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: value } : r))
@@ -178,6 +197,21 @@ export default function HomePage() {
               </button>
             </div>
           </div>
+
+          {availableCuisines.length >= 2 && (
+            <div className={styles.cuisineStrip}>
+              {availableCuisines.map(c => (
+                <button
+                  key={c}
+                  className={`${styles.cuisineChip} ${cuisineFilter === c ? styles.cuisineChipActive : ''}`}
+                  onClick={() => setCuisineFilter(prev => prev === c ? '' : c)}
+                  aria-pressed={cuisineFilter === c}
+                >
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                </button>
+              ))}
+            </div>
+          )}
 
           {collectionsOpen && (
             <div className={styles.collectionsPanel}>

@@ -423,3 +423,44 @@
 
 .collectionCreateBtn:hover { background: #a8532f; }
 .collectionCreateBtn:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Cuisine chip strip ────────────────────────────────────────────────────── */
+
+.cuisineStrip {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--sp-1);
+  margin-bottom: var(--sp-4);
+}
+
+.cuisineStrip::-webkit-scrollbar { display: none; }
+
+.cuisineChip {
+  flex-shrink: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #6B6459;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  background: #FFFFFF;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cuisineChip:hover {
+  border-color: #C4633E;
+  color: #C4633E;
+}
+
+.cuisineChipActive {
+  background: #C4633E;
+  border-color: #C4633E;
+  color: #FFFFFF;
+  -webkit-text-fill-color: #FFFFFF;
+}
