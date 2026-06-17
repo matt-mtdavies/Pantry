@@ -41,15 +41,6 @@ async function fetchAndStoreImage(
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
-  const userEmail = ctx.data.email as string
-
-  // If ADMIN_EMAILS is configured, only those accounts can trigger this
-  if (ctx.env.ADMIN_EMAILS) {
-    const admins = ctx.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase())
-    if (!admins.includes(userEmail.toLowerCase())) {
-      return json({ error: 'Forbidden' }, 403)
-    }
-  }
 
   // Rate limit: 5 backfill calls per hour per user
   const allowed = await checkRateLimit(ctx.env.DB, `backfill-images:${userId}`, 5, 60 * 60)
