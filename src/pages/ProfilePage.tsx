@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useOnboarding } from '../App'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
-import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, downloadExport } from '../lib/api'
+import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar } from '../lib/api'
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
 import { imageUrl } from '../lib/utils'
@@ -386,7 +386,7 @@ export default function ProfilePage() {
 
           <div className={styles.signOutSection}>
             <button className={styles.signOutBtn} onClick={handleLogout}>Sign out of Pantry</button>
-            <button className={styles.exportBtn} onClick={downloadExport}>Download my data</button>
+
             <button className={styles.inviteLinkBtn} onClick={typeof navigator.share === 'function' ? handleInviteShare : handleInviteCopy}>
               {inviteCopied ? '✓ Link copied' : 'Invite a friend'}
             </button>
