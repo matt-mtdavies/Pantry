@@ -30,6 +30,7 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
   // Schema additions
   await run('email_verified column', `ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1`)
   await run('share_token_expires_at column', `ALTER TABLE recipes ADD COLUMN share_token_expires_at INTEGER`)
+  await run('source_url column', `ALTER TABLE recipes ADD COLUMN source_url TEXT`)
 
   // Indexes: recipes
   await run('idx_recipes_user_deleted', `CREATE INDEX IF NOT EXISTS idx_recipes_user_deleted ON recipes (user_id, is_deleted)`)

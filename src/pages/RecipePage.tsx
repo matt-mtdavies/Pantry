@@ -404,7 +404,11 @@ export default function RecipePage() {
               </div>
             )}
 
-            {recipe.source_guess && <p className={styles.source}>From {recipe.source_guess}</p>}
+            {recipe.source_guess && (
+              recipe.source_url
+                ? <a href={recipe.source_url} target="_blank" rel="noopener noreferrer" className={styles.sourceLink}>From {recipe.source_guess} ↗</a>
+                : <p className={styles.source}>From {recipe.source_guess}</p>
+            )}
           </div>
 
           <hr className={styles.divider} />

@@ -187,6 +187,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     steps: Array.isArray(extracted.steps) ? extracted.steps.map(String) : [],
     tags: Array.isArray(extracted.tags) ? extracted.tags.map(String) : [],
     source_guess: extracted.source_guess ? String(extracted.source_guess) : null,
+    source_url: parsedUrl.toString(),
     source_image_url: sourceImageUrl,
     calories_per_serving: typeof extracted.calories_per_serving === 'number' ? Math.round(extracted.calories_per_serving) : null,
     cost_per_serving: typeof extracted.cost_per_serving === 'number' ? extracted.cost_per_serving : null,

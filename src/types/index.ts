@@ -32,6 +32,7 @@ export interface Recipe {
   steps: string[];
   tags: string[];
   source_guess: string | null;
+  source_url: string | null;
   hero_image_key: string | null;
   screenshot_keys: string[];
   is_favourite: boolean;
@@ -69,6 +70,7 @@ export interface ExtractedRecipe {
   steps: string[];
   tags: string[];
   source_guess: string | null;
+  source_url?: string | null;
   source_image_url?: string | null;
   calories_per_serving?: number | null;
   cost_per_serving?: number | null;
