@@ -138,6 +138,35 @@
 
 .filterSection { display: flex; flex-direction: column; gap: var(--sp-3); }
 
+.cuisineChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.cuisineChip {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  background: #FFFFFF;
+  color: #6B6459;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.cuisineChip:hover {
+  border-color: #C4633E;
+  color: #C4633E;
+}
+
+.cuisineChipActive {
+  background: #C4633E;
+  border-color: #C4633E;
+  color: #FFFFFF;
+}
+
 .filterSectionLabel {
   font-family: var(--font-ui);
   font-size: var(--text-xs);

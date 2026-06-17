@@ -14,6 +14,11 @@ import styles from './SearchPage.module.css'
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Other']
 const AGE_OPTIONS = ['Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+']
+const CUISINE_OPTIONS = [
+  'Italian', 'Greek', 'Indian', 'Mexican', 'Japanese', 'Thai', 'French',
+  'Chinese', 'Spanish', 'Turkish', 'American', 'British', 'Vietnamese',
+  'Korean', 'Moroccan', 'Lebanese', 'Persian', 'Mediterranean',
+]
 
 interface Filters {
   author: string
@@ -23,12 +28,13 @@ interface Filters {
   cal_max: string
   cost_max: string
   max_prep: string
+  cuisine: string
 }
 
-const EMPTY_FILTERS: Filters = { author: '', country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '', max_prep: '' }
+const EMPTY_FILTERS: Filters = { author: '', country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '', max_prep: '', cuisine: '' }
 
 function activeFilterCount(f: Filters) {
-  return [f.author, f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max, f.max_prep].filter(Boolean).length
+  return [f.author, f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max, f.max_prep, f.cuisine].filter(Boolean).length
 }
 
 export default function SearchPage() {
@@ -53,6 +59,7 @@ export default function SearchPage() {
     if (f.cal_max)     params.set('cal_max', f.cal_max)
     if (f.cost_max)    params.set('cost_max', f.cost_max)
     if (f.max_prep)     params.set('max_prep', f.max_prep)
+    if (f.cuisine)      params.set('cuisine', f.cuisine)
     if (pg > 0)        params.set('page', String(pg))
     return params.toString()
   }
@@ -178,6 +185,24 @@ export default function SearchPage() {
           {/* Filter panel */}
           {filtersOpen && (
             <div className={styles.filterPanel}>
+              <div className={styles.filterSection}>
+                <p className={styles.filterSectionLabel}>Cuisine</p>
+                <div className={styles.cuisineChips}>
+                  {CUISINE_OPTIONS.map(c => {
+                    const val = c.toLowerCase()
+                    const active = filters.cuisine === val
+                    return (
+                      <button
+                        key={val}
+                        className={`${styles.cuisineChip} ${active ? styles.cuisineChipActive : ''}`}
+                        onClick={() => handleFilterChange({ cuisine: active ? '' : val })}
+                        aria-pressed={active}
+                      >{c}</button>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div className={styles.filterSection}>
                 <p className={styles.filterSectionLabel}>Author</p>
                 <div className={styles.filterRow}>
