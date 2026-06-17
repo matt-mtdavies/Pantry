@@ -23,14 +23,18 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
   try {
     const { results } = await ctx.env.DB.prepare(`
-      SELECT r.*,
+      SELECT r.*, NULL AS author_name, NULL AS author_avatar, NULL AS author_avatar_key,
         (SELECT 1 FROM user_favourites WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav
       FROM recipes r
       WHERE r.user_id = ? AND r.is_deleted = 0
 
       UNION ALL
 
-      SELECT r.*, 1 AS uf_fav
+      SELECT r.*,
+        u.display_name  AS author_name,
+        u.avatar_id     AS author_avatar,
+        u.avatar_image_key AS author_avatar_key,
+        1 AS uf_fav
       FROM recipes r
       JOIN user_favourites uf ON uf.recipe_id = r.id AND uf.user_id = ?
       JOIN users u ON r.user_id = u.id

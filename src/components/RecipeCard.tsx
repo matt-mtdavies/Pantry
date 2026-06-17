@@ -2,14 +2,17 @@ import { Link } from 'react-router-dom'
 import type { Recipe } from '../types'
 import { formatTime, imageUrl } from '../lib/utils'
 import { ClockIcon, PersonIcon, HeartIcon, DishIcon } from './icons'
+import { Avatar } from './Avatar'
 import styles from './RecipeCard.module.css'
 
 interface Props {
   recipe: Recipe
   onToggleFavourite?: (id: string, value: boolean) => void
+  currentUserId?: string
 }
 
-export default function RecipeCard({ recipe, onToggleFavourite }: Props) {
+export default function RecipeCard({ recipe, onToggleFavourite, currentUserId }: Props) {
+  const isExternal = !!currentUserId && recipe.user_id !== currentUserId
   const heroSrc = imageUrl(recipe.hero_image_key)
 
   return (
@@ -66,6 +69,18 @@ export default function RecipeCard({ recipe, onToggleFavourite }: Props) {
             </span>
           )}
         </div>
+
+        {isExternal && (
+          <Link to={`/user/${recipe.user_id}`} className={styles.author} onClick={e => e.stopPropagation()}>
+            <Avatar
+              imageKey={recipe.author_avatar_key ?? null}
+              avatarId={recipe.author_avatar ?? 'default'}
+              size={18}
+              className={styles.authorAvatar}
+            />
+            <span className={styles.authorName}>{recipe.author_name ?? 'Anonymous'}</span>
+          </Link>
+        )}
       </div>
     </article>
   )

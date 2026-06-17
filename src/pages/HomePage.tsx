@@ -303,6 +303,7 @@ export default function HomePage() {
                   key={recipe.id}
                   recipe={recipe}
                   onToggleFavourite={handleToggleFavourite}
+                  currentUserId={user?.id}
                 />
               ))}
             </div>

@@ -142,3 +142,33 @@
   flex-shrink: 0;
   display: block;
 }
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid #F3EFE8;
+  text-decoration: none;
+}
+
+.authorAvatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.authorName {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #9C9189;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 150ms ease;
+}
+
+.author:hover .authorName {
+  color: #C4633E;
+}
