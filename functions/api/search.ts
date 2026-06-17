@@ -15,6 +15,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const calMax     = toInt(url.searchParams.get('cal_max'))
   const costMin    = toFloat(url.searchParams.get('cost_min'))
   const costMax    = toFloat(url.searchParams.get('cost_max'))
+  const maxPrep    = toInt(url.searchParams.get('max_prep'))
   const page       = Math.max(0, toInt(url.searchParams.get('page')) ?? 0)
 
   // Build dynamic WHERE clause
@@ -57,6 +58,10 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   if (costMax !== null) {
     wheres.push('r.cost_per_serving IS NOT NULL AND r.cost_per_serving <= ?')
     binds.push(costMax)
+  }
+  if (maxPrep !== null) {
+    wheres.push('r.prep_time IS NOT NULL AND r.prep_time <= ?')
+    binds.push(maxPrep)
   }
 
   let allRows: Record<string, unknown>[]

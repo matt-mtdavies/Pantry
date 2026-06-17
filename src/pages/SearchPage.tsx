@@ -22,12 +22,13 @@ interface Filters {
   age_bracket: string
   cal_max: string
   cost_max: string
+  max_prep: string
 }
 
-const EMPTY_FILTERS: Filters = { author: '', country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '' }
+const EMPTY_FILTERS: Filters = { author: '', country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '', max_prep: '' }
 
 function activeFilterCount(f: Filters) {
-  return [f.author, f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max].filter(Boolean).length
+  return [f.author, f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max, f.max_prep].filter(Boolean).length
 }
 
 export default function SearchPage() {
@@ -51,6 +52,7 @@ export default function SearchPage() {
     if (f.age_bracket) params.set('age_bracket', f.age_bracket)
     if (f.cal_max)     params.set('cal_max', f.cal_max)
     if (f.cost_max)    params.set('cost_max', f.cost_max)
+    if (f.max_prep)     params.set('max_prep', f.max_prep)
     if (pg > 0)        params.set('page', String(pg))
     return params.toString()
   }
@@ -225,6 +227,17 @@ export default function SearchPage() {
               <div className={styles.filterSection}>
                 <p className={styles.filterSectionLabel}>Recipe</p>
                 <div className={styles.filterRow}>
+                  <div className={styles.filterField}>
+                    <label className={styles.filterLabel}>Max prep time (mins)</label>
+                    <input
+                      className={styles.filterInput}
+                      type="number"
+                      min={0}
+                      placeholder="e.g. 30"
+                      value={filters.max_prep}
+                      onChange={e => handleFilterChange({ max_prep: e.target.value })}
+                    />
+                  </div>
                   <div className={styles.filterField}>
                     <label className={styles.filterLabel}>Max calories / serving</label>
                     <input

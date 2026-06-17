@@ -37,7 +37,7 @@ Rules:
 - amounts are strings (e.g. "1½", "2–3", "a handful"). Preserve fractions and ranges as strings.
 - unit can be empty string "" if no unit (e.g. "2 eggs" → amount: "2", unit: "", name: "eggs")
 - steps should be complete sentences with all the detail from the original
-- tags should be lowercase, short, helpful (e.g. dinner, baking, quick, vegetarian, chicken, pasta)
+- tags should be lowercase, short, helpful (e.g. dinner, baking, quick, vegetarian, chicken, pasta). Always include one cuisine tag if identifiable (e.g. italian, greek, indian, mexican, japanese, thai, french, chinese, spanish, turkish, american, british, vietnamese, korean, moroccan, lebanese, mediterranean). Omit a cuisine tag only if the dish genuinely has no clear single cuisine identity.
 - calories_per_serving: integer, estimated kcal per serving based on the ingredients. Use null if you cannot estimate.
 - cost_per_serving: float, estimated ingredient cost per serving in ${priceCtx}. Use null if you cannot estimate.
 - food_image_index: 0-based index of whichever provided image best shows the finished dish as an actual food photograph (not a screenshot of text, a webpage, a receipt, or a recipe card — only genuine food/meal photography). Use null if none of the images show actual cooked food.
