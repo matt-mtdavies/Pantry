@@ -1,4 +1,8 @@
 import type { Env } from '../env'
+import { checkRateLimit } from '../lib/rateLimit'
+
+const DAILY_SUGGESTION_LIMIT = 5
+const ONE_DAY_SECONDS = 86_400
 
 interface GeneratedRecipe {
   title: string
@@ -16,6 +20,14 @@ interface GeneratedRecipe {
 }
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
+  const userId = ctx.data.userId as string | undefined
+  if (userId) {
+    const allowed = await checkRateLimit(ctx.env.DB, `dinner:${userId}`, DAILY_SUGGESTION_LIMIT, ONE_DAY_SECONDS)
+    if (!allowed) {
+      return json({ error: `You've reached the daily limit of ${DAILY_SUGGESTION_LIMIT} dinner suggestions. Try again tomorrow.` }, 429)
+    }
+  }
+
   const body = await ctx.request.json() as {
     ingredients?: string[]
     mode?: 'match' | 'create'
