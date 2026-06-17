@@ -62,6 +62,8 @@ function Timer({ initialMinutes, label }: { initialMinutes: number; label: strin
   )
 }
 
+const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
+
 export default function CookModePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -71,6 +73,7 @@ export default function CookModePage() {
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set())
   const [servings, setServings] = useState<number>(2)
   const [showIngredients, setShowIngredients] = useState(true)
+  const [ttsEnabled, setTtsEnabled] = useState(false)
   const { isActive, acquire, release, supported } = useWakeLock()
   const { user } = useAuth()
 
@@ -106,6 +109,22 @@ export default function CookModePage() {
     return recipe.steps.map(step => detectTimerMinutes(step))
   }, [recipe])
 
+  useEffect(() => {
+    if (!ttsSupported) return
+    if (!ttsEnabled || !recipe) {
+      window.speechSynthesis.cancel()
+      return
+    }
+    const text = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    window.speechSynthesis.speak(utterance)
+  }, [ttsEnabled, currentStep, recipe, user?.unit_system])
+
+  useEffect(() => {
+    return () => { if (ttsSupported) window.speechSynthesis.cancel() }
+  }, [])
+
   const toggleIngredient = (i: number) => {
     setCheckedIngredients(prev => {
       const next = new Set(prev)
@@ -138,6 +157,28 @@ export default function CookModePage() {
         <div className={styles.headerTitle}>
           <span className={styles.recipeTitle}>{recipe.title}</span>
         </div>
+        {ttsSupported && (
+          <button
+            className={`${styles.ttsBtn} ${ttsEnabled ? styles.ttsBtnOn : ''}`}
+            onClick={() => setTtsEnabled(v => !v)}
+            aria-label={ttsEnabled ? 'Turn off read aloud' : 'Read steps aloud'}
+            title={ttsEnabled ? 'Read aloud on — tap to turn off' : 'Tap to read steps aloud'}
+          >
+            {ttsEnabled ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            )}
+          </button>
+        )}
         {supported && (
           <button
             className={`${styles.wakeLock} ${isActive ? styles.wakeLockOn : ''}`}

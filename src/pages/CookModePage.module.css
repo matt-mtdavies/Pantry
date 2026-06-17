@@ -62,6 +62,22 @@
 .wakeLock:hover { background: rgba(255,255,255,.1); }
 .wakeLockOn { background: rgba(196,99,62,.2); }
 
+.ttsBtn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,.05);
+  flex-shrink: 0;
+  color: #9C9189;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.ttsBtn:hover { background: rgba(255,255,255,.1); color: #FAF7F2; }
+.ttsBtnOn { background: rgba(196,99,62,.2); color: #C4633E; }
+
 .scaler {
   display: flex;
   align-items: center;
