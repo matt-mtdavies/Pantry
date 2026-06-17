@@ -134,6 +134,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .filterSection { display: flex; flex-direction: column; gap: var(--sp-3); }
@@ -165,6 +167,7 @@
   background: #C4633E;
   border-color: #C4633E;
   color: #FFFFFF;
+  -webkit-text-fill-color: #FFFFFF;
 }
 
 .filterSectionLabel {
