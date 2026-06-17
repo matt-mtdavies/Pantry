@@ -12,7 +12,7 @@ interface ClaudeMessage {
   content: Array<{ text: string }>
 }
 
-export const onRequestPost: PagesFunction<Env> = async (ctx) => {
+async function run(ctx: EventContext<Env, string, Record<string, unknown>>): Promise<Response> {
   if (!ctx.env.ANTHROPIC_API_KEY) {
     return json({ error: 'AI not configured' }, 503)
   }
@@ -99,6 +99,9 @@ Main ingredients: ${ingredientNames}`
     errors: errors.length ? errors : undefined,
   })
 }
+
+export const onRequestGet: PagesFunction<Env> = (ctx) => run(ctx)
+export const onRequestPost: PagesFunction<Env> = (ctx) => run(ctx)
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
