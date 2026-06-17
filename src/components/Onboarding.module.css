@@ -49,15 +49,32 @@
   border-color: #C4B8AC;
 }
 
+/* ── Middle (text + illustration grouped and centred) ────────────────── */
+
+.middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* ── Content ─────────────────────────────────────────────────────────── */
+
+.content {
+  padding: 0 var(--sp-8) var(--sp-6);
+  text-align: center;
+  flex-shrink: 0;
+  animation: slideUpFade 380ms var(--ease-out) both;
+}
+
 /* ── Illustration ────────────────────────────────────────────────────── */
 
 .illustrationWrap {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 var(--sp-4);
-  min-height: 0;
 }
 
 .illustrationInner {
@@ -69,15 +86,6 @@
 .illustrationInner svg {
   width: 100%;
   height: auto;
-}
-
-/* ── Content ─────────────────────────────────────────────────────────── */
-
-.content {
-  padding: 0 var(--sp-8) var(--sp-3);
-  text-align: center;
-  flex-shrink: 0;
-  animation: slideUpFade 380ms var(--ease-out) both;
 }
 
 .title {
