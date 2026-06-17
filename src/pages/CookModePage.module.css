@@ -400,57 +400,63 @@
 
 @keyframes celebFadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
-.celebGraphic {
-  position: relative;
-  width: 160px;
-  height: 160px;
+.clocheScene {
+  width: 260px;
+  height: 240px;
   margin-bottom: var(--sp-4);
 }
 
-.celebSvg {
+.clocheSvg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
-/* Circle draws itself in from the top, 600ms */
-.celebCircle {
-  stroke-dasharray: 252;
-  stroke-dashoffset: 252;
-  animation: drawCircle 0.6s ease-out forwards;
+/* Dome lifts up and away, slight tilt like a hand raising it */
+.cloche {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: liftLid 1.1s 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes drawCircle {
-  to { stroke-dashoffset: 0; }
-}
-
-/* Check draws itself in after circle is ~75% done */
-.celebCheck {
-  stroke-dasharray: 70;
-  stroke-dashoffset: 70;
-  animation: drawCheck 0.35s 0.45s ease-out forwards;
-}
-
-@keyframes drawCheck {
-  to { stroke-dashoffset: 0; }
-}
-
-/* Particles burst outward from centre then fade */
-.particle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 50%;
-  animation: particleBurst 0.65s ease-out forwards;
-}
-
-@keyframes particleBurst {
-  0%   { transform: translate(-50%, -50%); opacity: 1; }
+@keyframes liftLid {
+  0%   { transform: translateY(0)      rotate(0deg);  opacity: 1; }
   55%  { opacity: 1; }
-  100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))); opacity: 0; }
+  100% { transform: translateY(-170px) rotate(-7deg); opacity: 0; }
+}
+
+/* Food pops up from plate as lid clears */
+.revealFood {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: revealFood 0.45s 1.1s ease-out both;
+}
+
+@keyframes revealFood {
+  from { opacity: 0; transform: scaleY(0.5); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+
+/* Steam wisps draw in then float upward on a loop */
+.steam {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+}
+
+.steam1 { animation: steamDraw 0.5s 1.15s ease-out forwards, steamFloat 2.2s 1.65s ease-in-out infinite; }
+.steam2 { animation: steamDraw 0.5s 1.30s ease-out forwards, steamFloat 2.2s 1.80s ease-in-out infinite; }
+.steam3 { animation: steamDraw 0.5s 1.45s ease-out forwards, steamFloat 2.2s 1.95s ease-in-out infinite; }
+
+@keyframes steamDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes steamFloat {
+  0%, 100% { transform: translateY(0);     opacity: 0.45; }
+  50%       { transform: translateY(-14px); opacity: 0.15; }
 }
 
 .celebHeading {
@@ -459,7 +465,7 @@
   font-weight: 700;
   color: #FAF7F2;
   text-align: center;
-  animation: celebTextIn 0.5s 0.6s ease-out both;
+  animation: celebTextIn 0.5s 1.1s ease-out both;
 }
 
 .celebSub {
@@ -468,7 +474,7 @@
   color: #9C9189;
   text-align: center;
   max-width: 28ch;
-  animation: celebTextIn 0.5s 0.72s ease-out both;
+  animation: celebTextIn 0.5s 1.22s ease-out both;
 }
 
 @keyframes celebTextIn {
@@ -489,7 +495,7 @@
   border-radius: var(--radius-full);
   text-decoration: none;
   transition: background-color 150ms ease;
-  animation: celebTextIn 0.5s 0.84s ease-out both;
+  animation: celebTextIn 0.5s 1.34s ease-out both;
 }
 
 .celebBtn:hover { background: #a8532f; color: #FFFFFF; text-decoration: none; }

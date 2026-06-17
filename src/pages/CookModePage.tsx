@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
@@ -64,16 +64,6 @@ function Timer({ initialMinutes, label }: { initialMinutes: number; label: strin
 
 const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
-const BURST = [
-  { tx: '0px',   ty: '-80px', color: '#C4633E', size: 10 },
-  { tx: '57px',  ty: '-57px', color: '#E8A87C', size: 8  },
-  { tx: '80px',  ty: '0px',   color: '#7A8B6F', size: 9  },
-  { tx: '57px',  ty: '57px',  color: '#C4A882', size: 7  },
-  { tx: '0px',   ty: '80px',  color: '#C4633E', size: 9  },
-  { tx: '-57px', ty: '57px',  color: '#E8A87C', size: 8  },
-  { tx: '-80px', ty: '0px',   color: '#7A8B6F', size: 7  },
-  { tx: '-57px', ty: '-57px', color: '#C4A882', size: 10 },
-]
 
 export default function CookModePage() {
   const { id } = useParams<{ id: string }>()
@@ -324,34 +314,44 @@ export default function CookModePage() {
 
       {showCelebration && (
         <div className={styles.celebration} role="dialog" aria-modal="true" aria-label="Recipe complete">
-          <div className={styles.celebGraphic}>
-            {BURST.map((p, i) => (
-              <span
-                key={i}
-                className={styles.particle}
-                style={{
-                  '--tx': p.tx,
-                  '--ty': p.ty,
-                  width: `${p.size}px`,
-                  height: `${p.size}px`,
-                  background: p.color,
-                  animationDelay: `${400 + i * 15}ms`,
-                } as CSSProperties}
-              />
-            ))}
-            <svg viewBox="0 0 100 100" className={styles.celebSvg} aria-hidden="true">
-              <circle
-                cx="50" cy="50" r="40"
-                fill="none" stroke="#C4633E" strokeWidth="3"
-                className={styles.celebCircle}
-                transform="rotate(-90 50 50)"
-              />
-              <path
-                d="M 28 52 L 43 66 L 72 32"
-                fill="none" stroke="#C4633E" strokeWidth="3.5"
-                strokeLinecap="round" strokeLinejoin="round"
-                className={styles.celebCheck}
-              />
+          <div className={styles.clocheScene}>
+            <svg viewBox="0 0 200 200" className={styles.clocheSvg} aria-hidden="true">
+              {/* Tray (static) */}
+              <ellipse cx="100" cy="179" rx="82" ry="11" fill="#3A3530" />
+              <ellipse cx="100" cy="177" rx="78" ry="10" fill="#6A6058" />
+              <ellipse cx="100" cy="174" rx="65" ry="8.5" fill="#D4CCC4" />
+              <ellipse cx="100" cy="172" rx="56" ry="7"   fill="#FAF7F2" />
+
+              {/* Food revealed after lid lifts */}
+              <g className={styles.revealFood}>
+                <ellipse cx="100" cy="169" rx="24" ry="5.5" fill="#C4633E" />
+                <circle cx="72"  cy="169" r="5.5" fill="#7A8B6F" />
+                <circle cx="128" cy="169" r="5.5" fill="#7A8B6F" />
+                <circle cx="87"  cy="166.5" r="2.5" fill="#E8A87C" />
+                <circle cx="113" cy="166.5" r="2.5" fill="#E8A87C" />
+              </g>
+
+              {/* Steam rises after lid is gone */}
+              <path className={`${styles.steam} ${styles.steam1}`}
+                d="M 88 158 Q 83 145 88 132 Q 93 119 88 106"
+                fill="none" stroke="rgba(250,247,242,0.45)" strokeWidth="2.5" strokeLinecap="round" />
+              <path className={`${styles.steam} ${styles.steam2}`}
+                d="M 100 155 Q 96 142 100 129 Q 104 116 100 103"
+                fill="none" stroke="rgba(250,247,242,0.45)" strokeWidth="2.5" strokeLinecap="round" />
+              <path className={`${styles.steam} ${styles.steam3}`}
+                d="M 112 158 Q 117 145 112 132 Q 107 119 112 106"
+                fill="none" stroke="rgba(250,247,242,0.45)" strokeWidth="2.5" strokeLinecap="round" />
+
+              {/* Cloche dome — lifts up */}
+              <g className={styles.cloche}>
+                <ellipse cx="100" cy="172" rx="70" ry="9" fill="#28231E" />
+                <path d="M 30 172 C 30 120 70 82 100 82 C 130 82 170 120 170 172 Z" fill="#B4ACA4" />
+                <path d="M 55 160 C 55 110 76 86 100 86 C 124 86 145 110 145 160"
+                  fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+                <ellipse cx="100" cy="88" rx="14" ry="5.5" fill="#7A7068" />
+                <ellipse cx="100" cy="84" rx="11" ry="8"   fill="#9C9490" />
+                <ellipse cx="100" cy="81" rx="8"  ry="5"   fill="#C4BCB4" />
+              </g>
             </svg>
           </div>
           <h2 className={styles.celebHeading}>Nicely done!</h2>
