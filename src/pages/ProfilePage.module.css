@@ -563,6 +563,54 @@
 
 .inviteLinkBtn:hover { border-color: #9C9189; color: #1F1B16; }
 
+.iosHint {
+  margin-top: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: #F5E8E2;
+  border: 1px solid #E8C4A8;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  animation: hintIn 0.2s ease-out;
+}
+
+@keyframes hintIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.iosHintBody {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  flex: 1;
+}
+
+.iosHintIcon {
+  color: #C4633E;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.iosHintText {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #6B6459;
+  line-height: var(--leading-snug);
+}
+
+.iosHintClose {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #9C9189;
+  flex-shrink: 0;
+  padding: 2px 4px;
+  transition: color 150ms ease;
+}
+
+.iosHintClose:hover { color: #1F1B16; }
+
 /* Danger zone */
 .dangerZone {
   margin-top: var(--sp-8);

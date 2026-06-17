@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useOnboarding } from '../App'
+import { useInstallPrompt } from '../hooks/useInstallPrompt'
 import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, downloadExport } from '../lib/api'
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const { user, refetch, logout } = useAuth()
   const navigate = useNavigate()
   const onboarding = useOnboarding()
+  const { canPrompt, isIos, isInstalled, install } = useInstallPrompt()
 
   const [displayName, setDisplayName] = useState(user?.display_name ?? '')
   const [defaultServings, setDefaultServings] = useState(user?.default_servings ?? 2)
@@ -33,6 +35,7 @@ export default function ProfilePage() {
   const [backfillingImgs, setBackfillingImgs] = useState(false)
   const [backfillImgsMsg, setBackfillImgsMsg] = useState('')
   const [inviteCopied, setInviteCopied] = useState(false)
+  const [showIosHint, setShowIosHint] = useState(false)
   const [stats, setStats] = useState<{ recipe_count: number; avg_rating: number | null; total_ratings: number } | null>(null)
 
   // Avatar upload state
@@ -390,6 +393,31 @@ export default function ProfilePage() {
             <button className={styles.inviteLinkBtn} onClick={() => onboarding?.open()}>
               How Pantry works
             </button>
+            {!isInstalled && (canPrompt || isIos) && (
+              <>
+                <button
+                  className={styles.inviteLinkBtn}
+                  onClick={isIos ? () => setShowIosHint(v => !v) : install}
+                >
+                  Add to Home Screen
+                </button>
+                {isIos && showIosHint && (
+                  <div className={styles.iosHint}>
+                    <div className={styles.iosHintBody}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iosHintIcon} aria-hidden="true">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        <polyline points="16 6 12 2 8 6" />
+                        <line x1="12" y1="2" x2="12" y2="15" />
+                      </svg>
+                      <p className={styles.iosHintText}>
+                        Tap the <strong>Share</strong> button in Safari, then choose <strong>"Add to Home Screen"</strong>
+                      </p>
+                    </div>
+                    <button className={styles.iosHintClose} onClick={() => setShowIosHint(false)} aria-label="Dismiss">✕</button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <div className={styles.dangerZone}>
