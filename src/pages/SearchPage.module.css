@@ -272,6 +272,36 @@
 .badgeStar { color: #F59E0B; }
 .badgeCount { opacity: .8; font-weight: 400; }
 
+.heartBtn {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
+  color: #9C9189;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, transform 100ms ease;
+}
+
+.heartBtn:hover {
+  color: #C4633E;
+  background: #fff;
+}
+
+.heartBtn:active { transform: scale(0.88); }
+
+.heartBtnActive {
+  color: #C4633E;
+}
+
 .cardBody {
   padding: var(--sp-4);
   display: flex;

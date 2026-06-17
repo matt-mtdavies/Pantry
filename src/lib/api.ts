@@ -43,8 +43,12 @@ export async function deleteHeroImage(id: string): Promise<void> {
   await request<void>(`/api/recipes/${id}/hero-image`, { method: 'DELETE' })
 }
 
-export async function toggleFavourite(id: string, value: boolean): Promise<Recipe> {
-  return updateRecipe(id, { is_favourite: value } as Partial<Recipe>)
+export async function toggleFavourite(id: string, value: boolean): Promise<{ is_favourite: boolean }> {
+  return request<{ is_favourite: boolean }>(`/api/recipes/${id}/favourite`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value }),
+  })
 }
 
 export async function getShareLink(id: string): Promise<{ token: string; url: string }> {

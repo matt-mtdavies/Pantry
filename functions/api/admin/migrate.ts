@@ -32,6 +32,21 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
   await run('share_token_expires_at column', `ALTER TABLE recipes ADD COLUMN share_token_expires_at INTEGER`)
   await run('source_url column', `ALTER TABLE recipes ADD COLUMN source_url TEXT`)
 
+  // user_favourites join table (cross-user favouriting)
+  await run('user_favourites table', `
+    CREATE TABLE IF NOT EXISTS user_favourites (
+      user_id TEXT NOT NULL,
+      recipe_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      PRIMARY KEY (user_id, recipe_id)
+    )
+  `)
+  await run('backfill user_favourites', `
+    INSERT OR IGNORE INTO user_favourites (user_id, recipe_id, created_at)
+    SELECT user_id, id, created_at FROM recipes WHERE is_favourite = 1 AND is_deleted = 0
+  `)
+  await run('idx_user_favourites_user', `CREATE INDEX IF NOT EXISTS idx_user_favourites_user ON user_favourites (user_id)`)
+
   // Indexes: recipes
   await run('idx_recipes_user_deleted', `CREATE INDEX IF NOT EXISTS idx_recipes_user_deleted ON recipes (user_id, is_deleted)`)
   await run('idx_recipes_created_at', `CREATE INDEX IF NOT EXISTS idx_recipes_created_at ON recipes (created_at DESC)`)

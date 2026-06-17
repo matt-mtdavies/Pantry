@@ -307,27 +307,31 @@ export default function RecipePage() {
               </div>
             )}
 
-            {/* Owner actions */}
-            {isOwner && (
-              <div className={styles.actions}>
-                <Link to={`/recipe/${recipe.id}/cook`} className={styles.cookBtn}>Cook this recipe</Link>
+            {/* Actions */}
+            <div className={styles.actions}>
+              <Link to={`/recipe/${recipe.id}/cook`} className={styles.cookBtn}>Cook this recipe</Link>
+              {user && (
                 <button
                   className={`${styles.iconBtn} ${recipe.is_favourite ? styles.iconBtnActive : ''}`}
                   onClick={handleToggleFavourite}
                   aria-label={recipe.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
                   aria-pressed={recipe.is_favourite}
                 ><HeartIcon filled={recipe.is_favourite} size={20} /></button>
-                <button className={styles.iconBtn} onClick={() => setCollectionsOpen(o => !o)} aria-label="Add to collection" title="Add to collection">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
-                    <rect x="1.5" y="4.5" width="6" height="6" rx="1.5"/>
-                    <rect x="10.5" y="4.5" width="6" height="6" rx="1.5"/>
-                    <rect x="1.5" y="13" width="6" height="3.5" rx="1"/>
-                    <path d="M13.5 13v3.5M11.5 15h4"/>
-                  </svg>
-                </button>
-                <Link to={`/recipe/${recipe.id}/edit`} className={styles.iconBtn} aria-label="Edit recipe"><EditIcon size={18} /></Link>
-              </div>
-            )}
+              )}
+              {isOwner && (
+                <>
+                  <button className={styles.iconBtn} onClick={() => setCollectionsOpen(o => !o)} aria-label="Add to collection" title="Add to collection">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+                      <rect x="1.5" y="4.5" width="6" height="6" rx="1.5"/>
+                      <rect x="10.5" y="4.5" width="6" height="6" rx="1.5"/>
+                      <rect x="1.5" y="13" width="6" height="3.5" rx="1"/>
+                      <path d="M13.5 13v3.5M11.5 15h4"/>
+                    </svg>
+                  </button>
+                  <Link to={`/recipe/${recipe.id}/edit`} className={styles.iconBtn} aria-label="Edit recipe"><EditIcon size={18} /></Link>
+                </>
+              )}
+            </div>
 
             {/* Collection panel */}
             {isOwner && collectionsOpen && recipe && (
@@ -378,13 +382,6 @@ export default function RecipePage() {
                     maxLength={80}
                   />
                 </div>
-              </div>
-            )}
-
-            {/* Visitor actions */}
-            {!isOwner && (
-              <div className={styles.actions}>
-                <Link to={`/recipe/${recipe.id}/cook`} className={styles.cookBtn}>Cook this recipe</Link>
               </div>
             )}
 

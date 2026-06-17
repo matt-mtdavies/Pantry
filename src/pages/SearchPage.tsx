@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { SearchIcon, DishIcon, DiceIcon } from '../components/icons'
+import { SearchIcon, DishIcon, DiceIcon, HeartIcon } from '../components/icons'
 import { Avatar } from '../components/Avatar'
-import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage } from '../lib/api'
+import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage, toggleFavourite } from '../lib/api'
 import type { GeneratedRecipe } from '../lib/api'
 import { imageUrl, formatTime } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
+import { useAuth } from '../hooks/useAuth'
 import type { Recipe } from '../types'
 import styles from './SearchPage.module.css'
 
@@ -30,6 +31,7 @@ function activeFilterCount(f: Filters) {
 }
 
 export default function SearchPage() {
+  const { user } = useAuth()
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -98,6 +100,15 @@ export default function SearchPage() {
   }
 
   const activeCount = activeFilterCount(filters)
+
+  const handleToggleFavourite = async (recipeId: string, value: boolean) => {
+    setResults(prev => prev.map(r => r.id === recipeId ? { ...r, is_favourite: value } : r))
+    try {
+      await toggleFavourite(recipeId, value)
+    } catch {
+      setResults(prev => prev.map(r => r.id === recipeId ? { ...r, is_favourite: !value } : r))
+    }
+  }
 
   return (
     <div className="page-shell">
@@ -261,7 +272,13 @@ export default function SearchPage() {
             <>
               <p className={styles.count}>{results.length}{hasMore ? '+' : ''} recipe{results.length !== 1 ? 's' : ''}</p>
               <div className={styles.grid}>
-                {results.map(r => <SearchCard key={r.id} recipe={r} />)}
+                {results.map(r => (
+                  <SearchCard
+                    key={r.id}
+                    recipe={r}
+                    onToggleFavourite={user ? handleToggleFavourite : undefined}
+                  />
+                ))}
               </div>
               {hasMore && (
                 <div className={styles.loadMore}>
@@ -280,13 +297,23 @@ export default function SearchPage() {
   )
 }
 
-function SearchCard({ recipe: r }: { recipe: Recipe }) {
+function SearchCard({ recipe: r, onToggleFavourite }: { recipe: Recipe; onToggleFavourite?: (id: string, value: boolean) => void }) {
   const thumb = r.hero_image_key ? imageUrl(r.hero_image_key) : null
   const totalTime = (r.prep_time ?? 0) + (r.cook_time ?? 0)
 
   return (
     <div className={styles.card}>
       <Link to={`/recipe/${r.id}`} className={styles.cardOverlay} aria-label={r.title} />
+      {onToggleFavourite && (
+        <button
+          className={`${styles.heartBtn} ${r.is_favourite ? styles.heartBtnActive : ''}`}
+          onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFavourite(r.id, !r.is_favourite) }}
+          aria-label={r.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+          aria-pressed={!!r.is_favourite}
+        >
+          <HeartIcon filled={!!r.is_favourite} size={15} />
+        </button>
+      )}
       <div className={styles.cardImg}>
         {thumb
           ? <img src={thumb} alt={r.title} className={styles.cardPhoto} />

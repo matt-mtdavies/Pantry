@@ -13,7 +13,7 @@ function parseRecipe(row: Record<string, unknown>) {
     steps: JSON.parse((row.steps as string) || '[]'),
     tags: JSON.parse((row.tags as string) || '[]'),
     screenshot_keys: JSON.parse((row.screenshot_keys as string) || '[]'),
-    is_favourite: row.is_favourite === 1,
+    is_favourite: row.uf_fav === 1,
     is_deleted: row.is_deleted === 1,
     needs_attention: row.needs_attention === 1,
   }
@@ -21,9 +21,13 @@ function parseRecipe(row: Record<string, unknown>) {
 
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userId = ctx.data.userId as string
-  const { results } = await ctx.env.DB.prepare(
-    'SELECT * FROM recipes WHERE user_id = ? AND is_deleted = 0 ORDER BY updated_at DESC'
-  ).bind(userId).all<Record<string, unknown>>()
+  const { results } = await ctx.env.DB.prepare(`
+    SELECT r.*,
+      (SELECT 1 FROM user_favourites WHERE user_id = ? AND recipe_id = r.id LIMIT 1) AS uf_fav
+    FROM recipes r
+    WHERE r.user_id = ? AND r.is_deleted = 0
+    ORDER BY r.updated_at DESC
+  `).bind(userId, userId).all<Record<string, unknown>>()
   return json(results.map(parseRecipe))
 }
 
