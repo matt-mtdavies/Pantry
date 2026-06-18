@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { getInvite } from '../lib/api'
 import { imageUrl } from '../lib/utils'
 import { avatarEmoji } from '../lib/avatars'
-import { CollectionIcon, IngredientIcon, KitchenIcon } from '../components/icons'
+import { CollectionIcon, ShareIcon, KitchenIcon } from '../components/icons'
 import type { InviterInfo } from '../lib/api'
 import styles from './InvitePage.module.css'
 
@@ -84,8 +84,8 @@ export default function InvitePage() {
             <span>Save any recipe in seconds</span>
           </li>
           <li className={styles.feature}>
-            <IngredientIcon size={18} className={styles.featureIcon} />
-            <span>Scale servings for any crowd</span>
+            <ShareIcon size={18} className={styles.featureIcon} />
+            <span>Share recipes with friends and discover their secret sauces</span>
           </li>
           <li className={styles.feature}>
             <KitchenIcon size={18} className={styles.featureIcon} />
