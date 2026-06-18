@@ -85,10 +85,6 @@ export default function CookModePage() {
   const [showIngredients, setShowIngredients] = useState(true)
   const [ttsEnabled, setTtsEnabled] = useState(false)
   const [ttsSpeaking, setTtsSpeaking] = useState(false)
-  const [ttsVoice, setTtsVoice] = useState<'ai' | 'browser'>(() => {
-    try { return (localStorage.getItem('pantry:ttsVoice') as 'ai' | 'browser') || 'ai' }
-    catch { return 'ai' }
-  })
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -166,26 +162,11 @@ export default function CookModePage() {
   }
 
   // Called directly from click handlers so iOS treats it as a user-gesture chain
-  const speakStep = async (stepIndex: number, voiceOverride?: 'ai' | 'browser') => {
+  const speakStep = async (stepIndex: number) => {
     if (!recipe) return
     const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
     stopAudio()
     setTtsSpeaking(true)
-
-    const voice = voiceOverride ?? ttsVoice
-
-    if (voice === 'browser') {
-      if (!ttsSupported) { setTtsSpeaking(false); return }
-      const utterance = new SpeechSynthesisUtterance(text)
-      const v = pickVoice(voices)
-      if (v) utterance.voice = v
-      utterance.rate = 0.9
-      utterance.onend = () => setTtsSpeaking(false)
-      utterance.onerror = () => setTtsSpeaking(false)
-      window.speechSynthesis.speak(utterance)
-      return
-    }
-
     try {
       let url = audioCacheRef.current.get(text)
       if (!url) {
@@ -218,12 +199,6 @@ export default function CookModePage() {
     }
     setTtsEnabled(true)
     await speakStep(currentStep)
-  }
-
-  const handleVoiceChange = (v: 'ai' | 'browser') => {
-    setTtsVoice(v)
-    try { localStorage.setItem('pantry:ttsVoice', v) } catch {}
-    if (ttsEnabled) speakStep(currentStep, v)
   }
 
   const goToStep = (step: number) => {
@@ -329,46 +304,28 @@ export default function CookModePage() {
 
           <p className={styles.stepText}>{step}</p>
 
-          <div className={styles.ttsRow}>
-            <button
-              className={`${styles.ttsToggle} ${ttsEnabled ? styles.ttsToggleOn : ''}`}
-              onClick={handleTtsToggle}
-              aria-label={ttsLabel}
-              aria-pressed={ttsEnabled}
-            >
-              {ttsEnabled ? (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                </svg>
-              ) : (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <line x1="23" y1="9" x2="17" y2="15" />
-                  <line x1="17" y1="9" x2="23" y2="15" />
-                </svg>
-              )}
-              {ttsLabel}
-            </button>
-
-            {ttsSupported && (
-              <div className={styles.voiceSelect} role="group" aria-label="Voice type">
-                <button
-                  className={`${styles.voiceOption} ${ttsVoice === 'browser' ? styles.voiceOptionActive : ''}`}
-                  onClick={() => handleVoiceChange('browser')}
-                >
-                  Browser
-                </button>
-                <button
-                  className={`${styles.voiceOption} ${ttsVoice === 'ai' ? styles.voiceOptionActive : ''}`}
-                  onClick={() => handleVoiceChange('ai')}
-                >
-                  AI voice
-                </button>
-              </div>
+          {/* Prominent labelled TTS pill — visible right below the step text */}
+          <button
+            className={`${styles.ttsToggle} ${ttsEnabled ? styles.ttsToggleOn : ''}`}
+            onClick={handleTtsToggle}
+            aria-label={ttsLabel}
+            aria-pressed={ttsEnabled}
+          >
+            {ttsEnabled ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
             )}
-          </div>
+            {ttsLabel}
+          </button>
 
           {timers.length > 0 && (
             <div className={styles.timers}>
