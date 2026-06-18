@@ -165,10 +165,9 @@ export default function CookModePage() {
     setTtsSpeaking(false)
   }
 
-  const speakStep = async (stepIndex: number) => {
-    if (!recipe || !audioCtxRef.current) return
+  const speakText = async (text: string) => {
+    if (!audioCtxRef.current) return
     const ctx = audioCtxRef.current
-    const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
     stopAudio()
     setTtsSpeaking(true)
     try {
@@ -193,6 +192,12 @@ export default function CookModePage() {
       setTtsSpeaking(false)
       fallbackSpeak(text)
     }
+  }
+
+  const speakStep = async (stepIndex: number) => {
+    if (!recipe) return
+    const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
+    await speakText(text)
   }
 
   const handleTtsToggle = async () => {
@@ -366,7 +371,10 @@ export default function CookModePage() {
             ) : (
               <button
                 className={`${styles.navBtn} ${styles.navBtnDone}`}
-                onClick={() => setShowCelebration(true)}
+                onClick={() => {
+                  setShowCelebration(true)
+                  if (ttsEnabled) speakText('Nice job you little champion! Enjoy your fabulous creation!')
+                }}
               >
                 All done! ✓
               </button>
