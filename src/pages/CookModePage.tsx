@@ -88,7 +88,9 @@ export default function CookModePage() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const audioCacheRef = useRef<Map<string, string>>(new Map())
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null)
+  const audioCacheRef = useRef<Map<string, AudioBuffer>>(new Map())
   const { acquire, release } = useWakeLock()
   const { user } = useAuth()
 
@@ -118,8 +120,9 @@ export default function CookModePage() {
   // Cleanup all audio on unmount
   useEffect(() => {
     return () => {
+      if (sourceNodeRef.current) { try { sourceNodeRef.current.stop() } catch { /* */ } }
       audioRef.current?.pause()
-      audioCacheRef.current.forEach(url => URL.revokeObjectURL(url))
+      audioCtxRef.current?.close()
       if (ttsSupported) window.speechSynthesis.cancel()
     }
   }, [])
@@ -153,38 +156,39 @@ export default function CookModePage() {
   }
 
   const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
+    if (sourceNodeRef.current) {
+      try { sourceNodeRef.current.stop() } catch { /* already ended */ }
+      sourceNodeRef.current = null
     }
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null }
     if (ttsSupported) window.speechSynthesis.cancel()
     setTtsSpeaking(false)
   }
 
-  // Called directly from click handlers so iOS treats it as a user-gesture chain
   const speakStep = async (stepIndex: number) => {
-    if (!recipe) return
+    if (!recipe || !audioCtxRef.current) return
+    const ctx = audioCtxRef.current
     const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
     stopAudio()
     setTtsSpeaking(true)
     try {
-      let url = audioCacheRef.current.get(text)
-      if (!url) {
+      let buffer = audioCacheRef.current.get(text)
+      if (!buffer) {
         const res = await fetch('/api/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
         })
         if (!res.ok) throw new Error('TTS API unavailable')
-        const blob = await res.blob()
-        url = URL.createObjectURL(blob)
-        audioCacheRef.current.set(text, url)
+        buffer = await ctx.decodeAudioData(await res.arrayBuffer())
+        audioCacheRef.current.set(text, buffer)
       }
-      const audio = new Audio(url)
-      audioRef.current = audio
-      audio.onended = () => setTtsSpeaking(false)
-      audio.onerror = () => { setTtsSpeaking(false); fallbackSpeak(text) }
-      await audio.play()
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      source.connect(ctx.destination)
+      source.onended = () => setTtsSpeaking(false)
+      sourceNodeRef.current = source
+      source.start()
     } catch {
       setTtsSpeaking(false)
       fallbackSpeak(text)
@@ -197,6 +201,10 @@ export default function CookModePage() {
       setTtsEnabled(false)
       return
     }
+    // Create and resume AudioContext synchronously within the user gesture —
+    // this is what unlocks audio on iOS before the async fetch happens.
+    if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
+    if (audioCtxRef.current.state === 'suspended') await audioCtxRef.current.resume()
     setTtsEnabled(true)
     await speakStep(currentStep)
   }
