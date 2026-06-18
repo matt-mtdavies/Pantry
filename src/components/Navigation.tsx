@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Avatar } from './Avatar'
 import { ShareIcon } from './icons'
-import { resendVerificationEmail } from '../lib/api'
+import { resendVerificationEmail, createInvite } from '../lib/api'
 import styles from './Navigation.module.css'
 
 // ── SVG Tab Icons ─────────────────────────────────────────────────────────────
@@ -84,6 +84,7 @@ export default function Navigation() {
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
   const [resendError, setResendError] = useState(false)
+  const [inviteLoading, setInviteLoading] = useState(false)
 
   const showBanner = user != null && user.email_verified === false
 
@@ -110,13 +111,22 @@ export default function Navigation() {
     navigate('/auth')
   }
 
-  const handleInvite = () => {
-    const url = window.location.origin
-    if (typeof navigator.share === 'function') {
-      navigator.share({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url }).catch(() => {})
-    } else {
-      navigator.clipboard.writeText(url).catch(() => {})
-    }
+  const handleInvite = async () => {
+    if (inviteLoading) return
+    setInviteLoading(true)
+    try {
+      const { url } = await createInvite()
+      const name = user?.display_name?.split(' ')[0] ?? null
+      const text = name
+        ? `${name} invited you to Pantry — share recipes with friends and discover their secret sauces.`
+        : 'Join me on Pantry — share recipes with friends and discover their secret sauces.'
+      if (typeof navigator.share === 'function') {
+        await navigator.share({ title: 'Join me on Pantry', text, url }).catch(() => {})
+      } else {
+        await navigator.clipboard.writeText(url).catch(() => {})
+      }
+    } catch { /* ignore */ }
+    finally { setInviteLoading(false) }
   }
 
   return (
@@ -165,8 +175,9 @@ export default function Navigation() {
           <button
             className={styles.inviteBtn}
             onClick={handleInvite}
+            disabled={inviteLoading}
             aria-label="Invite someone to Pantry"
-            title="Invite others"
+            title="Invite a friend"
           >
             <ShareIcon size={18} />
           </button>

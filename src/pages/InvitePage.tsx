@@ -74,7 +74,7 @@ export default function InvitePage() {
         <h1 className={styles.inviterName}>
           {inviter?.display_name ?? 'A friend'}
         </h1>
-        <p className={styles.inviteText}>invited you to Pantry</p>
+        <p className={styles.inviteText}>Share recipes with friends and discover their secret sauces.</p>
 
         <div className={styles.divider} />
 
