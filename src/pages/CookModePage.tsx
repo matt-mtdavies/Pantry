@@ -64,6 +64,19 @@ function Timer({ initialMinutes, label }: { initialMinutes: number; label: strin
 
 const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
+function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  if (!voices.length) return null
+  const lang = (navigator.language || 'en').split('-')[0]
+  // iOS/macOS Enhanced voices, Edge Natural voices — all clearly better than the default
+  return (
+    voices.find(v => v.lang.startsWith(lang) && /enhanced|premium|natural/i.test(v.name)) ??
+    voices.find(v => v.lang.startsWith(lang) && v.localService && !v.default) ??
+    voices.find(v => v.lang.startsWith(lang) && v.default) ??
+    voices.find(v => v.lang.startsWith('en') && /enhanced|premium|natural/i.test(v.name)) ??
+    voices.find(v => v.lang.startsWith('en')) ??
+    null
+  )
+}
 
 export default function CookModePage() {
   const { id } = useParams<{ id: string }>()
@@ -75,6 +88,7 @@ export default function CookModePage() {
   const [servings, setServings] = useState<number>(2)
   const [showIngredients, setShowIngredients] = useState(true)
   const [ttsEnabled, setTtsEnabled] = useState(false)
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
   const { isActive, acquire, release, supported } = useWakeLock()
   const { user } = useAuth()
@@ -113,6 +127,14 @@ export default function CookModePage() {
 
   useEffect(() => {
     if (!ttsSupported) return
+    const load = () => setVoices(window.speechSynthesis.getVoices())
+    load()
+    window.speechSynthesis.addEventListener('voiceschanged', load)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', load)
+  }, [])
+
+  useEffect(() => {
+    if (!ttsSupported) return
     if (!ttsEnabled || !recipe) {
       window.speechSynthesis.cancel()
       return
@@ -120,8 +142,12 @@ export default function CookModePage() {
     const text = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
+    const voice = pickVoice(voices)
+    if (voice) utterance.voice = voice
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
     window.speechSynthesis.speak(utterance)
-  }, [ttsEnabled, currentStep, recipe, user?.unit_system])
+  }, [ttsEnabled, currentStep, recipe, user?.unit_system, voices])
 
   useEffect(() => {
     return () => { if (ttsSupported) window.speechSynthesis.cancel() }
