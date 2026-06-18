@@ -27,10 +27,12 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   ).bind(id, userId).first<{ id: string }>()
   if (!col) return json({ error: 'Not found' }, 404)
 
-  // Verify recipe belongs to user
-  const recipe = await ctx.env.DB.prepare(
-    'SELECT id FROM recipes WHERE id = ? AND user_id = ? AND is_deleted = 0'
-  ).bind(recipeId, userId).first<{ id: string }>()
+  // Verify recipe exists and is accessible (own recipe OR public user's recipe)
+  const recipe = await ctx.env.DB.prepare(`
+    SELECT r.id FROM recipes r
+    LEFT JOIN users u ON r.user_id = u.id
+    WHERE r.id = ? AND r.is_deleted = 0 AND (r.user_id = ? OR u.is_public = 1)
+  `).bind(recipeId, userId).first<{ id: string }>()
   if (!recipe) return json({ error: 'Recipe not found' }, 404)
 
   const existing = await ctx.env.DB.prepare(

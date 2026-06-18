@@ -72,9 +72,11 @@ export default function HomePage() {
     let list: Recipe[]
     if (filter === 'favourites') {
       list = recipes.filter(r => r.is_favourite)
+    } else if (activeCollection) {
+      // Collection mode: show all accessible recipes (own + external favourites)
+      // so the user can add any of them to the collection
+      list = recipes
     } else {
-      // For collections and 'all', always start from ownRecipes so
-      // the collection toggle mode can show everything.
       list = ownRecipes
     }
     if (cuisineFilter) {
@@ -84,7 +86,7 @@ export default function HomePage() {
       list = fuse.search(query).map(r => r.item).filter(r => list.includes(r))
     }
     return list
-  }, [recipes, ownRecipes, filter, cuisineFilter, query, fuse])
+  }, [recipes, ownRecipes, activeCollection, filter, cuisineFilter, query, fuse])
 
   const handleToggleFavourite = async (id: string, value: boolean) => {
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: value } : r))
