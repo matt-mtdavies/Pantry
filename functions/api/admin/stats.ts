@@ -158,6 +158,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
   // ── Cloudflare zone analytics ──────────────────────────────────────────────
   let cloudflare: { totalVisits: number; totalBytes: number; daily: Array<{ date: string; visits: number; bytes: number }> } | null = null
+  let cfDebug: unknown = null
   if (ctx.env.CF_ZONE_ID && ctx.env.CF_API_TOKEN) {
     try {
       const gql = `{
@@ -183,19 +184,21 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
         body: JSON.stringify({ query: gql }),
         signal: AbortSignal.timeout(8_000),
       })
-      if (cfRes.ok) {
-        const cfData = await cfRes.json() as {
-          data?: {
-            viewer?: {
-              zones?: Array<{
-                httpRequests1dGroups?: Array<{
-                  sum: { requests: number; pageViews: number; bytes: number }
-                  dimensions: { date: string }
-                }>
+      const cfData = await cfRes.json() as {
+        data?: {
+          viewer?: {
+            zones?: Array<{
+              httpRequests1dGroups?: Array<{
+                sum: { requests: number; pageViews: number; bytes: number }
+                dimensions: { date: string }
               }>
-            }
+            }>
           }
         }
+        errors?: unknown
+      }
+      cfDebug = { status: cfRes.status, errors: cfData.errors ?? null, zoneCount: cfData.data?.viewer?.zones?.length ?? 0, groupCount: cfData.data?.viewer?.zones?.[0]?.httpRequests1dGroups?.length ?? 0 }
+      if (cfRes.ok && !cfData.errors) {
         const groups = cfData.data?.viewer?.zones?.[0]?.httpRequests1dGroups ?? []
         const daily = groups.map(g => ({
           date: g.dimensions.date,
@@ -208,7 +211,9 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
           daily,
         }
       }
-    } catch { /* skip on error */ }
+    } catch (e) {
+      cfDebug = { error: String(e) }
+    }
   }
 
   // ── Resend email stats ─────────────────────────────────────────────────────
@@ -309,6 +314,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       daily: buildAiDaily(aiDaily),
     },
     cloudflare,
+    cfDebug,
     email,
     insights,
   })
