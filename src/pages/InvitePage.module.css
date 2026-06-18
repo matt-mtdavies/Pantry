@@ -223,6 +223,14 @@
   50% { opacity: 0.45; }
 }
 
+.alreadyMember {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: #C4633E;
+  font-weight: 600;
+  text-align: center;
+}
+
 .notFoundText {
   font-family: var(--font-body);
   font-size: var(--text-base);

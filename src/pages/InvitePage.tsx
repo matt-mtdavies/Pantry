@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { getInvite } from '../lib/api'
 import { imageUrl } from '../lib/utils'
@@ -11,21 +11,21 @@ import styles from './InvitePage.module.css'
 export default function InvitePage() {
   const { token } = useParams<{ token: string }>()
   const { user, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
   const [inviter, setInviter] = useState<InviterInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
-    if (user) { navigate('/'); return }
     if (!token) { setNotFound(true); setLoading(false); return }
-    try { sessionStorage.setItem('pantry_invite', token) } catch { /* ignore */ }
+    if (!user) {
+      try { sessionStorage.setItem('pantry_invite', token) } catch { /* ignore */ }
+    }
     getInvite(token)
       .then(setInviter)
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
-  }, [token, user, authLoading, navigate])
+  }, [token, user, authLoading])
 
   if (authLoading || loading) {
     return (
@@ -93,13 +93,20 @@ export default function InvitePage() {
           </li>
         </ul>
 
-        <Link to={ctaUrl} className={styles.cta}>{ctaLabel}</Link>
-
-        <p className={styles.freeLine}>Free · No credit card needed</p>
-
-        <Link to="/auth" className={styles.signinLink}>
-          Already have an account? Sign in
-        </Link>
+        {user ? (
+          <>
+            <p className={styles.alreadyMember}>You're already on Pantry!</p>
+            <Link to="/" className={styles.cta}>Go to my Pantry →</Link>
+          </>
+        ) : (
+          <>
+            <Link to={ctaUrl} className={styles.cta}>{ctaLabel}</Link>
+            <p className={styles.freeLine}>Free · No credit card needed</p>
+            <Link to="/auth" className={styles.signinLink}>
+              Already have an account? Sign in
+            </Link>
+          </>
+        )}
       </div>
     </div>
   )
