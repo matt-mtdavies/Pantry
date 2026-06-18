@@ -270,6 +270,24 @@ export async function toggleRecipeInCollection(collectionId: string, recipeId: s
   })
 }
 
+// Invites
+
+export interface InviterInfo {
+  display_name: string | null
+  avatar_id: string | null
+  avatar_image_key: string | null
+}
+
+export async function createInvite(): Promise<{ token: string; url: string }> {
+  return request<{ token: string; url: string }>('/api/invites', { method: 'POST' })
+}
+
+export async function getInvite(token: string): Promise<InviterInfo> {
+  const res = await fetch(`/api/invites/${token}`)
+  if (!res.ok) throw new Error('Not found')
+  return res.json() as Promise<InviterInfo>
+}
+
 // Data export
 
 export function downloadExport(): void {

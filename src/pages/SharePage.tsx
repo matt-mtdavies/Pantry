@@ -56,7 +56,9 @@ export default function SharePage() {
       <div className={styles.banner}>
         <div className={styles.bannerInner}>
           <span className={styles.bannerBrand}>Pantry</span>
-          <span className={styles.bannerText}>A friend shared this recipe with you</span>
+          <span className={styles.bannerText}>
+            {recipe.author_name ? `${recipe.author_name} shared this recipe with you` : 'A recipe shared with you'}
+          </span>
           {user ? (
             <button className={styles.saveBtn} onClick={() => navigate(`/recipe/${recipe.id}`)}>
               View in my Pantry

@@ -9,6 +9,7 @@ import CookModePage from './pages/CookModePage'
 import ImportPage from './pages/ImportPage'
 import EditRecipePage from './pages/EditRecipePage'
 import SharePage from './pages/SharePage'
+import InvitePage from './pages/InvitePage'
 import ProfilePage from './pages/ProfilePage'
 import AuthPage from './pages/AuthPage'
 import AuthCompletePage from './pages/AuthCompletePage'
@@ -57,6 +58,7 @@ function AppRoutes() {
           <Route path="/api/auth/verify" element={<AuthPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/share/:token" element={<SharePage />} />
+          <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />

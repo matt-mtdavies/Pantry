@@ -4,6 +4,7 @@ const PUBLIC_PREFIXES = [
   '/api/auth/',
   '/api/share/',
   '/api/images/',
+  '/api/invites/',  // GET /api/invites/:token — public invite lookup
 ]
 
 function getCookie(header: string, name: string): string | null {

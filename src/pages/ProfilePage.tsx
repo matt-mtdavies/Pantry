@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useOnboarding } from '../App'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
-import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar } from '../lib/api'
+import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, createInvite } from '../lib/api'
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
 import { imageUrl } from '../lib/utils'
@@ -35,6 +35,7 @@ export default function ProfilePage() {
   const [backfillingImgs, setBackfillingImgs] = useState(false)
   const [backfillImgsMsg, setBackfillImgsMsg] = useState('')
   const [inviteCopied, setInviteCopied] = useState(false)
+  const [inviteLoading, setInviteLoading] = useState(false)
   const [showIosHint, setShowIosHint] = useState(false)
   const [stats, setStats] = useState<{ recipe_count: number; avg_rating: number | null; total_ratings: number } | null>(null)
 
@@ -202,16 +203,37 @@ export default function ProfilePage() {
     finally { setBackfillingImgs(false) }
   }
 
-  const handleInviteCopy = async () => {
+  const getInviteUrl = async (): Promise<string> => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/auth`)
+      const { url } = await createInvite()
+      return url
+    } catch {
+      return `${window.location.origin}/auth`
+    }
+  }
+
+  const handleInviteCopy = async () => {
+    setInviteLoading(true)
+    try {
+      const url = await getInviteUrl()
+      await navigator.clipboard.writeText(url)
       setInviteCopied(true)
       setTimeout(() => setInviteCopied(false), 2500)
     } catch { /* ignore */ }
+    finally { setInviteLoading(false) }
   }
 
-  const handleInviteShare = () => {
-    navigator.share?.({ title: 'Join me on Pantry', text: 'Track and share your favourite recipes on Pantry.', url: `${window.location.origin}/auth` }).catch(() => {})
+  const handleInviteShare = async () => {
+    setInviteLoading(true)
+    try {
+      const url = await getInviteUrl()
+      const name = user?.display_name?.split(' ')[0] ?? null
+      const text = name
+        ? `${name} invited you to Pantry — save, scale, and cook from your recipe collection.`
+        : 'Join me on Pantry — save, scale, and cook from your recipe collection.'
+      await navigator.share?.({ title: 'Join me on Pantry', text, url })
+    } catch { /* user cancelled or share failed */ }
+    finally { setInviteLoading(false) }
   }
 
   const handleDeleteAccount = async () => {
@@ -387,8 +409,12 @@ export default function ProfilePage() {
           <div className={styles.signOutSection}>
             <button className={styles.signOutBtn} onClick={handleLogout}>Sign out of Pantry</button>
 
-            <button className={styles.inviteLinkBtn} onClick={typeof navigator.share === 'function' ? handleInviteShare : handleInviteCopy}>
-              {inviteCopied ? '✓ Link copied' : 'Invite a friend'}
+            <button
+              className={styles.inviteLinkBtn}
+              onClick={typeof navigator.share === 'function' ? handleInviteShare : handleInviteCopy}
+              disabled={inviteLoading}
+            >
+              {inviteLoading ? 'Preparing…' : inviteCopied ? '✓ Link copied' : 'Invite a friend'}
             </button>
             <button className={styles.inviteLinkBtn} onClick={() => onboarding?.open()}>
               How Pantry works
