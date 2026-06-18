@@ -231,7 +231,7 @@ export default function ProfilePage() {
       const text = name
         ? `${name} invited you to Pantry — save, share, discover and cook from your recipe collection.`
         : 'You\'re invited to Pantry — save, share, discover and cook from your recipe collection.'
-      await navigator.share?.({ title: 'Join me on Pantry', text, url })
+      await navigator.share?.({ title: 'Join me on Pantry', text: `${text} ${url}` })
     } catch { /* user cancelled or share failed */ }
     finally { setInviteLoading(false) }
   }

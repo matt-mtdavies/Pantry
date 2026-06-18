@@ -121,7 +121,7 @@ export default function Navigation() {
         ? `${name} invited you to Pantry — save, share, discover and cook from your recipe collection.`
         : 'You\'re invited to Pantry — save, share, discover and cook from your recipe collection.'
       if (typeof navigator.share === 'function') {
-        await navigator.share({ title: 'Join me on Pantry', text, url }).catch(() => {})
+        await navigator.share({ title: 'Join me on Pantry', text: `${text} ${url}` }).catch(() => {})
       } else {
         await navigator.clipboard.writeText(url).catch(() => {})
       }
