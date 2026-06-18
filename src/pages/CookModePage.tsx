@@ -165,22 +165,23 @@ export default function CookModePage() {
     setTtsSpeaking(false)
   }
 
-  const speakText = async (text: string) => {
+  const speakText = async (text: string, hd = false) => {
     if (!audioCtxRef.current) return
     const ctx = audioCtxRef.current
     stopAudio()
     setTtsSpeaking(true)
     try {
-      let buffer = audioCacheRef.current.get(text)
+      const cacheKey = hd ? `hd:${text}` : text
+      let buffer = audioCacheRef.current.get(cacheKey)
       if (!buffer) {
         const res = await fetch('/api/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text, ...(hd && { hd: true }) }),
         })
         if (!res.ok) throw new Error('TTS API unavailable')
         buffer = await ctx.decodeAudioData(await res.arrayBuffer())
-        audioCacheRef.current.set(text, buffer)
+        audioCacheRef.current.set(cacheKey, buffer)
       }
       const source = ctx.createBufferSource()
       source.buffer = buffer
@@ -373,7 +374,7 @@ export default function CookModePage() {
                 className={`${styles.navBtn} ${styles.navBtnDone}`}
                 onClick={() => {
                   setShowCelebration(true)
-                  if (ttsEnabled) speakText('Nice job you little champion! Enjoy your fabulous creation!')
+                  if (ttsEnabled) speakText('Nice job you little champion! Enjoy your fabulous creation!', true)
                 }}
               >
                 All done! ✓

@@ -13,9 +13,11 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   if (!userId) return json({ error: 'Unauthorized' }, 401)
 
   let text: string
+  let hd = false
   try {
-    const body = await ctx.request.json() as { text?: string }
+    const body = await ctx.request.json() as { text?: string; hd?: boolean }
     text = (body.text ?? '').trim()
+    hd = body.hd === true
   } catch {
     return json({ error: 'Invalid body' }, 400)
   }
@@ -31,11 +33,11 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'tts-1',
+      model: hd ? 'tts-1-hd' : 'tts-1',
       voice: 'nova',
       input: text,
       response_format: 'mp3',
-      speed: 0.92,
+      speed: hd ? 1.05 : 0.92,
     }),
   })
 
