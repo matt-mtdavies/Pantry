@@ -118,8 +118,8 @@ export default function Navigation() {
       const { url } = await createInvite()
       const name = user?.display_name?.split(' ')[0] ?? null
       const text = name
-        ? `${name} invited you to Pantry — share recipes with friends and discover their secret sauces.`
-        : 'Join me on Pantry — share recipes with friends and discover their secret sauces.'
+        ? `${name} invited you to Pantry — save, share, discover and cook from your recipe collection.`
+        : 'You\'re invited to Pantry — save, share, discover and cook from your recipe collection.'
       if (typeof navigator.share === 'function') {
         await navigator.share({ title: 'Join me on Pantry', text, url }).catch(() => {})
       } else {
