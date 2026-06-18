@@ -7,7 +7,7 @@ import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, upl
 import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { convertIngredient, convertStepText } from '../lib/units'
-import { HeartIcon, CameraIcon, ShareIcon, EditIcon } from '../components/icons'
+import { HeartIcon, CameraIcon, ShareIcon, EditIcon, CollectionIcon } from '../components/icons'
 import { Avatar } from '../components/Avatar'
 import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
@@ -58,9 +58,9 @@ export default function RecipePage() {
   }, [id, navigate, acquireWakeLock, releaseWakeLock])
 
   useEffect(() => {
-    if (!collectionsOpen) return
+    if (!user) return
     listCollections().then(setCollections).catch(() => {})
-  }, [collectionsOpen])
+  }, [user?.id])
 
   const isOwner = !!user && !!recipe && recipe.user_id === user.id
 
@@ -160,6 +160,7 @@ export default function RecipePage() {
 
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0)
   const displayStar = hoverStar ?? recipe.my_rating ?? 0
+  const activeCollections = collections.filter(c => c.recipe_ids.includes(recipe.id))
 
   return (
     <div className="page-shell">
@@ -256,6 +257,21 @@ export default function RecipePage() {
             )}
 
             {recipe.description && <p className={styles.description}>{recipe.description}</p>}
+
+            {user && (recipe.is_favourite || activeCollections.length > 0) && (
+              <div className={styles.designations}>
+                {recipe.is_favourite && (
+                  <span className={styles.designationFav}>
+                    <HeartIcon filled size={11} /> Saved
+                  </span>
+                )}
+                {activeCollections.map(c => (
+                  <span key={c.id} className={styles.designationCol}>
+                    <CollectionIcon size={11} /> {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className={styles.meta}>
               {recipe.prep_time != null && (

@@ -168,6 +168,41 @@
   font-style: italic;
 }
 
+.designations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.designationFav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: #C4633E;
+  background: #F5E8E2;
+  border: 1px solid #DFA088;
+  padding: 3px var(--sp-3);
+  border-radius: var(--radius-full);
+}
+
+.designationCol {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: #5A6B50;
+  background: #EBF0E8;
+  border: 1px solid #C8D4C2;
+  padding: 3px var(--sp-3);
+  border-radius: var(--radius-full);
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

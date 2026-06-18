@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Recipe } from '../types'
 import { formatTime, imageUrl } from '../lib/utils'
-import { ClockIcon, PersonIcon, HeartIcon, DishIcon } from './icons'
+import { ClockIcon, PersonIcon, HeartIcon, DishIcon, CollectionIcon } from './icons'
 import { Avatar } from './Avatar'
 import styles from './RecipeCard.module.css'
 
@@ -11,9 +11,10 @@ interface Props {
   currentUserId?: string
   inCollection?: boolean
   onToggleCollection?: (id: string, add: boolean) => void
+  collectionNames?: string[]
 }
 
-export default function RecipeCard({ recipe, onToggleFavourite, currentUserId, inCollection, onToggleCollection }: Props) {
+export default function RecipeCard({ recipe, onToggleFavourite, currentUserId, inCollection, onToggleCollection, collectionNames }: Props) {
   const isExternal = !!currentUserId && recipe.user_id !== currentUserId
   const heroSrc = imageUrl(recipe.hero_image_key)
 
@@ -82,6 +83,16 @@ export default function RecipeCard({ recipe, onToggleFavourite, currentUserId, i
             </span>
           )}
         </div>
+
+        {collectionNames && collectionNames.length > 0 && (
+          <div className={styles.designations}>
+            {collectionNames.map(name => (
+              <span key={name} className={styles.designationCol}>
+                <CollectionIcon size={10} /> {name}
+              </span>
+            ))}
+          </div>
+        )}
 
         {isExternal && (
           <Link to={`/user/${recipe.user_id}`} className={styles.author} onClick={e => e.stopPropagation()}>

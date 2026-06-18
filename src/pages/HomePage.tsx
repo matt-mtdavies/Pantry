@@ -138,6 +138,18 @@ export default function HomePage() {
     }
   }
 
+  const recipeCollectionNames = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const col of collections) {
+      for (const rid of col.recipe_ids) {
+        const names = map.get(rid)
+        if (names) names.push(col.name)
+        else map.set(rid, [col.name])
+      }
+    }
+    return map
+  }, [collections])
+
   const needsAttentionCount = ownRecipes.filter(r => r.needs_attention).length
 
   return (
@@ -349,6 +361,7 @@ export default function HomePage() {
                   currentUserId={user?.id}
                   inCollection={collectionEditMode && activeCollection ? activeCollection.recipe_ids.includes(recipe.id) : undefined}
                   onToggleCollection={collectionEditMode ? handleToggleInCollection : undefined}
+                  collectionNames={collectionEditMode ? undefined : recipeCollectionNames.get(recipe.id)}
                 />
               ))}
             </div>
