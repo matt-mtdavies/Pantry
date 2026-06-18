@@ -163,12 +163,12 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       const gql = `{
         viewer {
           zones(filter: { zoneTag: "${ctx.env.CF_ZONE_ID}" }) {
-            httpRequestsAdaptiveGroups(
+            httpRequests1dGroups(
               filter: { date_geq: "${thirtyDaysAgoStr}", date_leq: "${todayStr}" }
               limit: 31
               orderBy: [date_ASC]
             ) {
-              sum { visits bytes cachedBytes }
+              sum { requests pageViews bytes }
               dimensions { date }
             }
           }
@@ -188,18 +188,18 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
           data?: {
             viewer?: {
               zones?: Array<{
-                httpRequestsAdaptiveGroups?: Array<{
-                  sum: { visits: number; bytes: number }
+                httpRequests1dGroups?: Array<{
+                  sum: { requests: number; pageViews: number; bytes: number }
                   dimensions: { date: string }
                 }>
               }>
             }
           }
         }
-        const groups = cfData.data?.viewer?.zones?.[0]?.httpRequestsAdaptiveGroups ?? []
+        const groups = cfData.data?.viewer?.zones?.[0]?.httpRequests1dGroups ?? []
         const daily = groups.map(g => ({
           date: g.dimensions.date,
-          visits: g.sum.visits,
+          visits: g.sum.pageViews,
           bytes: g.sum.bytes,
         }))
         cloudflare = {
