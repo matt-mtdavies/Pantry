@@ -266,9 +266,11 @@
   margin-bottom: var(--sp-3);
 }
 
-.tipEmoji {
-  font-size: 1.25rem;
-  line-height: 1;
+.tipIcon {
+  display: flex;
+  align-items: center;
+  color: #C4633E;
+  flex-shrink: 0;
 }
 
 .tipCategory {

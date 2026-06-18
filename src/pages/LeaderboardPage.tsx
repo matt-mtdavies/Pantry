@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getLeaderboard, getFeed } from '../lib/api'
 import { imageUrl, formatTime, timeAgo } from '../lib/utils'
 import { Avatar } from '../components/Avatar'
-import { TrophyIcon, PersonIcon, DishIcon, StarIcon, SunIcon, ClockIcon } from '../components/icons'
+import { TrophyIcon, PersonIcon, DishIcon, StarIcon, SunIcon, ClockIcon, TechniqueIcon, IngredientIcon, StorageIcon, FlavourIcon, KitchenIcon } from '../components/icons'
 import type { LeaderboardRecipe, LeaderboardChef, FeedData } from '../types'
 import styles from './LeaderboardPage.module.css'
 
@@ -101,6 +101,14 @@ export default function LeaderboardPage() {
   )
 }
 
+const TIP_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Technique: TechniqueIcon,
+  Ingredient: IngredientIcon,
+  Storage: StorageIcon,
+  Flavour: FlavourIcon,
+  Kitchen: KitchenIcon,
+}
+
 function TodayTab({ feed }: { feed: FeedData | null }) {
   if (!feed) return null
 
@@ -109,7 +117,9 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
       {/* Daily tip */}
       <div className={styles.tipCard}>
         <div className={styles.tipHeader}>
-          <span className={styles.tipEmoji}>{feed.tip.emoji}</span>
+          <span className={styles.tipIcon}>
+            {(() => { const Icon = TIP_ICONS[feed.tip.category] ?? SunIcon; return <Icon size={20} /> })()}
+          </span>
           <span className={styles.tipCategory}>{feed.tip.category}</span>
         </div>
         <p className={styles.tipText}>{feed.tip.tip}</p>

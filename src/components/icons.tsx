@@ -138,3 +138,50 @@ export function CollectionIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+export function TechniqueIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <circle cx="8" cy="5" r="3" />
+      <path d="M8 8v6.5" />
+    </svg>
+  )
+}
+
+export function IngredientIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M8 13.5C8 13.5 2.5 9.5 2.5 6C2.5 3 5 1.5 8 1.5C11 1.5 13.5 3 13.5 6C13.5 9.5 8 13.5 8 13.5Z" />
+      <path d="M8 1.5V13.5" />
+    </svg>
+  )
+}
+
+export function StorageIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M5.5 4.5V2.5h5v2" />
+      <path d="M3.5 4.5h9" />
+      <path d="M4 4.5v8a1 1 0 001 1h6a1 1 0 001-1v-8" />
+    </svg>
+  )
+}
+
+export function FlavourIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M8 2C8 2 13 7 13 10.5a5 5 0 01-10 0C3 7 8 2 8 2z" />
+    </svg>
+  )
+}
+
+export function KitchenIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M3 7.5h10v5a1 1 0 01-1 1H4a1 1 0 01-1-1v-5z" />
+      <path d="M2.5 7.5h11" />
+      <path d="M5.5 7.5V6h5v1.5" />
+      <path d="M1 10h2M13 10h2" />
+    </svg>
+  )
+}
