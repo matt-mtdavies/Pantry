@@ -220,7 +220,45 @@
   line-height: var(--leading-relaxed);
   color: #FAF7F2;
   flex: 1;
-  margin-bottom: var(--sp-8);
+  margin-bottom: var(--sp-5);
+}
+
+/* ── TTS pill button ─────────────────────────────────────────────────────── */
+
+.ttsToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-5);
+  border-radius: var(--radius-full);
+  border: 1.5px solid rgba(250, 247, 242, 0.25);
+  background: rgba(250, 247, 242, 0.08);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: rgba(250, 247, 242, 0.65);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  min-height: 44px;
+  margin-bottom: var(--sp-6);
+  align-self: flex-start;
+}
+
+.ttsToggle:hover {
+  border-color: rgba(250, 247, 242, 0.5);
+  color: #FAF7F2;
+  background: rgba(250, 247, 242, 0.12);
+}
+
+.ttsToggleOn {
+  background: #C4633E;
+  border-color: #C4633E;
+  color: #FFFFFF;
+}
+
+.ttsToggleOn:hover {
+  background: #a8532f;
+  border-color: #a8532f;
 }
 
 .timers {

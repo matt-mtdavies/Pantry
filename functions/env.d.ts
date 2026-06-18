@@ -5,6 +5,7 @@ export interface Env {
   RESEND_API_KEY: string
   RESEND_FROM_EMAIL: string
   APP_URL: string
+  OPENAI_API_KEY?: string
   UNSPLASH_ACCESS_KEY?: string
   ADMIN_EMAILS?: string  // comma-separated list; if set, only these can use /api/admin/* endpoints
   CF_ZONE_ID?: string   // Cloudflare zone ID for analytics

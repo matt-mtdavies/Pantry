@@ -40,10 +40,7 @@ function Timer({ initialMinutes, label }: { initialMinutes: number; label: strin
       </span>
       <div className={styles.timerBtns}>
         {!done && (
-          <button
-            className={styles.timerBtn}
-            onClick={() => setRunning(r => !r)}
-          >
+          <button className={styles.timerBtn} onClick={() => setRunning(r => !r)}>
             {running ? 'Pause' : 'Start'}
           </button>
         )}
@@ -67,7 +64,6 @@ const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in windo
 function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
   if (!voices.length) return null
   const lang = (navigator.language || 'en').split('-')[0]
-  // iOS/macOS Enhanced voices, Edge Natural voices — all clearly better than the default
   return (
     voices.find(v => v.lang.startsWith(lang) && /enhanced|premium|natural/i.test(v.name)) ??
     voices.find(v => v.lang.startsWith(lang) && v.localService && !v.default) ??
@@ -88,26 +84,45 @@ export default function CookModePage() {
   const [servings, setServings] = useState<number>(2)
   const [showIngredients, setShowIngredients] = useState(true)
   const [ttsEnabled, setTtsEnabled] = useState(false)
+  const [ttsSpeaking, setTtsSpeaking] = useState(false)
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
-  const { isActive, acquire, release, supported } = useWakeLock()
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioCacheRef = useRef<Map<string, string>>(new Map())
+  const { acquire, release } = useWakeLock()
   const { user } = useAuth()
 
   useEffect(() => {
     if (!id) return
     getRecipe(id)
-      .then(r => {
-        setRecipe(r)
-        setServings(r.servings ?? 2)
-      })
+      .then(r => { setRecipe(r); setServings(r.servings ?? 2) })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
   }, [id, navigate])
 
+  // Screen always stays on while cooking
   useEffect(() => {
     acquire()
     return () => release()
   }, [acquire, release])
+
+  // Load system voices for Web Speech fallback
+  useEffect(() => {
+    if (!ttsSupported) return
+    const load = () => setVoices(window.speechSynthesis.getVoices())
+    load()
+    window.speechSynthesis.addEventListener('voiceschanged', load)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', load)
+  }, [])
+
+  // Cleanup all audio on unmount
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause()
+      audioCacheRef.current.forEach(url => URL.revokeObjectURL(url))
+      if (ttsSupported) window.speechSynthesis.cancel()
+    }
+  }, [])
 
   const scaledIngredients = useMemo<Ingredient[]>(() => {
     if (!recipe) return []
@@ -125,33 +140,73 @@ export default function CookModePage() {
     return recipe.steps.map(step => detectTimerMinutes(step))
   }, [recipe])
 
-  useEffect(() => {
-    if (!ttsSupported) return
-    const load = () => setVoices(window.speechSynthesis.getVoices())
-    load()
-    window.speechSynthesis.addEventListener('voiceschanged', load)
-    return () => window.speechSynthesis.removeEventListener('voiceschanged', load)
-  }, [])
+  // ── TTS ─────────────────────────────────────────────────────────────────────
 
-  useEffect(() => {
+  const fallbackSpeak = (text: string) => {
     if (!ttsSupported) return
-    if (!ttsEnabled || !recipe) {
-      window.speechSynthesis.cancel()
-      return
-    }
-    const text = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
     const voice = pickVoice(voices)
     if (voice) utterance.voice = voice
     utterance.rate = 0.9
-    utterance.pitch = 1.0
     window.speechSynthesis.speak(utterance)
-  }, [ttsEnabled, currentStep, recipe, user?.unit_system, voices])
+  }
 
-  useEffect(() => {
-    return () => { if (ttsSupported) window.speechSynthesis.cancel() }
-  }, [])
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    if (ttsSupported) window.speechSynthesis.cancel()
+    setTtsSpeaking(false)
+  }
+
+  // Called directly from click handlers so iOS treats it as a user-gesture chain
+  const speakStep = async (stepIndex: number) => {
+    if (!recipe) return
+    const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
+    stopAudio()
+    setTtsSpeaking(true)
+    try {
+      let url = audioCacheRef.current.get(text)
+      if (!url) {
+        const res = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        })
+        if (!res.ok) throw new Error('TTS API unavailable')
+        const blob = await res.blob()
+        url = URL.createObjectURL(blob)
+        audioCacheRef.current.set(text, url)
+      }
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.onended = () => setTtsSpeaking(false)
+      audio.onerror = () => { setTtsSpeaking(false); fallbackSpeak(text) }
+      await audio.play()
+    } catch {
+      setTtsSpeaking(false)
+      fallbackSpeak(text)
+    }
+  }
+
+  const handleTtsToggle = async () => {
+    if (ttsEnabled) {
+      stopAudio()
+      setTtsEnabled(false)
+      return
+    }
+    setTtsEnabled(true)
+    await speakStep(currentStep)
+  }
+
+  const goToStep = (step: number) => {
+    setCurrentStep(step)
+    if (ttsEnabled) speakStep(step)
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
 
   const toggleIngredient = (i: number) => {
     setCheckedIngredients(prev => {
@@ -174,10 +229,10 @@ export default function CookModePage() {
 
   const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
   const timers = stepTimers[currentStep]
+  const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
 
   return (
     <div className={styles.page}>
-      {/* Header */}
       <header className={styles.header}>
         <Link to={`/recipe/${recipe.id}`} className={styles.exit} aria-label="Exit cook mode">
           ← Exit
@@ -185,41 +240,8 @@ export default function CookModePage() {
         <div className={styles.headerTitle}>
           <span className={styles.recipeTitle}>{recipe.title}</span>
         </div>
-        {ttsSupported && (
-          <button
-            className={`${styles.ttsBtn} ${ttsEnabled ? styles.ttsBtnOn : ''}`}
-            onClick={() => setTtsEnabled(v => !v)}
-            aria-label={ttsEnabled ? 'Turn off read aloud' : 'Read steps aloud'}
-            title={ttsEnabled ? 'Read aloud on — tap to turn off' : 'Tap to read steps aloud'}
-          >
-            {ttsEnabled ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <line x1="23" y1="9" x2="17" y2="15" />
-                <line x1="17" y1="9" x2="23" y2="15" />
-              </svg>
-            )}
-          </button>
-        )}
-        {supported && (
-          <button
-            className={`${styles.wakeLock} ${isActive ? styles.wakeLockOn : ''}`}
-            onClick={isActive ? release : acquire}
-            aria-label={isActive ? 'Screen will stay on' : 'Tap to keep screen on'}
-            title={isActive ? 'Screen on — tap to release' : 'Tap to keep screen on'}
-          >
-            {isActive ? '☀️' : '🌙'}
-          </button>
-        )}
       </header>
 
-      {/* Servings scaler */}
       <div className={styles.scaler}>
         <span className={styles.scalerLabel}>Serves</span>
         <button
@@ -237,7 +259,6 @@ export default function CookModePage() {
       </div>
 
       <div className={styles.body}>
-        {/* Ingredient checklist */}
         <section className={`${styles.sidebar} ${showIngredients ? '' : styles.sidebarHidden}`}>
           <button
             className={styles.sidebarToggle}
@@ -268,7 +289,6 @@ export default function CookModePage() {
           )}
         </section>
 
-        {/* Step view */}
         <section className={styles.main}>
           <div className={styles.stepCounter}>
             Step {currentStep + 1} of {recipe.steps.length}
@@ -283,6 +303,29 @@ export default function CookModePage() {
           </div>
 
           <p className={styles.stepText}>{step}</p>
+
+          {/* Prominent labelled TTS pill — visible right below the step text */}
+          <button
+            className={`${styles.ttsToggle} ${ttsEnabled ? styles.ttsToggleOn : ''}`}
+            onClick={handleTtsToggle}
+            aria-label={ttsLabel}
+            aria-pressed={ttsEnabled}
+          >
+            {ttsEnabled ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            )}
+            {ttsLabel}
+          </button>
 
           {timers.length > 0 && (
             <div className={styles.timers}>
@@ -299,7 +342,7 @@ export default function CookModePage() {
           <div className={styles.stepNav}>
             <button
               className={styles.navBtn}
-              onClick={() => setCurrentStep(s => Math.max(0, s - 1))}
+              onClick={() => goToStep(Math.max(0, currentStep - 1))}
               disabled={currentStep === 0}
             >
               ← Previous
@@ -308,7 +351,7 @@ export default function CookModePage() {
             {currentStep < recipe.steps.length - 1 ? (
               <button
                 className={`${styles.navBtn} ${styles.navBtnNext}`}
-                onClick={() => setCurrentStep(s => s + 1)}
+                onClick={() => goToStep(currentStep + 1)}
               >
                 Next →
               </button>
@@ -322,7 +365,6 @@ export default function CookModePage() {
             )}
           </div>
 
-          {/* Step dots */}
           <div className={styles.dots} role="tablist" aria-label="Steps">
             {recipe.steps.map((_, i) => (
               <button
@@ -330,7 +372,7 @@ export default function CookModePage() {
                 role="tab"
                 aria-selected={i === currentStep}
                 className={`${styles.dot} ${i === currentStep ? styles.dotActive : ''} ${i < currentStep ? styles.dotDone : ''}`}
-                onClick={() => setCurrentStep(i)}
+                onClick={() => goToStep(i)}
                 aria-label={`Go to step ${i + 1}`}
               />
             ))}
@@ -342,13 +384,11 @@ export default function CookModePage() {
         <div className={styles.celebration} role="dialog" aria-modal="true" aria-label="Recipe complete">
           <div className={styles.clocheScene}>
             <svg viewBox="0 0 200 200" className={styles.clocheSvg} aria-hidden="true">
-              {/* Tray (static) */}
               <ellipse cx="100" cy="179" rx="82" ry="11" fill="#3A3530" />
               <ellipse cx="100" cy="177" rx="78" ry="10" fill="#6A6058" />
               <ellipse cx="100" cy="174" rx="65" ry="8.5" fill="#D4CCC4" />
               <ellipse cx="100" cy="172" rx="56" ry="7"   fill="#FAF7F2" />
 
-              {/* Food revealed after lid lifts */}
               <g className={styles.revealFood}>
                 <ellipse cx="100" cy="169" rx="24" ry="5.5" fill="#C4633E" />
                 <circle cx="72"  cy="169" r="5.5" fill="#7A8B6F" />
@@ -357,7 +397,6 @@ export default function CookModePage() {
                 <circle cx="113" cy="166.5" r="2.5" fill="#E8A87C" />
               </g>
 
-              {/* Steam rises after lid is gone */}
               <path className={`${styles.steam} ${styles.steam1}`}
                 d="M 88 158 Q 83 145 88 132 Q 93 119 88 106"
                 fill="none" stroke="rgba(250,247,242,0.45)" strokeWidth="2.5" strokeLinecap="round" />
@@ -368,7 +407,6 @@ export default function CookModePage() {
                 d="M 112 158 Q 117 145 112 132 Q 107 119 112 106"
                 fill="none" stroke="rgba(250,247,242,0.45)" strokeWidth="2.5" strokeLinecap="round" />
 
-              {/* Cloche dome — lifts up */}
               <g className={styles.cloche}>
                 <ellipse cx="100" cy="172" rx="70" ry="9" fill="#28231E" />
                 <path d="M 30 172 C 30 120 70 82 100 82 C 130 82 170 120 170 172 Z" fill="#B4ACA4" />
