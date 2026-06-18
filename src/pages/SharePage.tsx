@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
 import { DishIcon } from '../components/icons'
-import { getSharedRecipe, saveSharedRecipe } from '../lib/api'
+import { getSharedRecipe } from '../lib/api'
 import { formatTime, imageUrl } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
 import { convertIngredient, convertStepText } from '../lib/units'
@@ -12,11 +12,10 @@ import styles from './SharePage.module.css'
 export default function SharePage() {
   const { token } = useParams<{ token: string }>()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (!token) return
@@ -25,17 +24,6 @@ export default function SharePage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [token])
-
-  const handleSave = async () => {
-    if (!token) return
-    setSaving(true)
-    try {
-      await saveSharedRecipe(token)
-      setSaved(true)
-    } catch {
-      setSaving(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -69,15 +57,13 @@ export default function SharePage() {
         <div className={styles.bannerInner}>
           <span className={styles.bannerBrand}>Pantry</span>
           <span className={styles.bannerText}>A friend shared this recipe with you</span>
-          {saved ? (
-            <span className={styles.savedBadge}>✓ Saved to your Pantry</span>
-          ) : user ? (
-            <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving…' : 'Save to my Pantry'}
+          {user ? (
+            <button className={styles.saveBtn} onClick={() => navigate(`/recipe/${recipe.id}`)}>
+              View in my Pantry
             </button>
           ) : (
-            <Link to={`/auth?next=/share/${token}`} className={styles.saveBtn}>
-              Save to my Pantry
+            <Link to={`/auth?next=/recipe/${recipe.id}`} className={styles.saveBtn}>
+              View in my Pantry
             </Link>
           )}
         </div>

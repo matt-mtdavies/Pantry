@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { login, register, forgotPassword } from '../lib/api'
 import styles from './AuthPage.module.css'
@@ -9,6 +9,8 @@ type Mode = 'signin' | 'register' | 'forgot' | 'forgot-sent'
 export default function AuthPage() {
   const { user, loading, refetch } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const nextPath = searchParams.get('next') || '/'
 
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
@@ -18,8 +20,8 @@ export default function AuthPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!loading && user) navigate('/', { replace: true })
-  }, [user, loading, navigate])
+    if (!loading && user) navigate(nextPath, { replace: true })
+  }, [user, loading, navigate, nextPath])
 
   const switchMode = (next: Mode) => {
     setMode(next)
@@ -47,7 +49,7 @@ export default function AuthPage() {
 
       localStorage.setItem('pantry_session', sessionId)
       await refetch()
-      navigate(isRegister ? '/profile' : '/', { replace: true })
+      navigate(isRegister ? '/profile' : nextPath, { replace: true })
     } catch (err) {
       setStatus('error')
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
