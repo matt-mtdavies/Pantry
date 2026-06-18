@@ -28,6 +28,7 @@ export default function HomePage() {
   const [cuisineFilter, setCuisineFilter] = useState('')
   const [newColName, setNewColName] = useState('')
   const [creatingCol, setCreatingCol] = useState(false)
+  const [collectionEditMode, setCollectionEditMode] = useState(false)
 
   useEffect(() => {
     Promise.all([listRecipes(), listCollections()])
@@ -73,9 +74,9 @@ export default function HomePage() {
     if (filter === 'favourites') {
       list = recipes.filter(r => r.is_favourite)
     } else if (activeCollection) {
-      // Collection mode: show all accessible recipes (own + external favourites)
-      // so the user can add any of them to the collection
-      list = recipes
+      list = collectionEditMode
+        ? recipes
+        : recipes.filter(r => activeCollection.recipe_ids.includes(r.id))
     } else {
       list = ownRecipes
     }
@@ -86,7 +87,7 @@ export default function HomePage() {
       list = fuse.search(query).map(r => r.item).filter(r => list.includes(r))
     }
     return list
-  }, [recipes, ownRecipes, activeCollection, filter, cuisineFilter, query, fuse])
+  }, [recipes, ownRecipes, activeCollection, collectionEditMode, filter, cuisineFilter, query, fuse])
 
   const handleToggleFavourite = async (id: string, value: boolean) => {
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, is_favourite: value } : r))
@@ -113,7 +114,7 @@ export default function HomePage() {
   const handleDeleteCollection = async (id: string) => {
     await deleteCollection(id)
     setCollections(prev => prev.filter(c => c.id !== id))
-    if (filter === id) setFilter('all')
+    if (filter === id) { setFilter('all'); setCollectionEditMode(false) }
   }
 
   const handleToggleInCollection = async (recipeId: string, add: boolean) => {
@@ -244,7 +245,7 @@ export default function HomePage() {
                 <div key={c.id} className={`${styles.collectionRow} ${filter === c.id ? styles.collectionRowActive : ''}`}>
                   <button
                     className={styles.collectionRowSelect}
-                    onClick={() => setFilter(c.id)}
+                    onClick={() => { setFilter(c.id); setCollectionEditMode(false); setCollectionsOpen(false) }}
                   >
                     <span className={styles.collectionRowName}>{c.name}</span>
                     <span className={styles.collectionRowCount}>{c.recipe_ids.length}</span>
@@ -284,6 +285,19 @@ export default function HomePage() {
             </Link>
           )}
 
+          {!loading && activeCollection && (
+            <div className={styles.collectionMode}>
+              <span className={styles.collectionModeCount}>
+                <strong>{activeCollection.recipe_ids.length}</strong> recipe{activeCollection.recipe_ids.length !== 1 ? 's' : ''} in "{activeCollection.name}"
+              </span>
+              {collectionEditMode ? (
+                <button className={styles.collectionModeDone} onClick={() => setCollectionEditMode(false)}>Done</button>
+              ) : (
+                <button className={styles.collectionModeEdit} onClick={() => setCollectionEditMode(true)}>+ Add recipes</button>
+              )}
+            </div>
+          )}
+
           {loading ? (
             <div className={styles.grid}>
               {Array.from({ length: 6 }).map((_, i) => (
@@ -316,7 +330,7 @@ export default function HomePage() {
                     {filter === 'favourites'
                       ? 'Tap the ♡ heart on any recipe to save it here.'
                       : activeCollection
-                      ? 'Open a recipe and tap "Add to collection" to add it here.'
+                      ? 'Tap "+ Add recipes" above to add recipes to this collection.'
                       : 'Import your first recipe from a screenshot, or add one by hand.'}
                   </p>
                   {filter === 'all' && (
@@ -326,28 +340,18 @@ export default function HomePage() {
               )}
             </div>
           ) : (
-            <>
-              {activeCollection && (
-                <div className={styles.collectionMode}>
-                  <span className={styles.collectionModeCount}>
-                    <strong>{activeCollection.recipe_ids.length}</strong> recipe{activeCollection.recipe_ids.length !== 1 ? 's' : ''} in "{activeCollection.name}"
-                  </span>
-                  <span className={styles.collectionModeHint}>Tap + to add, ✓ to remove</span>
-                </div>
-              )}
-              <div className={styles.grid}>
-                {filtered.map(recipe => (
-                  <RecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    onToggleFavourite={activeCollection ? undefined : handleToggleFavourite}
-                    currentUserId={user?.id}
-                    inCollection={activeCollection ? activeCollection.recipe_ids.includes(recipe.id) : undefined}
-                    onToggleCollection={activeCollection ? handleToggleInCollection : undefined}
-                  />
-                ))}
-              </div>
-            </>
+            <div className={styles.grid}>
+              {filtered.map(recipe => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  onToggleFavourite={collectionEditMode ? undefined : handleToggleFavourite}
+                  currentUserId={user?.id}
+                  inCollection={collectionEditMode && activeCollection ? activeCollection.recipe_ids.includes(recipe.id) : undefined}
+                  onToggleCollection={collectionEditMode ? handleToggleInCollection : undefined}
+                />
+              ))}
+            </div>
           )}
         </div>
       </main>
