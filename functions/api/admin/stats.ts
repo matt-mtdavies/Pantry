@@ -1,7 +1,12 @@
 import type { Env } from '../../env'
 
 // Cost per successful AI call (USD)
-const COST = { screenshot: 0.015, url: 0.004, dinner: 0.005 }
+const COST = {
+  screenshot: 0.015,  // Claude Sonnet — ~1K tokens in+out
+  url:        0.004,  // Claude Haiku
+  dinner:     0.005,  // Claude Haiku
+  tts:        0.003,  // OpenAI tts-1 — ~200 chars avg step
+}
 
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const userEmail = ctx.data.email as string
@@ -30,6 +35,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     dailyUsers,
     totalRecipes,
     publicRecipes,
+    recipesWithImages,
     newRecipesWeek,
     newRecipesMonth,
     dailyRecipes,
@@ -57,6 +63,9 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       JOIN users u ON r.user_id = u.id
       WHERE r.is_deleted = 0 AND u.is_public = 1
     `),
+    ctx.env.DB.prepare(`
+      SELECT COUNT(*) AS n FROM recipes WHERE is_deleted = 0 AND hero_image_key IS NOT NULL AND hero_image_key != ''
+    `),
     ctx.env.DB.prepare('SELECT COUNT(*) AS n FROM recipes WHERE is_deleted = 0 AND created_at > ?').bind(weekAgo),
     ctx.env.DB.prepare('SELECT COUNT(*) AS n FROM recipes WHERE is_deleted = 0 AND created_at > ?').bind(monthAgo),
     ctx.env.DB.prepare(`
@@ -71,23 +80,55 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     `).bind(monthAgo),
   ])
 
-  // ── user_favourites (may not exist yet) ────────────────────────────────────
+  // ── user_favourites ─────────────────────────────────────────────────────────
   let totalFavourites = 0
   let dailyFavourites: Array<{ d: string; n: number }> = []
+  let topRecipes: Array<{ id: string; title: string; fave_count: number; avg_rating: number | null }> = []
   try {
-    const [fTotal, fDaily] = await ctx.env.DB.batch([
+    const [fTotal, fDaily, fTop] = await ctx.env.DB.batch([
       ctx.env.DB.prepare('SELECT COUNT(*) AS n FROM user_favourites'),
       ctx.env.DB.prepare(`
         SELECT date(created_at, 'unixepoch') AS d, COUNT(*) AS n
         FROM user_favourites WHERE created_at > ? GROUP BY d ORDER BY d
       `).bind(monthAgo),
+      ctx.env.DB.prepare(`
+        SELECT r.id, r.title,
+          COUNT(f.recipe_id) AS fave_count,
+          ROUND(AVG(rr.rating), 1) AS avg_rating
+        FROM recipes r
+        LEFT JOIN user_favourites f ON f.recipe_id = r.id
+        LEFT JOIN recipe_ratings rr ON rr.recipe_id = r.id
+        WHERE r.is_deleted = 0
+        GROUP BY r.id
+        ORDER BY fave_count DESC, avg_rating DESC
+        LIMIT 5
+      `),
     ])
     totalFavourites = num(fTotal.results?.[0], 'n')
     dailyFavourites = (fDaily.results ?? []) as Array<{ d: string; n: number }>
+    topRecipes = (fTop.results ?? []) as Array<{ id: string; title: string; fave_count: number; avg_rating: number | null }>
+  } catch { /* table not yet created */ }
+
+  // ── Invite funnel ───────────────────────────────────────────────────────────
+  let invites: { total: number; used: number; thisWeek: number; conversionPct: number } | null = null
+  try {
+    const [invTotal, invUsed, invWeek] = await ctx.env.DB.batch([
+      ctx.env.DB.prepare('SELECT COUNT(*) AS n FROM invite_tokens'),
+      ctx.env.DB.prepare('SELECT COUNT(*) AS n FROM invite_tokens WHERE used_at IS NOT NULL'),
+      ctx.env.DB.prepare('SELECT COUNT(*) AS n FROM invite_tokens WHERE created_at > ?').bind(weekAgo),
+    ])
+    const total = num(invTotal.results?.[0], 'n')
+    const used = num(invUsed.results?.[0], 'n')
+    invites = {
+      total,
+      used,
+      thisWeek: num(invWeek.results?.[0], 'n'),
+      conversionPct: total > 0 ? Math.round((used / total) * 100) : 0,
+    }
   } catch { /* table not yet created */ }
 
   // ── AI usage ───────────────────────────────────────────────────────────────
-  let aiThisMonth = { screenshot: 0, url: 0, dinner: 0 }
+  let aiThisMonth = { screenshot: 0, url: 0, dinner: 0, tts: 0 }
   let aiDaily: Array<{ date: string; type: string; count: number }> = []
   try {
     const [aiMonth, aiDailyRes] = await ctx.env.DB.batch([
@@ -102,14 +143,18 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       if (row.type === 'screenshot') aiThisMonth.screenshot = row.n
       if (row.type === 'url') aiThisMonth.url = row.n
       if (row.type === 'dinner') aiThisMonth.dinner = row.n
+      if (row.type === 'tts') aiThisMonth.tts = row.n
     }
     aiDaily = (aiDailyRes.results ?? []) as Array<{ date: string; type: string; count: number }>
   } catch { /* table not yet migrated */ }
 
-  const estimatedCostUsd =
+  const anthropicCostUsd =
     aiThisMonth.screenshot * COST.screenshot +
     aiThisMonth.url * COST.url +
     aiThisMonth.dinner * COST.dinner
+
+  const openaiCostUsd = aiThisMonth.tts * COST.tts
+  const totalAiCostUsd = anthropicCostUsd + openaiCostUsd
 
   // ── Cloudflare zone analytics ──────────────────────────────────────────────
   let cloudflare: { totalVisits: number; totalBytes: number; daily: Array<{ date: string; visits: number; bytes: number }> } | null = null
@@ -183,39 +228,89 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     } catch { /* skip on error */ }
   }
 
-  // ── Shape daily series (fill gaps) ────────────────────────────────────────
+  // ── Shape daily series (fill gaps) ─────────────────────────────────────────
+  const totalUsersN = num(totalUsers.results?.[0], 'n')
+  const activeN = num(activeUsersWeek.results?.[0], 'n')
+  const totalRecipesN = num(totalRecipes.results?.[0], 'n')
+  const totalRatingsN = num(totalRatings.results?.[0], 'n')
+  const avgRating = (totalRatings.results?.[0] as Record<string, unknown>)?.avg
+    ? Number((totalRatings.results[0] as Record<string, unknown>).avg)
+    : null
+  const recipesWithImagesN = num(recipesWithImages.results?.[0], 'n')
+
+  // ── Insights ────────────────────────────────────────────────────────────────
+  const insights: string[] = []
+
+  const activeRate = totalUsersN > 0 ? Math.round((activeN / totalUsersN) * 100) : 0
+  insights.push(`${activeRate}% of users were active this week (recipe created or rated).`)
+
+  const favPerRecipe = totalRecipesN > 0 ? (totalFavourites / totalRecipesN).toFixed(1) : '0'
+  insights.push(`${favPerRecipe} favourites per recipe on average.`)
+
+  if (avgRating != null) {
+    insights.push(`Community average rating is ${avgRating} ★.`)
+  }
+
+  const imageRate = totalRecipesN > 0 ? Math.round((recipesWithImagesN / totalRecipesN) * 100) : 0
+  insights.push(`${imageRate}% of recipes have a hero image.`)
+
+  if (invites) {
+    if (invites.conversionPct > 0) {
+      insights.push(`Invite acceptance rate is ${invites.conversionPct}% (${invites.used} of ${invites.total} invites used).`)
+    } else {
+      insights.push(`${invites.total} invites sent, none accepted yet.`)
+    }
+  }
+
+  if (aiThisMonth.tts > 0) {
+    insights.push(`TTS used ${aiThisMonth.tts} times this month (~$${openaiCostUsd.toFixed(2)} OpenAI cost).`)
+  }
+
+  if (cloudflare && cloudflare.totalVisits > 0) {
+    const visitsPerUser = totalUsersN > 0 ? (cloudflare.totalVisits / totalUsersN).toFixed(0) : '0'
+    insights.push(`${cloudflare.totalVisits.toLocaleString()} site visits in 30 days — ~${visitsPerUser} per registered user.`)
+  }
+
+  if (totalAiCostUsd > 0) {
+    insights.push(`Estimated total AI spend this month: $${totalAiCostUsd.toFixed(2)} (Anthropic $${anthropicCostUsd.toFixed(2)} + OpenAI $${openaiCostUsd.toFixed(2)}).`)
+  }
+
   return json({
     users: {
-      total: num(totalUsers.results?.[0], 'n'),
+      total: totalUsersN,
       newThisWeek: num(newUsersWeek.results?.[0], 'n'),
       newThisMonth: num(newUsersMonth.results?.[0], 'n'),
-      activeThisWeek: num(activeUsersWeek.results?.[0], 'n'),
+      activeThisWeek: activeN,
       daily: toDaily(dailyUsers.results as Array<{ d: string; n: number }> ?? []),
     },
     recipes: {
-      total: num(totalRecipes.results?.[0], 'n'),
+      total: totalRecipesN,
       public: num(publicRecipes.results?.[0], 'n'),
+      withImages: recipesWithImagesN,
       newThisWeek: num(newRecipesWeek.results?.[0], 'n'),
       newThisMonth: num(newRecipesMonth.results?.[0], 'n'),
       daily: toDaily(dailyRecipes.results as Array<{ d: string; n: number }> ?? []),
     },
     engagement: {
       totalFavourites,
-      totalRatings: num(totalRatings.results?.[0], 'n'),
-      avgRating: (totalRatings.results?.[0] as Record<string, unknown>)?.avg
-        ? Number((totalRatings.results[0] as Record<string, unknown>).avg)
-        : null,
+      totalRatings: totalRatingsN,
+      avgRating,
       totalCollections: num(totalCollections.results?.[0], 'n'),
       dailyFavourites: toDaily(dailyFavourites),
       dailyRatings: toDaily(dailyRatings.results as Array<{ d: string; n: number }> ?? []),
+      topRecipes,
     },
+    invites,
     ai: {
       thisMonth: aiThisMonth,
-      estimatedCostUsd: Math.round(estimatedCostUsd * 100) / 100,
+      anthropicCostUsd: Math.round(anthropicCostUsd * 100) / 100,
+      openaiCostUsd: Math.round(openaiCostUsd * 100) / 100,
+      totalCostUsd: Math.round(totalAiCostUsd * 100) / 100,
       daily: buildAiDaily(aiDaily),
     },
     cloudflare,
     email,
+    insights,
   })
 }
 
@@ -235,18 +330,19 @@ function toDaily(rows: Array<{ d: string; n: number }>): Array<{ date: string; c
 
 function buildAiDaily(
   rows: Array<{ date: string; type: string; count: number }>
-): Array<{ date: string; screenshots: number; urls: number; dinner: number }> {
-  const map = new Map<string, { screenshots: number; urls: number; dinner: number }>()
+): Array<{ date: string; screenshots: number; urls: number; dinner: number; tts: number }> {
+  const map = new Map<string, { screenshots: number; urls: number; dinner: number; tts: number }>()
   for (const r of rows) {
-    const entry = map.get(r.date) ?? { screenshots: 0, urls: 0, dinner: 0 }
+    const entry = map.get(r.date) ?? { screenshots: 0, urls: 0, dinner: 0, tts: 0 }
     if (r.type === 'screenshot') entry.screenshots += r.count
     if (r.type === 'url') entry.urls += r.count
     if (r.type === 'dinner') entry.dinner += r.count
+    if (r.type === 'tts') entry.tts += r.count
     map.set(r.date, entry)
   }
   return Array.from({ length: 30 }, (_, i) => {
     const d = new Date(Date.now() - (29 - i) * 86_400_000).toISOString().split('T')[0]
-    return { date: d, ...(map.get(d) ?? { screenshots: 0, urls: 0, dinner: 0 }) }
+    return { date: d, ...(map.get(d) ?? { screenshots: 0, urls: 0, dinner: 0, tts: 0 }) }
   })
 }
 

@@ -1,4 +1,5 @@
 import type { Env } from '../env'
+import { logAiUsage } from '../lib/logAiUsage'
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -42,6 +43,8 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     const detail = await res.text().catch(() => '')
     return json({ error: 'upstream_failed', detail }, 502)
   }
+
+  ctx.waitUntil(logAiUsage(ctx.env.DB, 'tts'))
 
   return new Response(res.body, {
     headers: {

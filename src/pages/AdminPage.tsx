@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
   XAxis, YAxis, Tooltip, CartesianGrid, Legend,
@@ -14,24 +14,31 @@ interface AdminStats {
     daily: Array<{ date: string; count: number }>
   }
   recipes: {
-    total: number; public: number; newThisWeek: number; newThisMonth: number
+    total: number; public: number; withImages: number; newThisWeek: number; newThisMonth: number
     daily: Array<{ date: string; count: number }>
   }
   engagement: {
     totalFavourites: number; totalRatings: number; avgRating: number | null; totalCollections: number
     dailyFavourites: Array<{ date: string; count: number }>
     dailyRatings: Array<{ date: string; count: number }>
+    topRecipes: Array<{ id: string; title: string; fave_count: number; avg_rating: number | null }>
   }
+  invites: {
+    total: number; used: number; thisWeek: number; conversionPct: number
+  } | null
   ai: {
-    thisMonth: { screenshot: number; url: number; dinner: number }
-    estimatedCostUsd: number
-    daily: Array<{ date: string; screenshots: number; urls: number; dinner: number }>
+    thisMonth: { screenshot: number; url: number; dinner: number; tts: number }
+    anthropicCostUsd: number
+    openaiCostUsd: number
+    totalCostUsd: number
+    daily: Array<{ date: string; screenshots: number; urls: number; dinner: number; tts: number }>
   }
   cloudflare: {
     totalVisits: number; totalBytes: number
     daily: Array<{ date: string; visits: number; bytes: number }>
   } | null
   email: { thisMonth: number; recentTotal: number } | null
+  insights: string[]
 }
 
 const fmtDate = (d: unknown) => {
@@ -53,6 +60,7 @@ const CHART_COLORS = {
   screenshot: '#C4633E',
   url: '#6B8FBF',
   dinner: '#8BAF6B',
+  tts: '#B07CC6',
   visits: '#C4633E',
 }
 
@@ -124,6 +132,21 @@ export default function AdminPage() {
 
         {stats && (
           <>
+            {/* ── Insights ─────────────────────────────────────────────────── */}
+            {stats.insights.length > 0 && (
+              <section className={styles.section}>
+                <div className={styles.sectionTitle}>Insights</div>
+                <ul className={styles.insights}>
+                  {stats.insights.map((text, i) => (
+                    <li key={i} className={styles.insight}>
+                      <span className={styles.insightDot} />
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* ── Users ────────────────────────────────────────────────────── */}
             <section className={styles.section}>
               <div className={styles.sectionTitle}>Users</div>
@@ -167,8 +190,8 @@ export default function AdminPage() {
               <div className={styles.cards}>
                 <StatCard label="Total recipes" value={stats.recipes.total.toLocaleString()} />
                 <StatCard label="Public" value={stats.recipes.public} sub={`${Math.round(stats.recipes.public / Math.max(stats.recipes.total, 1) * 100)}% of total`} />
+                <StatCard label="With hero image" value={stats.recipes.withImages} sub={`${Math.round(stats.recipes.withImages / Math.max(stats.recipes.total, 1) * 100)}% of total`} />
                 <StatCard label="New this week" value={stats.recipes.newThisWeek} />
-                <StatCard label="New this month" value={stats.recipes.newThisMonth} />
               </div>
             </section>
 
@@ -211,20 +234,69 @@ export default function AdminPage() {
                   </ResponsiveContainer>
                 </div>
               </div>
+
+              {/* Top recipes by favourites */}
+              {stats.engagement.topRecipes.length > 0 && (
+                <div className={styles.topRecipes}>
+                  <div className={styles.chartTitle}>Most favourited recipes</div>
+                  <ol className={styles.topList}>
+                    {stats.engagement.topRecipes.map((r, i) => (
+                      <li key={r.id} className={styles.topItem}>
+                        <span className={styles.topRank}>{i + 1}</span>
+                        <Link to={`/recipe/${r.id}`} className={styles.topTitle}>{r.title}</Link>
+                        <span className={styles.topMeta}>
+                          {r.fave_count} ♥{r.avg_rating != null ? ` · ${r.avg_rating} ★` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </section>
+
+            {/* ── Invites ──────────────────────────────────────────────────── */}
+            {stats.invites && (
+              <section className={styles.section}>
+                <div className={styles.sectionTitle}>Invites</div>
+                <div className={styles.cards}>
+                  <StatCard label="Invites sent" value={stats.invites.total} />
+                  <StatCard label="Accepted" value={stats.invites.used} sub="invite → new account" />
+                  <StatCard
+                    label="Conversion rate"
+                    value={`${stats.invites.conversionPct}%`}
+                    accent={stats.invites.conversionPct >= 30}
+                  />
+                  <StatCard label="Sent this week" value={stats.invites.thisWeek} />
+                </div>
+              </section>
+            )}
 
             {/* ── AI & Cost ────────────────────────────────────────────────── */}
             <section className={styles.section}>
               <div className={styles.sectionTitle}>AI Usage & Cost</div>
               <div className={styles.cards}>
-                <StatCard label="Screenshots (mo)" value={stats.ai.thisMonth.screenshot} sub="Sonnet · ~$0.015/call" />
-                <StatCard label="URL imports (mo)" value={stats.ai.thisMonth.url} sub="Haiku · ~$0.004/call" />
-                <StatCard label="Dinner suggestions (mo)" value={stats.ai.thisMonth.dinner} sub="Haiku · ~$0.005/call" />
+                <StatCard label="Screenshots (mo)" value={stats.ai.thisMonth.screenshot} sub="Anthropic Sonnet · ~$0.015/call" />
+                <StatCard label="URL imports (mo)" value={stats.ai.thisMonth.url} sub="Anthropic Haiku · ~$0.004/call" />
+                <StatCard label="Dinner suggests (mo)" value={stats.ai.thisMonth.dinner} sub="Anthropic Haiku · ~$0.005/call" />
+                <StatCard label="TTS reads (mo)" value={stats.ai.thisMonth.tts} sub="OpenAI tts-1 · ~$0.003/call" />
+              </div>
+              <div className={styles.cards} style={{ marginTop: 0 }}>
                 <StatCard
-                  label="Est. Anthropic cost"
-                  value={`$${stats.ai.estimatedCostUsd.toFixed(2)}`}
+                  label="Anthropic cost"
+                  value={`$${stats.ai.anthropicCostUsd.toFixed(2)}`}
                   sub="this calendar month"
-                  accent={stats.ai.estimatedCostUsd > 50}
+                  accent={stats.ai.anthropicCostUsd > 50}
+                />
+                <StatCard
+                  label="OpenAI cost"
+                  value={`$${stats.ai.openaiCostUsd.toFixed(2)}`}
+                  sub="this calendar month"
+                />
+                <StatCard
+                  label="Total AI cost"
+                  value={`$${stats.ai.totalCostUsd.toFixed(2)}`}
+                  sub="this calendar month"
+                  accent={stats.ai.totalCostUsd > 60}
                 />
               </div>
               <div className={styles.chartBoxFull}>
@@ -238,7 +310,8 @@ export default function AdminPage() {
                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-ui)' }} />
                     <Bar dataKey="screenshots" name="Screenshot" stackId="a" fill={CHART_COLORS.screenshot} />
                     <Bar dataKey="urls" name="URL import" stackId="a" fill={CHART_COLORS.url} />
-                    <Bar dataKey="dinner" name="Dinner suggest" stackId="a" fill={CHART_COLORS.dinner} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="dinner" name="Dinner suggest" stackId="a" fill={CHART_COLORS.dinner} />
+                    <Bar dataKey="tts" name="TTS" stackId="a" fill={CHART_COLORS.tts} radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
