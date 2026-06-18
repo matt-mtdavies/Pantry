@@ -235,6 +235,21 @@ export default function RecipePage() {
         <div className="content-col">
           <div className={styles.header}>
 
+            {user && (recipe.is_favourite || activeCollections.length > 0) && (
+              <div className={styles.designations}>
+                {recipe.is_favourite && (
+                  <span className={styles.designationFav}>
+                    <HeartIcon filled size={11} /> Saved
+                  </span>
+                )}
+                {activeCollections.map(c => (
+                  <span key={c.id} className={styles.designationCol}>
+                    <CollectionIcon size={11} /> In: {c.name}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {recipe.tags.length > 0 && (
               <div className={styles.tags}>
                 {recipe.tags.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
@@ -257,21 +272,6 @@ export default function RecipePage() {
             )}
 
             {recipe.description && <p className={styles.description}>{recipe.description}</p>}
-
-            {user && (recipe.is_favourite || activeCollections.length > 0) && (
-              <div className={styles.designations}>
-                {recipe.is_favourite && (
-                  <span className={styles.designationFav}>
-                    <HeartIcon filled size={11} /> Saved
-                  </span>
-                )}
-                {activeCollections.map(c => (
-                  <span key={c.id} className={styles.designationCol}>
-                    <CollectionIcon size={11} /> {c.name}
-                  </span>
-                ))}
-              </div>
-            )}
 
             <div className={styles.meta}>
               {recipe.prep_time != null && (

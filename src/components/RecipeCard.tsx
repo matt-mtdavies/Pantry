@@ -88,7 +88,7 @@ export default function RecipeCard({ recipe, onToggleFavourite, currentUserId, i
           <div className={styles.designations}>
             {collectionNames.map(name => (
               <span key={name} className={styles.designationCol}>
-                <CollectionIcon size={10} /> {name}
+                <CollectionIcon size={10} /> In: {name}
               </span>
             ))}
           </div>
