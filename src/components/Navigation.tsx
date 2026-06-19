@@ -234,11 +234,9 @@ export default function Navigation() {
           <IconCompass active={p === '/explore'} />
           <span className={styles.tabLabel}>Explore</span>
         </Link>
-        <Link to="/import" className={`${styles.tab} ${styles.tabAdd} ${p === '/import' ? styles.tabActive : ''}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"
-            strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.25" />
-          </svg>
+        <Link to="/leaderboard" className={`${styles.tab} ${p === '/leaderboard' ? styles.tabActive : ''}`}>
+          <IconPodium active={p === '/leaderboard'} />
+          <span className={styles.tabLabel}>Community</span>
         </Link>
         <Link to="/chefs" className={`${styles.tab} ${p === '/chefs' || p.startsWith('/user/') ? styles.tabActive : ''}`}>
           <IconChefs active={p === '/chefs' || p.startsWith('/user/')} />
@@ -249,6 +247,18 @@ export default function Navigation() {
           <span className={styles.tabLabel}>Profile</span>
         </Link>
       </nav>
+
+      {/* Floating Action Button — mobile only */}
+      <Link
+        to="/import"
+        className={`${styles.fab} ${p === '/import' ? styles.fabActive : ''}`}
+        aria-label="Add recipe"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+          strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" />
+        </svg>
+      </Link>
     </>
   )
 }

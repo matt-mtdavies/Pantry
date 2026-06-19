@@ -228,26 +228,39 @@
     text-transform: uppercase;
   }
 
-  /* Raised orange "Add" circle */
-  .tabAdd {
-    flex: none;
-    width: 52px;
-    height: 52px;
-    min-height: 52px;
-    margin: var(--sp-2) var(--sp-1) var(--sp-1);
-    padding: 0;
-    align-self: center;
-    border-radius: var(--radius-full);
+}
+
+/* ── Floating Action Button (mobile only) ──────────────────────────────────── */
+
+.fab { display: none; }
+
+@media (max-width: 640px) {
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: calc(58px + env(safe-area-inset-bottom) + 14px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
     background: #C4633E;
-    color: #FFFFFF !important;
-    flex-direction: row;
-    box-shadow: 0 3px 12px rgba(196, 99, 62, 0.45);
-    transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    color: #FFFFFF;
+    box-shadow: 0 4px 20px rgba(196, 99, 62, 0.5), 0 1px 4px rgba(196, 99, 62, 0.3);
+    z-index: 101;
+    text-decoration: none;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
   }
 
-  .tabAdd:active {
-    transform: scale(0.9);
-    box-shadow: 0 1px 4px rgba(196, 99, 62, 0.3);
+  .fab:active {
+    transform: translateX(-50%) scale(0.92);
+    box-shadow: 0 2px 8px rgba(196, 99, 62, 0.35);
+    background: #a8532f;
+  }
+
+  .fabActive {
     background: #a8532f;
   }
 }
