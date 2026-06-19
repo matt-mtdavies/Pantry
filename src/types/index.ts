@@ -128,7 +128,22 @@ export interface PublicProfile {
   recipe_count: number;
   avg_rating: number | null;
   total_ratings: number;
+  follower_count: number;
+  following_count: number;
+  is_following: boolean;
   recipes: PublicProfileRecipe[];
+}
+
+export interface Chef {
+  id: string;
+  display_name: string | null;
+  avatar_id: string;
+  avatar_image_key: string | null;
+  country: string | null;
+  recipe_count: number;
+  avg_rating: number | null;
+  follower_count: number;
+  is_following: boolean;
 }
 
 export interface FeedTip {

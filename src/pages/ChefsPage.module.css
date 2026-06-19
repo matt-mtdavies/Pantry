@@ -1,0 +1,194 @@
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  padding-top: var(--sp-8);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  color: #1F1B16;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #9C9189;
+  margin-top: var(--sp-1);
+}
+
+/* ── Search ───────────────────────────────────────────────────────────────── */
+
+.searchWrap {
+  position: relative;
+  margin-bottom: var(--sp-6);
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--sp-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9C9189;
+  pointer-events: none;
+}
+
+.search {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) calc(var(--sp-4) + 16px + var(--sp-2));
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: #1F1B16;
+  background: #FFFFFF;
+  border: 1.5px solid #E8E0D4;
+  border-radius: var(--radius-full);
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.search:focus { border-color: #C4633E; }
+.search::placeholder { color: #C4C0B8; }
+
+/* ── Grid ─────────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-10);
+}
+
+/* ── Chef Card ────────────────────────────────────────────────────────────── */
+
+.card {
+  background: #FFFFFF;
+  border: 1px solid #E8E0D4;
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6) var(--sp-5) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(31,27,22,0.09);
+  transform: translateY(-2px);
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+  width: 100%;
+}
+
+.avatar {
+  border-radius: 50%;
+  border: 2px solid #F3EFE8;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: #1F1B16;
+  text-align: center;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.country {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #9C9189;
+  text-align: center;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--sp-1);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #6B6459;
+}
+
+.star {
+  color: #C4633E;
+}
+
+/* ── Follow button ────────────────────────────────────────────────────────── */
+
+.followBtn {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #C4633E;
+  background: transparent;
+  color: #C4633E;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+  margin-top: var(--sp-1);
+}
+
+.followBtn:hover {
+  background: #C4633E;
+  color: #FFFFFF;
+}
+
+.followBtn.following {
+  background: #C4633E;
+  color: #FFFFFF;
+}
+
+.followBtn.following:hover {
+  background: #a8532f;
+  border-color: #a8532f;
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────────────── */
+
+.cardSkeleton {
+  height: 220px;
+  border-radius: var(--radius-lg);
+}
+
+/* ── Empty ────────────────────────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: var(--sp-20) 0;
+}
+
+.emptyText {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: #9C9189;
+}
+
+@media (max-width: 480px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .title { font-size: var(--text-3xl); }
+}

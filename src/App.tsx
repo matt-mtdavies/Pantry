@@ -18,6 +18,7 @@ import SearchPage from './pages/SearchPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import NeedsAttentionPage from './pages/NeedsAttentionPage'
 import PublicProfilePage from './pages/PublicProfilePage'
+import ChefsPage from './pages/ChefsPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import Onboarding from './components/Onboarding'
@@ -72,6 +73,7 @@ function AppRoutes() {
           <Route path="/needs-attention" element={<ProtectedRoute><NeedsAttentionPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/user/:id" element={<ProtectedRoute><PublicProfilePage /></ProtectedRoute>} />
+          <Route path="/chefs" element={<ProtectedRoute><ChefsPage /></ProtectedRoute>} />
           <Route path="/admin" element={
             <ProtectedRoute>
               <Suspense fallback={<div className="page-shell"><div className="page-main" /></div>}>

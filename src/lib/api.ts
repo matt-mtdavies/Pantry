@@ -1,4 +1,4 @@
-import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData, PublicProfile, Collection } from '../types'
+import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData, PublicProfile, Collection, Chef } from '../types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: 'include', ...init })
@@ -173,6 +173,20 @@ export async function getLeaderboard(): Promise<{ topRecipes: LeaderboardRecipe[
 
 export async function getPublicProfile(userId: string): Promise<PublicProfile> {
   return request<PublicProfile>(`/api/users/${userId}`)
+}
+
+// Chef discovery
+
+export async function getChefs(): Promise<Chef[]> {
+  return request<Chef[]>('/api/chefs')
+}
+
+export async function followChef(userId: string): Promise<{ following: boolean; follower_count: number }> {
+  return request(`/api/follows/${userId}`, { method: 'POST' })
+}
+
+export async function unfollowChef(userId: string): Promise<{ following: boolean; follower_count: number }> {
+  return request(`/api/follows/${userId}`, { method: 'DELETE' })
 }
 
 // Community feed

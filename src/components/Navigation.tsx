@@ -60,6 +60,21 @@ function IconPodium({ active }: IP) {
   )
 }
 
+/** Two people — chefs/discovery */
+function IconChefs({ active }: IP) {
+  const fill = active ? 'currentColor' : 'none'
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" strokeLinecap="round">
+      <circle cx="9" cy="7.5" r="3.25" fill={fill} stroke="currentColor" strokeWidth="1.75" />
+      <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"
+        fill="none" stroke={active ? 'none' : 'currentColor'} strokeWidth="1.75" />
+      {active && <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" fill="currentColor" />}
+      <circle cx="17.5" cy="8" r="2.75" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" opacity={active ? 0.7 : 1} />
+      <path d="M21 20c0-2.8-1.6-4.8-4-5.5" stroke="currentColor" strokeWidth="1.5" opacity={active ? 0.7 : 1} />
+    </svg>
+  )
+}
+
 /** Person silhouette */
 function IconPerson({ active }: IP) {
   const fill = active ? 'currentColor' : 'none'
@@ -167,6 +182,9 @@ export default function Navigation() {
             <Link to="/leaderboard" className={`${styles.link} ${p === '/leaderboard' ? styles.active : ''}`}>
               Community
             </Link>
+            <Link to="/chefs" className={`${styles.link} ${p === '/chefs' || p.startsWith('/user/') ? styles.active : ''}`}>
+              Chefs
+            </Link>
             <Link to="/import" className={`${styles.link} ${p === '/import' ? styles.active : ''}`}>
               Add Recipe
             </Link>
@@ -225,6 +243,10 @@ export default function Navigation() {
         <Link to="/leaderboard" className={`${styles.tab} ${p === '/leaderboard' ? styles.tabActive : ''}`}>
           <IconPodium active={p === '/leaderboard'} />
           <span className={styles.tabLabel}>Board</span>
+        </Link>
+        <Link to="/chefs" className={`${styles.tab} ${p === '/chefs' || p.startsWith('/user/') ? styles.tabActive : ''}`}>
+          <IconChefs active={p === '/chefs' || p.startsWith('/user/')} />
+          <span className={styles.tabLabel}>Chefs</span>
         </Link>
         <Link to="/profile" className={`${styles.tab} ${p === '/profile' ? styles.tabActive : ''}`}>
           <IconPerson active={p === '/profile'} />

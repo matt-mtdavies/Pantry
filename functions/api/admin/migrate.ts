@@ -78,6 +78,18 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
     )
   `)
 
+  // user_follows (chef follow system)
+  await run('user_follows table', `
+    CREATE TABLE IF NOT EXISTS user_follows (
+      follower_id TEXT NOT NULL,
+      following_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      PRIMARY KEY (follower_id, following_id)
+    )
+  `)
+  await run('idx_user_follows_follower', `CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON user_follows (follower_id)`)
+  await run('idx_user_follows_following', `CREATE INDEX IF NOT EXISTS idx_user_follows_following ON user_follows (following_id)`)
+
   return json({ steps, errors, ok: errors.length === 0 })
 }
 

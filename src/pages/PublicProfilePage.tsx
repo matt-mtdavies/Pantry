@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
-import { getPublicProfile } from '../lib/api'
+import { getPublicProfile, followChef, unfollowChef } from '../lib/api'
+import { useAuth } from '../hooks/useAuth'
 import { imageUrl, formatTime } from '../lib/utils'
 import { Avatar } from '../components/Avatar'
 import { DishIcon, StarIcon, ClockIcon } from '../components/icons'
@@ -10,9 +11,11 @@ import styles from './PublicProfilePage.module.css'
 
 export default function PublicProfilePage() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [followLoading, setFollowLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -21,6 +24,34 @@ export default function PublicProfilePage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [id])
+
+  const isOwnProfile = user?.id === id
+
+  const handleFollow = async () => {
+    if (!profile || followLoading) return
+    setFollowLoading(true)
+    const wasFollowing = profile.is_following
+    // Optimistic update
+    setProfile(p => p ? {
+      ...p,
+      is_following: !wasFollowing,
+      follower_count: p.follower_count + (wasFollowing ? -1 : 1),
+    } : p)
+    try {
+      const res = wasFollowing
+        ? await unfollowChef(profile.id)
+        : await followChef(profile.id)
+      setProfile(p => p ? { ...p, is_following: res.following, follower_count: res.follower_count } : p)
+    } catch {
+      setProfile(p => p ? {
+        ...p,
+        is_following: wasFollowing,
+        follower_count: p.follower_count + (wasFollowing ? 1 : -1),
+      } : p)
+    } finally {
+      setFollowLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -53,7 +84,7 @@ export default function PublicProfilePage() {
             <DishIcon size={48} className={styles.notFoundIcon} />
             <h1 className={styles.notFoundTitle}>Profile not found</h1>
             <p className={styles.notFoundText}>This profile is private or doesn't exist.</p>
-            <Link to="/leaderboard" className={styles.backBtn}>Back to Community</Link>
+            <Link to="/chefs" className={styles.backBtn}>Browse chefs</Link>
           </div>
         </main>
       </div>
@@ -97,13 +128,25 @@ export default function PublicProfilePage() {
                   <span className={styles.statLabel}>Avg rating</span>
                 </div>
               )}
-              {profile.total_ratings > 0 && (
-                <div className={styles.stat}>
-                  <span className={styles.statValue}>{profile.total_ratings}</span>
-                  <span className={styles.statLabel}>Rating{profile.total_ratings !== 1 ? 's' : ''}</span>
-                </div>
-              )}
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{profile.follower_count}</span>
+                <span className={styles.statLabel}>Follower{profile.follower_count !== 1 ? 's' : ''}</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{profile.following_count}</span>
+                <span className={styles.statLabel}>Following</span>
+              </div>
             </div>
+
+            {!isOwnProfile && (
+              <button
+                className={`${styles.followBtn} ${profile.is_following ? styles.following : ''}`}
+                onClick={handleFollow}
+                disabled={followLoading}
+              >
+                {profile.is_following ? 'Following' : 'Follow'}
+              </button>
+            )}
           </div>
         </div>
 
