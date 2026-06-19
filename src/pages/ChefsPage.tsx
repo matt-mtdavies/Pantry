@@ -117,8 +117,10 @@ function ChefCard({ chef, isOwnProfile, onFollow }: {
           size={72}
           className={styles.avatar}
         />
-        <p className={styles.name}>{chef.display_name ?? 'Anonymous'}</p>
-        {chef.country && <p className={styles.country}>{chef.country}</p>}
+        <div className={styles.identity}>
+          <p className={styles.name}>{chef.display_name ?? 'Anonymous'}</p>
+          <p className={styles.country}>{chef.country ?? ''}</p>
+        </div>
 
         <div className={styles.stats}>
           <span className={styles.stat}>
@@ -136,7 +138,7 @@ function ChefCard({ chef, isOwnProfile, onFollow }: {
             <span> follower{chef.follower_count !== 1 ? 's' : ''}</span>
           </span>
         </div>
-      </Link>
+        </Link>
 
       {!isOwnProfile && (
         <button

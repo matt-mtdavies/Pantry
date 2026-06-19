@@ -240,10 +240,6 @@ export default function Navigation() {
             <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.25" />
           </svg>
         </Link>
-        <Link to="/leaderboard" className={`${styles.tab} ${p === '/leaderboard' ? styles.tabActive : ''}`}>
-          <IconPodium active={p === '/leaderboard'} />
-          <span className={styles.tabLabel}>Board</span>
-        </Link>
         <Link to="/chefs" className={`${styles.tab} ${p === '/chefs' || p.startsWith('/user/') ? styles.tabActive : ''}`}>
           <IconChefs active={p === '/chefs' || p.startsWith('/user/')} />
           <span className={styles.tabLabel}>Chefs</span>

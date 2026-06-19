@@ -74,7 +74,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-3);
   transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
@@ -87,14 +86,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
   text-decoration: none;
   width: 100%;
+  flex: 1;
 }
 
 .avatar {
   border-radius: 50%;
   border: 2px solid #F3EFE8;
+  margin-bottom: var(--sp-4);
+  flex-shrink: 0;
+}
+
+/* Fixed-height identity block so all cards align regardless of country */
+.identity {
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-3);
+  width: 100%;
 }
 
 .name {
@@ -112,6 +124,7 @@
   font-size: var(--text-xs);
   color: #9C9189;
   text-align: center;
+  min-height: 1.2em;
 }
 
 .stats {
@@ -120,7 +133,6 @@
   gap: var(--sp-3);
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: var(--sp-1);
 }
 
 .stat {
@@ -132,11 +144,9 @@
   color: #6B6459;
 }
 
-.star {
-  color: #C4633E;
-}
+.star { color: #C4633E; }
 
-/* ── Follow button ────────────────────────────────────────────────────────── */
+/* ── Follow button — always pinned to bottom of card ─────────────────────── */
 
 .followBtn {
   width: 100%;
@@ -150,13 +160,10 @@
   color: #C4633E;
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease;
-  margin-top: var(--sp-1);
+  margin-top: var(--sp-4);
 }
 
-.followBtn:hover {
-  background: #C4633E;
-  color: #FFFFFF;
-}
+.followBtn:hover { background: #C4633E; color: #FFFFFF; }
 
 .followBtn.following {
   background: #C4633E;
