@@ -105,6 +105,55 @@ Hit `https://myopenpantry.com/api/admin/migrate` after deploying to run any new 
 
 ---
 
+## Auth System
+
+Dual-mode: magic link (passwordless) + email/password. No third-party auth service.
+
+### Magic link flow
+1. `POST /api/auth/send-link` — rate-limits (3/15min per email, 5/15min per IP), stores 64-char hex token in `magic_tokens` (15min TTL), sends email via Resend.
+2. `GET /api/auth/verify?token=…` — returns plain HTML page with a `<form method="POST">` button. No JS. Prevents email scanners from consuming the token (they prefetch GET, won't submit POST).
+3. `POST /api/auth/verify` — marks token used, upserts user, creates session, sets `pantry_session` cookie, redirects via inline `<script>window.location.replace('/auth/complete?s=<sessionId>')` so Safari ITP fallback works.
+
+### Password flow
+- PBKDF2-SHA256, 100,000 iterations, stored `salt:hash` (hex).
+- Register: allows adding a password to an existing magic-link account. New accounts start `email_verified = 0`.
+- Login: always returns "Incorrect email or password" — never reveal if the email exists.
+
+### Session cookie
+```
+pantry_session=<16-byte-hex>; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000
+```
+
+### Middleware
+`functions/_middleware.ts` — validates cookie on all `/api/*` except public prefixes. Fallback: `Authorization: Bearer <id>` header for Safari ITP. Sets `ctx.data.userId`, `ctx.data.email`.
+
+---
+
+## Onboarding
+
+Full-screen overlay, shown once on first sign-in. `localStorage('onboarding-complete')` gate.
+
+- `<Onboarding onClose={fn} />` above the router in `App.tsx`.
+- `OnboardingContext` with `open()` for re-triggering from any component.
+- 5 slides: Welcome · Save recipes · Cook mode · Discover · Share. Each has an inline SVG illustration.
+- Swipe navigation via `touchstart`/`touchend` (50px threshold). Dot nav + Next/Skip buttons.
+- Last slide CTA: "Get cooking →".
+
+---
+
+## Invite System
+
+Any signed-in user generates a 10-char unambiguous token (`POST /api/invites`). Public landing page at `/invite/:token`.
+
+- Token charset excludes ambiguous chars (no `0/O`, `1/I/l`). Collision-checked up to 5 retries.
+- Invite page: shows inviter's avatar + name, 3 feature bullets, "Accept invite →" CTA → `/auth?mode=register&invite=<token>`.
+- Logged-in visitors see "You're already on Pantry!" + link to app instead of the CTA.
+- Token stored in `sessionStorage('pantry_invite')` before redirect so registration can record who invited them.
+- Sharing: `navigator.share({ title, text: \`${msg} ${url}\` })` — URL embedded in text, not a separate param (separate param = two iMessage bubbles).
+- `invite_tokens` table: `token, user_id, created_at, used_at, used_by_user_id`.
+
+---
+
 ## Key Database Tables
 ```sql
 users           -- id (TEXT/UUID), email, display_name, country, avatar_id, avatar_image_key,
