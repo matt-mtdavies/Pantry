@@ -49,10 +49,7 @@ export default function SearchPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [wizardOpen, setWizardOpen] = useState(false)
-  const [wizardRecipe, setWizardRecipe] = useState<GeneratedRecipe | null>(null)
-  const [generating, setGenerating] = useState(false)
-  const [generatedRecipes, setGeneratedRecipes] = useState<GeneratedRecipe[]>([])
-  const [generatedFor, setGeneratedFor] = useState('')
+  const [wizardQuery, setWizardQuery] = useState('')
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const buildParams = (q: string, f: Filters, pg: number) => {
@@ -97,21 +94,8 @@ export default function SearchPage() {
 
   const handleQueryChange = (q: string) => {
     setQuery(q)
-    setGeneratedRecipes([])
-    setGeneratedFor('')
     if (debounce.current) clearTimeout(debounce.current)
     debounce.current = setTimeout(() => doSearch(q, filters), 350)
-  }
-
-  const handleGenerate = async () => {
-    if (!query.trim()) return
-    setGenerating(true)
-    setGeneratedRecipes([])
-    try {
-      const result = await getDinnerSuggestions([query.trim()], 'search')
-      setGeneratedRecipes(result.recipes.slice(0, 2))
-      setGeneratedFor(query.trim())
-    } catch { /* ignore */ } finally { setGenerating(false) }
   }
 
   const handleFilterChange = (patch: Partial<Filters>) => {
@@ -321,45 +305,12 @@ export default function SearchPage() {
               {query ? (
                 <>
                   <p className={styles.emptySub}>No community recipes match your search.</p>
-                  {generatedRecipes.length > 0 ? (
-                    <div className={styles.generatedSection}>
-                      <p className={styles.generatedFor}>AI-generated recipes for "{generatedFor}"</p>
-                      <div className={styles.generatedGrid}>
-                        {generatedRecipes.map((r, i) => (
-                          <button
-                            key={i}
-                            className={styles.generatedCard}
-                            onClick={() => { setWizardRecipe(r); setWizardOpen(true) }}
-                          >
-                            <div className={styles.generatedCardTags}>
-                              {r.tags.slice(0, 2).map(t => (
-                                <span key={t} className={styles.generatedCardTag}>{t}</span>
-                              ))}
-                            </div>
-                            <p className={styles.generatedCardTitle}>{r.title}</p>
-                            <p className={styles.generatedCardDesc}>{r.description}</p>
-                            <div className={styles.generatedCardMeta}>
-                              {r.prep_time + r.cook_time > 0 && <span>{r.prep_time + r.cook_time} min</span>}
-                              <span>Serves {r.servings}</span>
-                              {r.calories_per_serving && <span>{r.calories_per_serving} kcal</span>}
-                            </div>
-                            <span className={styles.generatedCardCta}>View full recipe →</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      className={styles.generateBtn}
-                      onClick={handleGenerate}
-                      disabled={generating}
-                    >
-                      {generating
-                        ? <><SaltGrinder size={16} /> Generating…</>
-                        : <>✦ Generate recipes for "{query}"</>
-                      }
-                    </button>
-                  )}
+                  <button
+                    className={styles.generateBtn}
+                    onClick={() => { setWizardQuery(query.trim()); setWizardOpen(true) }}
+                  >
+                    ✦ Generate recipes for "{query}"
+                  </button>
                 </>
               ) : (
                 <p className={styles.emptySub}>No public recipes yet — be the first to share one!</p>
@@ -391,8 +342,8 @@ export default function SearchPage() {
       </main>
       {wizardOpen && (
         <DinnerWizard
-          onClose={() => { setWizardOpen(false); setWizardRecipe(null) }}
-          initialRecipe={wizardRecipe ?? undefined}
+          onClose={() => { setWizardOpen(false); setWizardQuery('') }}
+          initialQuery={wizardQuery || undefined}
         />
       )}
     </div>
@@ -470,13 +421,13 @@ const PANTRY_CHIPS = [
 
 type WizardStage = 'form' | 'loading' | 'summaries' | 'detail' | 'error'
 
-function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initialRecipe?: GeneratedRecipe }) {
+function DinnerWizard({ onClose, initialQuery }: { onClose: () => void; initialQuery?: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [mode, setMode] = useState<'match' | 'create'>('create')
-  const [stage, setStage] = useState<WizardStage>(initialRecipe ? 'detail' : 'form')
+  const [stage, setStage] = useState<WizardStage>(initialQuery ? 'loading' : 'form')
   const [recipes, setRecipes] = useState<GeneratedRecipe[]>([])
   const [summaryImages, setSummaryImages] = useState<(string | null)[]>([null, null, null])
-  const [activeRecipe, setActiveRecipe] = useState<GeneratedRecipe | null>(initialRecipe ?? null)
+  const [activeRecipe, setActiveRecipe] = useState<GeneratedRecipe | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -488,15 +439,19 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
     })
   }
 
-  const runWizard = async (ingredientOverride?: string[]) => {
+  const runWizard = async (ingredientOverride?: string[], modeOverride?: 'match' | 'create' | 'search') => {
     setStage('loading')
     setSummaryImages([null, null, null])
     try {
       const ingredientList = ingredientOverride ?? Array.from(selected)
-      const result = await getDinnerSuggestions(ingredientList, mode)
-      setRecipes(result.recipes.slice(0, 3))
+      const resultMode = modeOverride ?? mode
+      const maxCount = resultMode === 'search' ? 2 : 3
+      const result = await getDinnerSuggestions(ingredientList, resultMode)
+      const recs = result.recipes.slice(0, maxCount)
+      setRecipes(recs)
+      setSummaryImages(new Array(recs.length).fill(null))
       setStage('summaries')
-      result.recipes.slice(0, 3).forEach(async (r, i) => {
+      recs.forEach(async (r, i) => {
         try {
           const imgs = await searchImages([r.title, ...r.tags.slice(0, 1)].join(' '))
           if (imgs.length > 0) {
@@ -508,6 +463,12 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
       setStage('error')
     }
   }
+
+  useEffect(() => {
+    if (!initialQuery) return
+    runWizard([initialQuery], 'search')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSave = async () => {
     if (!activeRecipe) return
@@ -535,8 +496,9 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
     } catch { /* ignore */ } finally { setSaving(false) }
   }
 
+  const wizardTitle = initialQuery ? `Recipes for "${initialQuery}"` : "What's for dinner?"
   const wizardSubtitle =
-    stage === 'summaries' ? '3 ideas for tonight — tap one to see the full recipe.' :
+    stage === 'summaries' ? (initialQuery ? 'Tap a recipe to see the full details.' : '3 ideas for tonight — tap one to see the full recipe.') :
     stage === 'detail' ? 'Full recipe — save it to your collection.' :
     'Tap what you have in your pantry.'
 
@@ -546,7 +508,7 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
         <div className={styles.wizardHandle} />
         <div className={styles.wizardHeader}>
           <div>
-            <h2 className={styles.wizardTitle}>What's for dinner?</h2>
+            <h2 className={styles.wizardTitle}>{wizardTitle}</h2>
             <p className={styles.wizardSub}>{wizardSubtitle}</p>
           </div>
           <button className={styles.wizardClose} onClick={onClose} aria-label="Close">✕</button>
@@ -605,7 +567,9 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
         {stage === 'loading' && (
           <div className={styles.wizardLoading}>
             <SaltGrinder size={56} />
-            <p className={styles.wizardLoadingText}>Cooking up 3 ideas for you…</p>
+            <p className={styles.wizardLoadingText}>
+              {initialQuery ? `Finding recipes for "${initialQuery}"…` : 'Cooking up 3 ideas for you…'}
+            </p>
           </div>
         )}
 
@@ -613,8 +577,8 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
           <div className={styles.wizardEmpty}>
             <p className={styles.wizardEmptyTitle}>Something went wrong</p>
             <p className={styles.wizardEmptySub}>Couldn't generate recipes — please try again.</p>
-            <button className={styles.wizardBackBtn} onClick={() => runWizard()}>Try again</button>
-            <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
+            <button className={styles.wizardBackBtn} onClick={() => initialQuery ? runWizard([initialQuery], 'search') : runWizard()}>Try again</button>
+            {!initialQuery && <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>}
           </div>
         )}
 
@@ -645,8 +609,15 @@ function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initial
               ))}
             </div>
             <div className={styles.summaryActions}>
-              <button className={styles.wizardTryAgain} onClick={() => runWizard()}>Try different ideas</button>
-              <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
+              <button
+                className={styles.wizardTryAgain}
+                onClick={() => initialQuery ? runWizard([initialQuery], 'search') : runWizard()}
+              >
+                Try different ideas
+              </button>
+              {!initialQuery && (
+                <button className={styles.wizardBackBtn} onClick={() => setStage('form')}>← Change ingredients</button>
+              )}
             </div>
           </div>
         )}
