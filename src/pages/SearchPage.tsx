@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
 import { SearchIcon, DishIcon, DiceIcon, HeartIcon } from '../components/icons'
+import { ShareListButton } from '../components/ShareListButton'
 import { Avatar } from '../components/Avatar'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage, toggleFavourite } from '../lib/api'
 import type { GeneratedRecipe } from '../lib/api'
@@ -632,6 +633,10 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                       </li>
                     ))}
                   </ul>
+                  <ShareListButton
+                    items={activeRecipe.shopping_list}
+                    recipeName={activeRecipe.title}
+                  />
                 </div>
               )}
 

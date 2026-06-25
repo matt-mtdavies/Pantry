@@ -8,6 +8,7 @@ import { formatTime, imageUrl } from '../lib/utils'
 import { getCurrencySymbol } from '../lib/currency'
 import { convertIngredient, convertStepText } from '../lib/units'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon, CollectionIcon } from '../components/icons'
+import { ShareListButton } from '../components/ShareListButton'
 import { Avatar } from '../components/Avatar'
 import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
@@ -440,6 +441,13 @@ export default function RecipePage() {
                 )
               })}
             </ul>
+            <ShareListButton
+              items={recipe.ingredients.map(ing => {
+                const c = convertIngredient(ing.amount, ing.unit, user?.unit_system ?? 'metric')
+                return [c.amount, c.unit, ing.name].filter(Boolean).join(' ').trim()
+              })}
+              recipeName={recipe.title}
+            />
           </section>
 
           <hr className={styles.divider} />

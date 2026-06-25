@@ -175,6 +175,32 @@ export function FlavourIcon({ size = 16, className }: IconProps) {
   )
 }
 
+export function MailIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+      <path d="M1.5 5l6.5 4.5L14.5 5" />
+    </svg>
+  )
+}
+
+export function CopyIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <rect x="5.5" y="5.5" width="8" height="9" rx="1.5" />
+      <path d="M10.5 5.5V3.5a1.5 1.5 0 00-1.5-1.5H3.5a1.5 1.5 0 00-1.5 1.5v6a1.5 1.5 0 001.5 1.5h2" />
+    </svg>
+  )
+}
+
+export function CheckIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M2.5 8.5l4 4 7-8" />
+    </svg>
+  )
+}
+
 export function KitchenIcon({ size = 16, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
