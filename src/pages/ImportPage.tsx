@@ -5,6 +5,7 @@ import SaltGrinder from '../components/SaltGrinder'
 import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import { formatTime } from '../lib/utils'
 import type { ExtractedRecipe, Ingredient } from '../types'
+import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
 import styles from './ImportPage.module.css'
 
 type Stage = 'upload' | 'extracting' | 'review' | 'saving' | 'error'
@@ -363,6 +364,9 @@ function ReviewScreen({
   const updateStep = (i: number, val: string) => setRecipe(r => { const s = [...r.steps]; s[i] = val; return { ...r, steps: s } })
   const removeStep = (i: number) => setRecipe(r => ({ ...r, steps: r.steps.filter((_, idx) => idx !== i) }))
   const addStep = () => setRecipe(r => ({ ...r, steps: [...r.steps, ''] }))
+  const moveStep = (i: number, dir: -1 | 1) => setRecipe(r => {
+    const s = [...r.steps];[s[i], s[i + dir]] = [s[i + dir], s[i]]; return { ...r, steps: s }
+  })
   const addTag = () => {
     const t = newTag.trim().toLowerCase()
     if (t && !recipe.tags.includes(t)) setRecipe(r => ({ ...r, tags: [...r.tags, t] }))
@@ -650,6 +654,10 @@ function ReviewScreen({
               <ol className={styles.stepsList}>
                 {recipe.steps.map((step, i) => (
                   <li key={i} className={styles.stepRow}>
+                    <div className={styles.stepControls}>
+                      <button className={styles.stepMoveBtn} onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label={`Move step ${i + 1} up`}><ArrowUpIcon size={12} /></button>
+                      <button className={styles.stepMoveBtn} onClick={() => moveStep(i, 1)} disabled={i === recipe.steps.length - 1} aria-label={`Move step ${i + 1} down`}><ArrowDownIcon size={12} /></button>
+                    </div>
                     <span className={styles.stepNum}>{i + 1}</span>
                     <textarea
                       className={`${styles.input} ${styles.stepInput}`}

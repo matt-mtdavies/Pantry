@@ -155,7 +155,7 @@
 
 .stepRow {
   display: flex;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   align-items: flex-start;
 }
 
@@ -179,6 +179,39 @@
   flex: 1;
   min-height: auto;
   resize: vertical;
+}
+
+.stepControls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: var(--sp-3);
+}
+
+.stepMoveBtn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: #C4B8AC;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.stepMoveBtn:hover:not(:disabled) {
+  color: #C4633E;
+  background-color: #F5E8E2;
+}
+
+.stepMoveBtn:disabled {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .tagsField {

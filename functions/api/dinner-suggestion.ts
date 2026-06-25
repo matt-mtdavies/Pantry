@@ -31,23 +31,35 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const body = await ctx.request.json() as {
     ingredients?: string[]
-    mode?: 'match' | 'create'
+    mode?: 'match' | 'create' | 'search'
   }
 
   const ingredients = body.ingredients ?? []
   const mode = body.mode ?? 'create'
 
-  const ingredientStr = ingredients.length > 0
-    ? ingredients.join(', ')
-    : 'any common pantry staples you like'
-
-  const shoppingNote = mode === 'create'
-    ? 'The user is happy to shop for extra ingredients — include these in shopping_list.'
-    : 'Use ONLY the listed ingredients — set shopping_list to [].'
-
   const recipeSchema = `{"title":"string","description":"1-2 sentence description","servings":2,"prep_time":15,"cook_time":30,"ingredients":[{"amount":"200","unit":"g","name":"ingredient"}],"steps":["step text"],"tags":["tag"],"shopping_list":[],"calories_per_serving":450,"cost_per_serving":3.50,"cost_currency":"USD"}`
 
-  const prompt = `You are a creative chef assistant. Generate exactly 3 different delicious recipe ideas.
+  let prompt: string
+
+  if (mode === 'search') {
+    const dishName = ingredients[0] ?? 'a delicious dish'
+    prompt = `You are a creative chef assistant. Generate exactly 2 different recipes for making "${dishName}".
+Recipe 1: the classic or traditional version.
+Recipe 2: a creative variation or modern twist.
+Each recipe serves 2-4 people. Include ALL ingredients needed in shopping_list.
+
+Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation):
+{"recipes":[${recipeSchema},${recipeSchema}]}`
+  } else {
+    const ingredientStr = ingredients.length > 0
+      ? ingredients.join(', ')
+      : 'any common pantry staples you like'
+
+    const shoppingNote = mode === 'create'
+      ? 'The user is happy to shop for extra ingredients — include these in shopping_list.'
+      : 'Use ONLY the listed ingredients — set shopping_list to [].'
+
+    prompt = `You are a creative chef assistant. Generate exactly 3 different delicious recipe ideas.
 Available ingredients: ${ingredientStr}.
 ${shoppingNote}
 Make the 3 recipes clearly different — vary cuisines, cooking styles, or main protein.
@@ -55,6 +67,7 @@ Each recipe serves 2 people.
 
 Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation):
 {"recipes":[${recipeSchema},${recipeSchema},${recipeSchema}]}`
+  }
 
   try {
     const aiRes = await fetch('https://api.anthropic.com/v1/messages', {

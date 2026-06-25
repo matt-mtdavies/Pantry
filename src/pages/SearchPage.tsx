@@ -49,6 +49,10 @@ export default function SearchPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [wizardRecipe, setWizardRecipe] = useState<GeneratedRecipe | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [generatedRecipes, setGeneratedRecipes] = useState<GeneratedRecipe[]>([])
+  const [generatedFor, setGeneratedFor] = useState('')
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const buildParams = (q: string, f: Filters, pg: number) => {
@@ -93,8 +97,21 @@ export default function SearchPage() {
 
   const handleQueryChange = (q: string) => {
     setQuery(q)
+    setGeneratedRecipes([])
+    setGeneratedFor('')
     if (debounce.current) clearTimeout(debounce.current)
     debounce.current = setTimeout(() => doSearch(q, filters), 350)
+  }
+
+  const handleGenerate = async () => {
+    if (!query.trim()) return
+    setGenerating(true)
+    setGeneratedRecipes([])
+    try {
+      const result = await getDinnerSuggestions([query.trim()], 'search')
+      setGeneratedRecipes(result.recipes.slice(0, 2))
+      setGeneratedFor(query.trim())
+    } catch { /* ignore */ } finally { setGenerating(false) }
   }
 
   const handleFilterChange = (patch: Partial<Filters>) => {
@@ -301,11 +318,52 @@ export default function SearchPage() {
           ) : results.length === 0 ? (
             <div className={styles.empty}>
               <p className={styles.emptyTitle}>No recipes found</p>
-              <p className={styles.emptySub}>
-                {query || activeCount > 0
-                  ? 'Try adjusting your search or filters.'
-                  : 'No public recipes yet — be the first to share one!'}
-              </p>
+              {query ? (
+                <>
+                  <p className={styles.emptySub}>No community recipes match your search.</p>
+                  {generatedRecipes.length > 0 ? (
+                    <div className={styles.generatedSection}>
+                      <p className={styles.generatedFor}>AI-generated recipes for "{generatedFor}"</p>
+                      <div className={styles.generatedGrid}>
+                        {generatedRecipes.map((r, i) => (
+                          <button
+                            key={i}
+                            className={styles.generatedCard}
+                            onClick={() => { setWizardRecipe(r); setWizardOpen(true) }}
+                          >
+                            <div className={styles.generatedCardTags}>
+                              {r.tags.slice(0, 2).map(t => (
+                                <span key={t} className={styles.generatedCardTag}>{t}</span>
+                              ))}
+                            </div>
+                            <p className={styles.generatedCardTitle}>{r.title}</p>
+                            <p className={styles.generatedCardDesc}>{r.description}</p>
+                            <div className={styles.generatedCardMeta}>
+                              {r.prep_time + r.cook_time > 0 && <span>{r.prep_time + r.cook_time} min</span>}
+                              <span>Serves {r.servings}</span>
+                              {r.calories_per_serving && <span>{r.calories_per_serving} kcal</span>}
+                            </div>
+                            <span className={styles.generatedCardCta}>View full recipe →</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className={styles.generateBtn}
+                      onClick={handleGenerate}
+                      disabled={generating}
+                    >
+                      {generating
+                        ? <><SaltGrinder size={16} /> Generating…</>
+                        : <>✦ Generate recipes for "{query}"</>
+                      }
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p className={styles.emptySub}>No public recipes yet — be the first to share one!</p>
+              )}
             </div>
           ) : (
             <>
@@ -331,7 +389,12 @@ export default function SearchPage() {
 
         </div>
       </main>
-      {wizardOpen && <DinnerWizard onClose={() => setWizardOpen(false)} />}
+      {wizardOpen && (
+        <DinnerWizard
+          onClose={() => { setWizardOpen(false); setWizardRecipe(null) }}
+          initialRecipe={wizardRecipe ?? undefined}
+        />
+      )}
     </div>
   )
 }
@@ -407,13 +470,13 @@ const PANTRY_CHIPS = [
 
 type WizardStage = 'form' | 'loading' | 'summaries' | 'detail' | 'error'
 
-function DinnerWizard({ onClose }: { onClose: () => void }) {
+function DinnerWizard({ onClose, initialRecipe }: { onClose: () => void; initialRecipe?: GeneratedRecipe }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [mode, setMode] = useState<'match' | 'create'>('create')
-  const [stage, setStage] = useState<WizardStage>('form')
+  const [stage, setStage] = useState<WizardStage>(initialRecipe ? 'detail' : 'form')
   const [recipes, setRecipes] = useState<GeneratedRecipe[]>([])
   const [summaryImages, setSummaryImages] = useState<(string | null)[]>([null, null, null])
-  const [activeRecipe, setActiveRecipe] = useState<GeneratedRecipe | null>(null)
+  const [activeRecipe, setActiveRecipe] = useState<GeneratedRecipe | null>(initialRecipe ?? null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -663,9 +726,11 @@ function DinnerWizard({ onClose }: { onClose: () => void }) {
                   {saving ? 'Saving…' : 'Save to my recipes'}
                 </button>
               )}
-              <button className={styles.wizardBackBtn} onClick={() => { setActiveRecipe(null); setSavedId(null); setStage('summaries') }}>
-                ← Back to ideas
-              </button>
+              {recipes.length > 0 && (
+                <button className={styles.wizardBackBtn} onClick={() => { setActiveRecipe(null); setSavedId(null); setStage('summaries') }}>
+                  ← Back to ideas
+                </button>
+              )}
             </div>
           </div>
         )}

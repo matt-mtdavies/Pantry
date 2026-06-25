@@ -249,7 +249,7 @@ export interface GeneratedRecipe {
 
 export async function getDinnerSuggestions(
   ingredients: string[],
-  mode?: 'match' | 'create',
+  mode?: 'match' | 'create' | 'search',
 ): Promise<{ recipes: GeneratedRecipe[] }> {
   return request<{ recipes: GeneratedRecipe[] }>('/api/dinner-suggestion', {
     method: 'POST',

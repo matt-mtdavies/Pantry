@@ -5,6 +5,7 @@ import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe, createRecipe, updateRecipe } from '../lib/api'
 import { getCurrencySymbol } from '../lib/currency'
 import type { Recipe, Ingredient } from '../types'
+import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
 import styles from './EditRecipePage.module.css'
 
 const EMPTY_RECIPE = (): Partial<Recipe> => ({
@@ -67,6 +68,10 @@ export default function EditRecipePage() {
 
   const addStep = () =>
     update('steps', [...(recipe.steps ?? []), ''])
+
+  const moveStep = (i: number, dir: -1 | 1) => {
+    const s = [...(recipe.steps ?? [])];[s[i], s[i + dir]] = [s[i + dir], s[i]]; update('steps', s)
+  }
 
   const addTag = () => {
     const t = newTag.trim().toLowerCase()
@@ -252,6 +257,10 @@ export default function EditRecipePage() {
               <ol className={styles.stepsList}>
                 {(recipe.steps ?? []).map((step, i) => (
                   <li key={i} className={styles.stepRow}>
+                    <div className={styles.stepControls}>
+                      <button className={styles.stepMoveBtn} onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label={`Move step ${i + 1} up`}><ArrowUpIcon size={12} /></button>
+                      <button className={styles.stepMoveBtn} onClick={() => moveStep(i, 1)} disabled={i === (recipe.steps ?? []).length - 1} aria-label={`Move step ${i + 1} down`}><ArrowDownIcon size={12} /></button>
+                    </div>
                     <span className={styles.stepNum}>{i + 1}</span>
                     <textarea
                       className={`${styles.input} ${styles.stepInput}`}

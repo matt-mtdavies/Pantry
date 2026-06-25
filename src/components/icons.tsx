@@ -175,6 +175,22 @@ export function FlavourIcon({ size = 16, className }: IconProps) {
   )
 }
 
+export function ArrowUpIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M8 12V4M4.5 7.5L8 4l3.5 3.5" />
+    </svg>
+  )
+}
+
+export function ArrowDownIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <path d="M8 4v8M4.5 8.5L8 12l3.5-3.5" />
+    </svg>
+  )
+}
+
 export function MailIcon({ size = 16, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
