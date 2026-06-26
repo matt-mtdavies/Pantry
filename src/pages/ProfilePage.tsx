@@ -8,6 +8,7 @@ import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, remo
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
 import { imageUrl } from '../lib/utils'
+import { FeedbackModal } from '../components/FeedbackModal'
 import styles from './ProfilePage.module.css'
 
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary', 'Other']
@@ -37,6 +38,7 @@ export default function ProfilePage() {
   const [inviteCopied, setInviteCopied] = useState(false)
   const [inviteLoading, setInviteLoading] = useState(false)
   const [showIosHint, setShowIosHint] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [stats, setStats] = useState<{ recipe_count: number; avg_rating: number | null; total_ratings: number } | null>(null)
 
   // Avatar upload state
@@ -419,6 +421,9 @@ export default function ProfilePage() {
             <button className={styles.inviteLinkBtn} onClick={() => onboarding?.open()}>
               How Pantry works
             </button>
+            <button className={styles.inviteLinkBtn} onClick={() => setFeedbackOpen(true)}>
+              Share feedback
+            </button>
             {!isInstalled && (canPrompt || isIos) && (
               <>
                 <button
@@ -469,6 +474,7 @@ export default function ProfilePage() {
       </main>
 
       {cropSrc && <CropModal src={cropSrc} onSave={handleCropSave} onCancel={handleCropCancel} />}
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     </div>
   )
 }

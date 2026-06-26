@@ -307,3 +307,13 @@ export async function getInvite(token: string): Promise<InviterInfo> {
 export function downloadExport(): void {
   window.location.href = '/api/me/export'
 }
+
+// Feedback
+
+export async function submitFeedback(category: string, message: string): Promise<void> {
+  await request<{ ok: boolean }>('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category, message }),
+  })
+}

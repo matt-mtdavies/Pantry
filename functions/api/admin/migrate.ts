@@ -90,6 +90,19 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
   await run('idx_user_follows_follower', `CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON user_follows (follower_id)`)
   await run('idx_user_follows_following', `CREATE INDEX IF NOT EXISTS idx_user_follows_following ON user_follows (following_id)`)
 
+  // User feedback / improvement suggestions
+  await run('feedback table', `
+    CREATE TABLE IF NOT EXISTS feedback (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      user_email TEXT,
+      category TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `)
+  await run('idx_feedback_created', `CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback (created_at DESC)`)
+
   return json({ steps, errors, ok: errors.length === 0 })
 }
 
