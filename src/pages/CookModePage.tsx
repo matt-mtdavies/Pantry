@@ -9,55 +9,6 @@ import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe, Ingredient } from '../types'
 import styles from './CookModePage.module.css'
 
-function Timer({ initialMinutes, label }: { initialMinutes: number; label: string }) {
-  const [seconds, setSeconds] = useState(initialMinutes * 60)
-  const [running, setRunning] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  useEffect(() => {
-    if (running && seconds > 0) {
-      intervalRef.current = setInterval(() => setSeconds(s => {
-        if (s <= 1) {
-          setRunning(false)
-          clearInterval(intervalRef.current!)
-          return 0
-        }
-        return s - 1
-      }), 1000)
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [running])
-
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  const done = seconds === 0
-
-  return (
-    <div className={`${styles.timer} ${done ? styles.timerDone : ''}`}>
-      <span className={styles.timerLabel}>{label}</span>
-      <span className={styles.timerTime}>
-        {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
-      </span>
-      <div className={styles.timerBtns}>
-        {!done && (
-          <button className={styles.timerBtn} onClick={() => setRunning(r => !r)}>
-            {running ? 'Pause' : 'Start'}
-          </button>
-        )}
-        {done ? (
-          <span className={styles.timerDoneLabel}>Done! ✓</span>
-        ) : (
-          <button
-            className={styles.timerReset}
-            onClick={() => { setRunning(false); setSeconds(initialMinutes * 60) }}
-          >
-            Reset
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
 
 const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
@@ -94,6 +45,14 @@ export default function CookModePage() {
   const { acquire, release } = useWakeLock()
   const { user } = useAuth()
 
+  // Global persistent timer
+  const [timerSecs, setTimerSecs] = useState(0)
+  const [timerRunning, setTimerRunning] = useState(false)
+  const [timerInitialSecs, setTimerInitialSecs] = useState(0)
+  const [timerDone, setTimerDone] = useState(false)
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timerDoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     if (!id) return
     getRecipe(id)
@@ -108,6 +67,44 @@ export default function CookModePage() {
     return () => release()
   }, [acquire, release])
 
+  // Global timer
+  useEffect(() => {
+    if (!timerRunning) return
+    timerIntervalRef.current = setInterval(() => {
+      setTimerSecs(s => {
+        if (s <= 1) {
+          setTimerRunning(false)
+          setTimerDone(true)
+          if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
+          timerDoneTimeoutRef.current = setTimeout(() => setTimerDone(false), 5000)
+          if (navigator.vibrate) navigator.vibrate([300, 150, 300])
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current) }
+  }, [timerRunning])
+
+  const loadTimer = (mins: number) => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
+    const secs = mins * 60
+    setTimerDone(false)
+    setTimerSecs(secs)
+    setTimerInitialSecs(secs)
+    setTimerRunning(true)
+  }
+
+  const clearTimer = () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
+    setTimerRunning(false)
+    setTimerSecs(0)
+    setTimerInitialSecs(0)
+    setTimerDone(false)
+  }
+
   // Load system voices for Web Speech fallback
   useEffect(() => {
     if (!ttsSupported) return
@@ -117,13 +114,15 @@ export default function CookModePage() {
     return () => window.speechSynthesis.removeEventListener('voiceschanged', load)
   }, [])
 
-  // Cleanup all audio on unmount
+  // Cleanup all audio and timer on unmount
   useEffect(() => {
     return () => {
       if (sourceNodeRef.current) { try { sourceNodeRef.current.stop() } catch { /* */ } }
       audioRef.current?.pause()
       audioCtxRef.current?.close()
       if (ttsSupported) window.speechSynthesis.cancel()
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+      if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
     }
   }, [])
 
@@ -244,6 +243,10 @@ export default function CookModePage() {
   const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
   const timers = stepTimers[currentStep]
   const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
+  const timerM = Math.floor(timerSecs / 60)
+  const timerS = timerSecs % 60
+  const timerDisplay = `${String(timerM).padStart(2, '0')}:${String(timerS).padStart(2, '0')}`
+  const showTimer = timerSecs > 0 || timerDone
 
   return (
     <div className={styles.page}>
@@ -254,6 +257,30 @@ export default function CookModePage() {
         <div className={styles.headerTitle}>
           <span className={styles.recipeTitle}>{recipe.title}</span>
         </div>
+        {showTimer && (
+          <div className={`${styles.globalTimerPill} ${timerDone ? styles.globalTimerPillDone : ''}`}>
+            {timerDone ? (
+              <span className={styles.globalTimerDone}>Done ✓</span>
+            ) : (
+              <>
+                <span className={styles.globalTimerTime}>{timerDisplay}</span>
+                <button
+                  className={styles.globalTimerCtrl}
+                  onClick={() => setTimerRunning(r => !r)}
+                  aria-label={timerRunning ? 'Pause timer' : 'Resume timer'}
+                >
+                  {timerRunning ? '⏸' : '▶'}
+                </button>
+                <button
+                  className={styles.globalTimerCtrl}
+                  onClick={() => { setTimerRunning(false); setTimerSecs(timerInitialSecs) }}
+                  aria-label="Reset timer"
+                >↩</button>
+              </>
+            )}
+            <button className={styles.globalTimerCtrl} onClick={clearTimer} aria-label="Clear timer">✕</button>
+          </div>
+        )}
       </header>
 
       <div className={styles.scaler}>
@@ -344,11 +371,22 @@ export default function CookModePage() {
           {timers.length > 0 && (
             <div className={styles.timers}>
               {timers.map((mins, i) => (
-                <Timer
-                  key={`${currentStep}-${i}`}
-                  initialMinutes={mins}
-                  label={formatTime(mins)}
-                />
+                <button
+                  key={i}
+                  className={styles.timerSuggestion}
+                  onClick={() => loadTimer(mins)}
+                  aria-label={`Start ${formatTime(mins)} timer`}
+                >
+                  <span className={styles.timerSuggestionTime}>
+                    {String(Math.floor(mins)).padStart(2, '0')}:00
+                  </span>
+                  <div className={styles.timerSuggestionInfo}>
+                    <span className={styles.timerSuggestionLabel}>{formatTime(mins)}</span>
+                    <span className={styles.timerSuggestionCta}>
+                      {timerRunning && timerInitialSecs === mins * 60 ? 'Running ▶' : '→ Start timer'}
+                    </span>
+                  </div>
+                </button>
               ))}
             </div>
           )}

@@ -261,84 +261,117 @@
   border-color: #a8532f;
 }
 
-.timers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-4);
-  margin-bottom: var(--sp-8);
-}
+/* ── Global persistent timer (header) ───────────────────────────────── */
 
-.timer {
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-4) var(--sp-5);
+.globalTimerPill {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
+  gap: var(--sp-1);
+  background: rgba(196, 99, 62, 0.18);
+  border: 1px solid rgba(196, 99, 62, 0.4);
+  border-radius: var(--radius-full);
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
+  flex-shrink: 0;
 }
 
-.timerDone {
-  background: rgba(122,139,111,.2);
-  border-color: rgba(122,139,111,.4);
+.globalTimerPillDone {
+  background: rgba(122, 139, 111, 0.25);
+  border-color: rgba(122, 139, 111, 0.5);
+  animation: timerPulse 0.5s ease-out 3;
 }
 
-.timerLabel {
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: #9C9189;
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
 }
 
-.timerTime {
+.globalTimerTime {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  font-size: var(--text-base);
   font-weight: 600;
   color: #FAF7F2;
-  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  min-width: 48px;
 }
 
-.timerBtns {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-.timerBtn {
-  padding: var(--sp-2) var(--sp-4);
-  background: #C4633E;
-  color: #FFFFFF;
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  min-height: 40px;
-  transition: background-color 150ms ease;
-}
-
-.timerBtn:hover { background: #a8532f; }
-
-.timerReset {
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: #9C9189;
-  padding: var(--sp-1) var(--sp-3);
-  border: 1.5px solid #E8E0D4;
-  border-radius: var(--radius-full);
-  background: transparent;
-  cursor: pointer;
-  transition: all 150ms ease;
-  text-decoration: none;
-}
-
-.timerReset:hover { border-color: #9C9189; color: #6B6459; }
-
-.timerDoneLabel {
+.globalTimerDone {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
   color: #7A8B6F;
+  padding: 0 var(--sp-1);
+}
+
+.globalTimerCtrl {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,.08);
+  color: rgba(250,247,242,.7);
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.globalTimerCtrl:hover { background: rgba(255,255,255,.18); color: #FAF7F2; }
+
+/* ── Step timer suggestion buttons ──────────────────────────────────── */
+
+.timers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-8);
+}
+
+.timerSuggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3) var(--sp-5);
+  text-align: left;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.timerSuggestion:hover {
+  background: rgba(196,99,62,.15);
+  border-color: rgba(196,99,62,.45);
+}
+
+.timerSuggestionTime {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: #FAF7F2;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.timerSuggestionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timerSuggestionLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: #9C9189;
+}
+
+.timerSuggestionCta {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #C4633E;
 }
 
 .stepNav {
