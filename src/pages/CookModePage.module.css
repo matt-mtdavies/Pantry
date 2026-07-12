@@ -1,5 +1,6 @@
 .page {
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   background-color: #1F1B16;
   color: #FAF7F2;
   display: flex;
@@ -122,6 +123,7 @@
 
 .body {
   flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 300px 1fr;
   overflow: hidden;
@@ -821,6 +823,7 @@
     border-right: none;
     border-bottom: 1px solid rgba(232,224,212,.1);
     padding: var(--sp-4) var(--sp-5);
+    max-height: 40vh;
   }
   .main {
     padding: var(--sp-6) var(--sp-5);
