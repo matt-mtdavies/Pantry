@@ -52,6 +52,9 @@ export default function CookModePage() {
   const [timerDone, setTimerDone] = useState(false)
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timerDoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const timerAutoCollapseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [timerExpanded, setTimerExpanded] = useState(false)
+  const [customOpen, setCustomOpen] = useState(false)
   const [customMins, setCustomMins] = useState('')
   const [customSecs, setCustomSecs] = useState('')
 
@@ -91,11 +94,14 @@ export default function CookModePage() {
   const loadTimer = (mins: number) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
     if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
+    if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     const secs = mins * 60
     setTimerDone(false)
     setTimerSecs(secs)
     setTimerInitialSecs(secs)
     setTimerRunning(true)
+    setTimerExpanded(false)
+    setCustomOpen(false)
     setCustomMins('')
     setCustomSecs('')
   }
@@ -103,10 +109,12 @@ export default function CookModePage() {
   const clearTimer = () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
     if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
+    if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     setTimerRunning(false)
     setTimerSecs(0)
     setTimerInitialSecs(0)
     setTimerDone(false)
+    setTimerExpanded(false)
     setCustomMins('')
     setCustomSecs('')
   }
@@ -121,8 +129,15 @@ export default function CookModePage() {
     const totalSecs = (parseInt(customMins || '0') * 60) + parseInt(customSecs || '0')
     if (totalSecs < 1) return
     loadTimer(totalSecs / 60)
-    setCustomMins('')
-    setCustomSecs('')
+  }
+
+  const toggleExpanded = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setTimerExpanded(prev => {
+      if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
+      if (!prev) timerAutoCollapseRef.current = setTimeout(() => setTimerExpanded(false), 5000)
+      return !prev
+    })
   }
 
   // Load system voices for Web Speech fallback
@@ -143,6 +158,7 @@ export default function CookModePage() {
       if (ttsSupported) window.speechSynthesis.cancel()
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
       if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
+      if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     }
   }, [])
 
@@ -262,6 +278,7 @@ export default function CookModePage() {
   const timerIsActive = timerSecs > 0 || timerDone
   const timerProgressPct = timerDone ? 100 : timerInitialSecs > 0 ? (timerSecs / timerInitialSecs) * 100 : 0
   const timerBannerMod = timerDone ? styles.timerBannerDone : timerRunning ? styles.timerBannerRunning : timerSecs > 0 ? styles.timerBannerPaused : ''
+  const timerDotMod = timerDone ? styles.timerDotDone : timerRunning ? styles.timerDotRunning : timerSecs > 0 ? styles.timerDotPaused : ''
   const TIMER_PRESETS = [1, 5, 10, 15, 20]
 
   return (
@@ -275,125 +292,170 @@ export default function CookModePage() {
         </div>
       </header>
 
-      {/* Global timer banner — always visible, independent of steps */}
+      {/* Global timer banner — collapses to a thin strip once active */}
       <div className={`${styles.timerBanner} ${timerBannerMod}`}>
-        <div className={styles.timerBannerTop}>
-          <div className={styles.timerBannerLeft}>
-            <div className={styles.timerBannerDisplay} aria-label={`Timer: ${String(timerM).padStart(2,'0')}:${String(timerS).padStart(2,'0')}`}>
-              {timerDone ? 'Done!' : (
-                <>
-                  {String(timerM).padStart(2, '0')}
-                  <span className={styles.timerBannerColon}>:</span>
-                  {String(timerS).padStart(2, '0')}
-                </>
-              )}
+
+        {timerIsActive ? (
+          <>
+            {/* Active: single compact row */}
+            <div className={styles.timerActiveRow}>
+              <div className={styles.timerActiveLeft}>
+                <span className={`${styles.timerDot} ${timerDotMod}`} aria-hidden="true" />
+                <span className={styles.timerActiveDisplay} aria-label={`Timer: ${String(timerM).padStart(2,'0')}:${String(timerS).padStart(2,'0')}`}>
+                  {timerDone ? 'Done!' : (
+                    <>
+                      {String(timerM).padStart(2, '0')}
+                      <span className={styles.timerActiveColon}>:</span>
+                      {String(timerS).padStart(2, '0')}
+                    </>
+                  )}
+                </span>
+              </div>
+              <div className={styles.timerActiveControls}>
+                {!timerDone && (
+                  <button
+                    className={`${styles.timerCtrlBtn} ${styles.timerCtrlBtnPrimary}`}
+                    onClick={() => setTimerRunning(r => !r)}
+                    aria-label={timerRunning ? 'Pause' : 'Resume'}
+                  >
+                    {timerRunning ? (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <rect x="6" y="4" width="4" height="16" rx="1.5"/>
+                        <rect x="14" y="4" width="4" height="16" rx="1.5"/>
+                      </svg>
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <polygon points="6 3 20 12 6 21"/>
+                      </svg>
+                    )}
+                  </button>
+                )}
+                <button
+                  className={`${styles.timerCtrlBtn} ${timerDone ? styles.timerCtrlBtnDone : ''}`}
+                  onClick={clearTimer}
+                  aria-label="Clear timer"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+                {!timerDone && (
+                  <button
+                    className={`${styles.timerExpandBtn} ${timerExpanded ? styles.timerExpandBtnOpen : ''}`}
+                    onClick={toggleExpanded}
+                    aria-label={timerExpanded ? 'Collapse' : 'Add time'}
+                    aria-expanded={timerExpanded}
+                  >
+                    {timerExpanded ? (
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="18 15 12 9 6 15"/>
+                      </svg>
+                    ) : (
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-            <div className={styles.timerBannerStatus}>
-              {timerDone ? 'Timer complete' : timerSecs > 0 ? (timerRunning ? 'Running' : 'Paused') : 'Set a timer'}
+
+            {/* Add-time chips — slides in when expanded */}
+            {timerExpanded && (
+              <div className={styles.timerAddRow}>
+                {TIMER_PRESETS.map(mins => (
+                  <button
+                    key={mins}
+                    className={styles.timerAddChip}
+                    onClick={() => {
+                      addToTimer(mins)
+                      if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
+                      timerAutoCollapseRef.current = setTimeout(() => setTimerExpanded(false), 3000)
+                    }}
+                    aria-label={`Add ${mins} minutes`}
+                  >
+                    +{mins}m
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Idle: clock icon + quick-set chips + custom toggle — all one row */}
+            <div className={styles.timerIdleRow}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={styles.timerIdleIcon} aria-hidden="true">
+                <circle cx="12" cy="13" r="8"/>
+                <polyline points="12 9 12 13 15 15"/>
+                <line x1="9" y1="3" x2="15" y2="3"/>
+              </svg>
+              <div className={styles.timerIdleChips}>
+                {TIMER_PRESETS.map(mins => (
+                  <button
+                    key={mins}
+                    className={styles.timerIdleChip}
+                    onClick={() => loadTimer(mins)}
+                    aria-label={`Set ${mins} minute timer`}
+                  >
+                    {mins}m
+                  </button>
+                ))}
+              </div>
+              <button
+                className={`${styles.timerCustomToggle} ${customOpen ? styles.timerCustomToggleOpen : ''}`}
+                onClick={() => setCustomOpen(v => !v)}
+                aria-label="Set custom time"
+                aria-expanded={customOpen}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
             </div>
-          </div>
 
-          <div className={styles.timerBannerControls}>
-            <button
-              className={`${styles.timerBannerBtn} ${styles.timerBannerBtnPrimary}`}
-              onClick={() => setTimerRunning(r => !r)}
-              disabled={!timerIsActive || timerDone}
-              aria-label={timerRunning ? 'Pause timer' : 'Resume timer'}
-            >
-              {timerRunning ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <rect x="6" y="4" width="4" height="16" rx="1.5"/>
-                  <rect x="14" y="4" width="4" height="16" rx="1.5"/>
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <polygon points="6 3 20 12 6 21"/>
-                </svg>
-              )}
-            </button>
-            <button
-              className={styles.timerBannerBtn}
-              onClick={() => { setTimerRunning(false); setTimerSecs(timerInitialSecs) }}
-              disabled={!timerIsActive || timerDone}
-              aria-label="Reset timer"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 1 0 .49-4.36"/>
-              </svg>
-            </button>
-            <button
-              className={styles.timerBannerBtn}
-              onClick={clearTimer}
-              disabled={!timerIsActive}
-              aria-label="Clear timer"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.timerBannerPresets}>
-          {TIMER_PRESETS.map(mins => (
-            <button
-              key={mins}
-              className={styles.timerPreset}
-              onClick={() => timerIsActive && !timerDone ? addToTimer(mins) : loadTimer(mins)}
-              aria-label={timerIsActive && !timerDone ? `Add ${mins} minutes` : `Set ${mins} minute timer`}
-            >
-              {timerIsActive && !timerDone ? `+${mins}m` : `${mins}m`}
-            </button>
-          ))}
-        </div>
-
-        <div className={styles.timerCustomRow}>
-          <div className={styles.timerCustomField}>
-            <input
-              type="number"
-              min="0"
-              max="99"
-              inputMode="numeric"
-              className={styles.timerCustomInput}
-              value={customMins}
-              onChange={e => setCustomMins(e.target.value)}
-              placeholder="00"
-              aria-label="Minutes"
-            />
-            <span className={styles.timerCustomUnit}>m</span>
-          </div>
-          <span className={styles.timerCustomSep}>:</span>
-          <div className={styles.timerCustomField}>
-            <input
-              type="number"
-              min="0"
-              max="59"
-              inputMode="numeric"
-              className={styles.timerCustomInput}
-              value={customSecs}
-              onChange={e => setCustomSecs(e.target.value)}
-              placeholder="00"
-              aria-label="Seconds"
-            />
-            <span className={styles.timerCustomUnit}>s</span>
-          </div>
-          <button
-            className={styles.timerCustomSet}
-            onClick={setCustomTimer}
-            disabled={!customMins && !customSecs}
-          >
-            Set →
-          </button>
-        </div>
+            {/* Custom input — slides in under the idle row */}
+            {customOpen && (
+              <div className={styles.timerCustomRow}>
+                <div className={styles.timerCustomField}>
+                  <input
+                    type="number" min="0" max="99" inputMode="numeric"
+                    className={styles.timerCustomInput}
+                    value={customMins}
+                    onChange={e => setCustomMins(e.target.value)}
+                    placeholder="00"
+                    aria-label="Minutes"
+                    autoFocus
+                  />
+                  <span className={styles.timerCustomUnit}>m</span>
+                </div>
+                <span className={styles.timerCustomSep}>:</span>
+                <div className={styles.timerCustomField}>
+                  <input
+                    type="number" min="0" max="59" inputMode="numeric"
+                    className={styles.timerCustomInput}
+                    value={customSecs}
+                    onChange={e => setCustomSecs(e.target.value)}
+                    placeholder="00"
+                    aria-label="Seconds"
+                  />
+                  <span className={styles.timerCustomUnit}>s</span>
+                </div>
+                <button
+                  className={styles.timerCustomSet}
+                  onClick={setCustomTimer}
+                  disabled={!customMins && !customSecs}
+                >
+                  Set →
+                </button>
+              </div>
+            )}
+          </>
+        )}
 
         {timerInitialSecs > 0 && (
           <div className={styles.timerBannerProgress}>
-            <div
-              className={styles.timerBannerProgressFill}
-              style={{ width: `${timerProgressPct}%` }}
-            />
+            <div className={styles.timerBannerProgressFill} style={{ width: `${timerProgressPct}%` }} />
           </div>
         )}
       </div>
