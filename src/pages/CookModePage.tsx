@@ -52,6 +52,9 @@ export default function CookModePage() {
   const [timerDone, setTimerDone] = useState(false)
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timerDoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [customOpen, setCustomOpen] = useState(false)
+  const [customMins, setCustomMins] = useState('')
+  const [customSecs, setCustomSecs] = useState('')
 
   useEffect(() => {
     if (!id) return
@@ -94,6 +97,7 @@ export default function CookModePage() {
     setTimerSecs(secs)
     setTimerInitialSecs(secs)
     setTimerRunning(true)
+    setCustomOpen(false)
   }
 
   const clearTimer = () => {
@@ -103,12 +107,21 @@ export default function CookModePage() {
     setTimerSecs(0)
     setTimerInitialSecs(0)
     setTimerDone(false)
+    setCustomOpen(false)
   }
 
   const addToTimer = (mins: number) => {
     const extra = mins * 60
     setTimerSecs(s => s + extra)
     setTimerInitialSecs(s => s + extra)
+  }
+
+  const setCustomTimer = () => {
+    const totalSecs = (parseInt(customMins || '0') * 60) + parseInt(customSecs || '0')
+    if (totalSecs < 1) return
+    loadTimer(totalSecs / 60)
+    setCustomMins('')
+    setCustomSecs('')
   }
 
   // Load system voices for Web Speech fallback
@@ -333,7 +346,56 @@ export default function CookModePage() {
               {timerIsActive && !timerDone ? `+${mins}m` : `${mins}m`}
             </button>
           ))}
+          <button
+            className={`${styles.timerPreset} ${customOpen ? styles.timerPresetActive : ''}`}
+            onClick={() => setCustomOpen(v => !v)}
+            aria-label="Set custom time"
+            aria-expanded={customOpen}
+          >
+            Custom
+          </button>
         </div>
+
+        {customOpen && (
+          <div className={styles.timerCustomRow}>
+            <div className={styles.timerCustomField}>
+              <input
+                type="number"
+                min="0"
+                max="99"
+                inputMode="numeric"
+                className={styles.timerCustomInput}
+                value={customMins}
+                onChange={e => setCustomMins(e.target.value)}
+                placeholder="00"
+                aria-label="Minutes"
+              />
+              <span className={styles.timerCustomUnit}>m</span>
+            </div>
+            <span className={styles.timerCustomSep}>:</span>
+            <div className={styles.timerCustomField}>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                inputMode="numeric"
+                className={styles.timerCustomInput}
+                value={customSecs}
+                onChange={e => setCustomSecs(e.target.value)}
+                placeholder="00"
+                aria-label="Seconds"
+              />
+              <span className={styles.timerCustomUnit}>s</span>
+            </div>
+            <button
+              className={styles.timerCustomSet}
+              onClick={setCustomTimer}
+              disabled={!customMins && !customSecs}
+            >
+              Set →
+            </button>
+          </div>
+        )}
 
         {timerInitialSecs > 0 && (
           <div className={styles.timerBannerProgress}>

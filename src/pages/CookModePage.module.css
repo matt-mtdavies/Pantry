@@ -451,6 +451,12 @@
   color: #FAF7F2;
 }
 
+.timerPresetActive {
+  background: rgba(196,99,62,.15);
+  border-color: rgba(196,99,62,.42);
+  color: #FAF7F2;
+}
+
 .timerBannerRunning .timerPreset,
 .timerBannerPaused  .timerPreset {
   color: rgba(250,247,242,.45);
@@ -464,6 +470,82 @@
   border-color: rgba(196,99,62,.45);
   color: #FAF7F2;
 }
+
+/* Custom time input */
+
+.timerCustomRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) 0 var(--sp-4);
+}
+
+.timerCustomField {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.timerCustomInput {
+  width: 56px;
+  height: 48px;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: var(--radius-md);
+  color: #FAF7F2;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.timerCustomInput::-webkit-inner-spin-button,
+.timerCustomInput::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.timerCustomInput:focus {
+  border-color: #C4633E;
+  background: rgba(196,99,62,.08);
+}
+
+.timerCustomInput::placeholder { color: rgba(250,247,242,.18); }
+
+.timerCustomUnit {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: rgba(250,247,242,.35);
+}
+
+.timerCustomSep {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: rgba(250,247,242,.2);
+  margin: 0 calc(-1 * var(--sp-1));
+}
+
+.timerCustomSet {
+  margin-left: auto;
+  padding: 0 var(--sp-5);
+  height: 48px;
+  background: #C4633E;
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  transition: background 150ms ease, opacity 150ms ease;
+  box-shadow: 0 4px 14px rgba(196,99,62,.35);
+}
+
+.timerCustomSet:hover:not(:disabled) { background: #a8532f; }
+.timerCustomSet:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
 
 /* Progress bar */
 
