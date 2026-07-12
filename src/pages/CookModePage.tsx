@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
-import { detectTimerMinutes, scaleIngredient, formatTime } from '../lib/utils'
+import { scaleIngredient } from '../lib/utils'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useAuth } from '../hooks/useAuth'
 import { convertIngredient, convertStepText } from '../lib/units'
@@ -105,6 +105,12 @@ export default function CookModePage() {
     setTimerDone(false)
   }
 
+  const addToTimer = (mins: number) => {
+    const extra = mins * 60
+    setTimerSecs(s => s + extra)
+    setTimerInitialSecs(s => s + extra)
+  }
+
   // Load system voices for Web Speech fallback
   useEffect(() => {
     if (!ttsSupported) return
@@ -136,11 +142,6 @@ export default function CookModePage() {
       return { ...scaled, amount: c.amount, unit: c.unit }
     })
   }, [recipe, servings, user?.unit_system])
-
-  const stepTimers = useMemo(() => {
-    if (!recipe) return []
-    return recipe.steps.map(step => detectTimerMinutes(step))
-  }, [recipe])
 
   // ── TTS ─────────────────────────────────────────────────────────────────────
 
@@ -241,12 +242,13 @@ export default function CookModePage() {
   if (!recipe) return null
 
   const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
-  const timers = stepTimers[currentStep]
   const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
   const timerM = Math.floor(timerSecs / 60)
   const timerS = timerSecs % 60
-  const timerDisplay = `${String(timerM).padStart(2, '0')}:${String(timerS).padStart(2, '0')}`
-  const showTimer = timerSecs > 0 || timerDone
+  const timerIsActive = timerSecs > 0 || timerDone
+  const timerProgressPct = timerDone ? 100 : timerInitialSecs > 0 ? (timerSecs / timerInitialSecs) * 100 : 0
+  const timerBannerMod = timerDone ? styles.timerBannerDone : timerRunning ? styles.timerBannerRunning : timerSecs > 0 ? styles.timerBannerPaused : ''
+  const TIMER_PRESETS = [1, 3, 5, 10, 15, 20]
 
   return (
     <div className={styles.page}>
@@ -257,31 +259,91 @@ export default function CookModePage() {
         <div className={styles.headerTitle}>
           <span className={styles.recipeTitle}>{recipe.title}</span>
         </div>
-        {showTimer && (
-          <div className={`${styles.globalTimerPill} ${timerDone ? styles.globalTimerPillDone : ''}`}>
-            {timerDone ? (
-              <span className={styles.globalTimerDone}>Done ✓</span>
-            ) : (
-              <>
-                <span className={styles.globalTimerTime}>{timerDisplay}</span>
-                <button
-                  className={styles.globalTimerCtrl}
-                  onClick={() => setTimerRunning(r => !r)}
-                  aria-label={timerRunning ? 'Pause timer' : 'Resume timer'}
-                >
-                  {timerRunning ? '⏸' : '▶'}
-                </button>
-                <button
-                  className={styles.globalTimerCtrl}
-                  onClick={() => { setTimerRunning(false); setTimerSecs(timerInitialSecs) }}
-                  aria-label="Reset timer"
-                >↩</button>
-              </>
-            )}
-            <button className={styles.globalTimerCtrl} onClick={clearTimer} aria-label="Clear timer">✕</button>
+      </header>
+
+      {/* Global timer banner — always visible, independent of steps */}
+      <div className={`${styles.timerBanner} ${timerBannerMod}`}>
+        <div className={styles.timerBannerTop}>
+          <div className={styles.timerBannerLeft}>
+            <div className={styles.timerBannerDisplay} aria-label={`Timer: ${String(timerM).padStart(2,'0')}:${String(timerS).padStart(2,'0')}`}>
+              {timerDone ? 'Done!' : (
+                <>
+                  {String(timerM).padStart(2, '0')}
+                  <span className={styles.timerBannerColon}>:</span>
+                  {String(timerS).padStart(2, '0')}
+                </>
+              )}
+            </div>
+            <div className={styles.timerBannerStatus}>
+              {timerDone ? 'Timer complete' : timerSecs > 0 ? (timerRunning ? 'Running' : 'Paused') : 'Set a timer'}
+            </div>
+          </div>
+
+          <div className={styles.timerBannerControls}>
+            <button
+              className={`${styles.timerBannerBtn} ${styles.timerBannerBtnPrimary}`}
+              onClick={() => setTimerRunning(r => !r)}
+              disabled={!timerIsActive || timerDone}
+              aria-label={timerRunning ? 'Pause timer' : 'Resume timer'}
+            >
+              {timerRunning ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" rx="1.5"/>
+                  <rect x="14" y="4" width="4" height="16" rx="1.5"/>
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <polygon points="6 3 20 12 6 21"/>
+                </svg>
+              )}
+            </button>
+            <button
+              className={styles.timerBannerBtn}
+              onClick={() => { setTimerRunning(false); setTimerSecs(timerInitialSecs) }}
+              disabled={!timerIsActive || timerDone}
+              aria-label="Reset timer"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.36"/>
+              </svg>
+            </button>
+            <button
+              className={styles.timerBannerBtn}
+              onClick={clearTimer}
+              disabled={!timerIsActive}
+              aria-label="Clear timer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.timerBannerPresets}>
+          {TIMER_PRESETS.map(mins => (
+            <button
+              key={mins}
+              className={styles.timerPreset}
+              onClick={() => timerIsActive && !timerDone ? addToTimer(mins) : loadTimer(mins)}
+              aria-label={timerIsActive && !timerDone ? `Add ${mins} minutes` : `Set ${mins} minute timer`}
+            >
+              {timerIsActive && !timerDone ? `+${mins}m` : `${mins}m`}
+            </button>
+          ))}
+        </div>
+
+        {timerInitialSecs > 0 && (
+          <div className={styles.timerBannerProgress}>
+            <div
+              className={styles.timerBannerProgressFill}
+              style={{ width: `${timerProgressPct}%` }}
+            />
           </div>
         )}
-      </header>
+      </div>
 
       <div className={styles.scaler}>
         <span className={styles.scalerLabel}>Serves</span>
@@ -367,29 +429,6 @@ export default function CookModePage() {
             )}
             {ttsLabel}
           </button>
-
-          {timers.length > 0 && (
-            <div className={styles.timers}>
-              {timers.map((mins, i) => (
-                <button
-                  key={i}
-                  className={styles.timerSuggestion}
-                  onClick={() => loadTimer(mins)}
-                  aria-label={`Start ${formatTime(mins)} timer`}
-                >
-                  <span className={styles.timerSuggestionTime}>
-                    {String(Math.floor(mins)).padStart(2, '0')}:00
-                  </span>
-                  <div className={styles.timerSuggestionInfo}>
-                    <span className={styles.timerSuggestionLabel}>{formatTime(mins)}</span>
-                    <span className={styles.timerSuggestionCta}>
-                      {timerRunning && timerInitialSecs === mins * 60 ? 'Running ▶' : '→ Start timer'}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
 
           <div className={styles.stepNav}>
             <button

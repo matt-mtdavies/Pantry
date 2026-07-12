@@ -261,118 +261,228 @@
   border-color: #a8532f;
 }
 
-/* ── Global persistent timer (header) ───────────────────────────────── */
+/* ── Global timer banner ─────────────────────────────────────────────── */
 
-.globalTimerPill {
+@keyframes colonBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+
+@keyframes timerDonePulse {
+  0%, 100% { transform: scale(1); }
+  40%       { transform: scale(1.012); }
+}
+
+.timerBanner {
+  position: relative;
+  padding: var(--sp-5) var(--sp-5) 0;
+  border-bottom: 1px solid rgba(232,224,212,.12);
+  overflow: hidden;
+  transition: background 400ms ease;
+}
+
+.timerBannerRunning { background: rgba(196,99,62,.04); }
+.timerBannerDone    { background: rgba(122,139,111,.05); animation: timerDonePulse 0.6s ease-out 3; }
+
+.timerBannerTop {
   display: flex;
   align-items: center;
-  gap: var(--sp-1);
-  background: rgba(196, 99, 62, 0.18);
-  border: 1px solid rgba(196, 99, 62, 0.4);
-  border-radius: var(--radius-full);
-  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.timerBannerLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.timerBannerDisplay {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: rgba(250,247,242,.12);
+  transition: color 350ms ease, text-shadow 350ms ease;
+}
+
+.timerBannerRunning .timerBannerDisplay {
+  color: #FAF7F2;
+  text-shadow:
+    0 0 40px rgba(196,99,62,.55),
+    0 0 90px  rgba(196,99,62,.25),
+    0 0 160px rgba(196,99,62,.1);
+}
+
+.timerBannerPaused .timerBannerDisplay {
+  color: rgba(250,247,242,.5);
+  text-shadow: none;
+}
+
+.timerBannerDone .timerBannerDisplay {
+  color: #7A8B6F;
+  text-shadow:
+    0 0 40px rgba(122,139,111,.5),
+    0 0 90px  rgba(122,139,111,.2);
+}
+
+.timerBannerColon {
+  display: inline-block;
+}
+
+.timerBannerRunning .timerBannerColon {
+  animation: colonBlink 1s ease-in-out infinite;
+}
+
+.timerBannerStatus {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(250,247,242,.18);
+  margin-top: var(--sp-1);
+  transition: color 350ms ease;
+}
+
+.timerBannerRunning .timerBannerStatus { color: #C4633E; }
+.timerBannerPaused  .timerBannerStatus { color: rgba(250,247,242,.35); }
+.timerBannerDone    .timerBannerStatus { color: #7A8B6F; }
+
+.timerBannerControls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   flex-shrink: 0;
 }
 
-.globalTimerPillDone {
-  background: rgba(122, 139, 111, 0.25);
-  border-color: rgba(122, 139, 111, 0.5);
-  animation: timerPulse 0.5s ease-out 3;
-}
-
-@keyframes timerPulse {
-  0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.05); }
-}
-
-.globalTimerTime {
-  font-family: var(--font-display);
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: #FAF7F2;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.03em;
-  min-width: 48px;
-}
-
-.globalTimerDone {
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: #7A8B6F;
-  padding: 0 var(--sp-1);
-}
-
-.globalTimerCtrl {
-  width: 30px;
-  height: 30px;
+.timerBannerBtn {
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-full);
-  background: rgba(255,255,255,.08);
-  color: rgba(250,247,242,.7);
-  font-size: 0.7rem;
+  background: rgba(255,255,255,.06);
+  color: rgba(250,247,242,.3);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition: background 150ms ease, color 150ms ease;
+  border: 1px solid rgba(255,255,255,.06);
 }
 
-.globalTimerCtrl:hover { background: rgba(255,255,255,.18); color: #FAF7F2; }
-
-/* ── Step timer suggestion buttons ──────────────────────────────────── */
-
-.timers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-8);
-}
-
-.timerSuggestion {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-3) var(--sp-5);
-  text-align: left;
-  transition: background 150ms ease, border-color 150ms ease;
-}
-
-.timerSuggestion:hover {
-  background: rgba(196,99,62,.15);
-  border-color: rgba(196,99,62,.45);
-}
-
-.timerSuggestionTime {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 600;
+.timerBannerBtn:hover:not(:disabled) {
+  background: rgba(255,255,255,.12);
   color: #FAF7F2;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
+  border-color: rgba(255,255,255,.14);
 }
 
-.timerSuggestionInfo {
+.timerBannerBtn:disabled {
+  opacity: 0.22;
+  cursor: default;
+}
+
+.timerBannerBtnPrimary {
+  width: 52px;
+  height: 52px;
+  background: rgba(196,99,62,.12);
+  color: rgba(196,99,62,.45);
+  border: 1.5px solid rgba(196,99,62,.18);
+}
+
+.timerBannerRunning .timerBannerBtnPrimary,
+.timerBannerPaused .timerBannerBtnPrimary {
+  background: #C4633E;
+  color: #FFFFFF;
+  border-color: #C4633E;
+  box-shadow: 0 4px 18px rgba(196,99,62,.4), 0 1px 4px rgba(196,99,62,.25);
+}
+
+.timerBannerRunning .timerBannerBtnPrimary:hover,
+.timerBannerPaused  .timerBannerBtnPrimary:hover {
+  background: #a8532f;
+  border-color: #a8532f;
+}
+
+.timerBannerDone .timerBannerBtnPrimary {
+  background: rgba(122,139,111,.15);
+  color: rgba(122,139,111,.4);
+  border-color: rgba(122,139,111,.2);
+  box-shadow: none;
+}
+
+/* Preset chips */
+
+.timerBannerPresets {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  padding-bottom: var(--sp-4);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 calc(-1 * var(--sp-5));
+  padding-left: var(--sp-5);
+  padding-right: var(--sp-5);
 }
 
-.timerSuggestionLabel {
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  color: #9C9189;
-}
+.timerBannerPresets::-webkit-scrollbar { display: none; }
 
-.timerSuggestionCta {
+.timerPreset {
+  flex-shrink: 0;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: #C4633E;
+  color: rgba(250,247,242,.3);
+  padding: 0 var(--sp-4);
+  height: 36px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,.04);
+  white-space: nowrap;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.01em;
 }
+
+.timerPreset:hover {
+  background: rgba(196,99,62,.12);
+  border-color: rgba(196,99,62,.38);
+  color: #FAF7F2;
+}
+
+.timerBannerRunning .timerPreset,
+.timerBannerPaused  .timerPreset {
+  color: rgba(250,247,242,.45);
+  border-color: rgba(255,255,255,.1);
+  background: rgba(255,255,255,.06);
+}
+
+.timerBannerRunning .timerPreset:hover,
+.timerBannerPaused  .timerPreset:hover {
+  background: rgba(196,99,62,.15);
+  border-color: rgba(196,99,62,.45);
+  color: #FAF7F2;
+}
+
+/* Progress bar */
+
+.timerBannerProgress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,.04);
+}
+
+.timerBannerProgressFill {
+  height: 100%;
+  background: #C4633E;
+  transition: width 1s linear;
+}
+
+.timerBannerDone .timerBannerProgressFill { background: #7A8B6F; }
 
 .stepNav {
   display: flex;
