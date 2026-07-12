@@ -416,24 +416,15 @@
 .timerBannerPresets {
   display: flex;
   gap: var(--sp-2);
-  overflow-x: auto;
-  padding-bottom: var(--sp-4);
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  margin: 0 calc(-1 * var(--sp-5));
-  padding-left: var(--sp-5);
-  padding-right: var(--sp-5);
+  padding-bottom: var(--sp-3);
 }
 
-.timerBannerPresets::-webkit-scrollbar { display: none; }
-
 .timerPreset {
-  flex-shrink: 0;
+  flex: 1;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
   color: rgba(250,247,242,.3);
-  padding: 0 var(--sp-4);
   height: 36px;
   border: 1px solid rgba(255,255,255,.07);
   border-radius: var(--radius-full);
@@ -442,6 +433,7 @@
   transition: all 150ms ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   letter-spacing: 0.01em;
 }
 
@@ -451,11 +443,6 @@
   color: #FAF7F2;
 }
 
-.timerPresetActive {
-  background: rgba(196,99,62,.15);
-  border-color: rgba(196,99,62,.42);
-  color: #FAF7F2;
-}
 
 .timerBannerRunning .timerPreset,
 .timerBannerPaused  .timerPreset {
@@ -477,7 +464,8 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-1) 0 var(--sp-4);
+  padding: var(--sp-3) 0 var(--sp-4);
+  border-top: 1px solid rgba(255,255,255,.06);
 }
 
 .timerCustomField {

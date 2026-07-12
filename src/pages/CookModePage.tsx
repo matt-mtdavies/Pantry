@@ -52,7 +52,6 @@ export default function CookModePage() {
   const [timerDone, setTimerDone] = useState(false)
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timerDoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [customOpen, setCustomOpen] = useState(false)
   const [customMins, setCustomMins] = useState('')
   const [customSecs, setCustomSecs] = useState('')
 
@@ -97,7 +96,8 @@ export default function CookModePage() {
     setTimerSecs(secs)
     setTimerInitialSecs(secs)
     setTimerRunning(true)
-    setCustomOpen(false)
+    setCustomMins('')
+    setCustomSecs('')
   }
 
   const clearTimer = () => {
@@ -107,7 +107,8 @@ export default function CookModePage() {
     setTimerSecs(0)
     setTimerInitialSecs(0)
     setTimerDone(false)
-    setCustomOpen(false)
+    setCustomMins('')
+    setCustomSecs('')
   }
 
   const addToTimer = (mins: number) => {
@@ -261,7 +262,7 @@ export default function CookModePage() {
   const timerIsActive = timerSecs > 0 || timerDone
   const timerProgressPct = timerDone ? 100 : timerInitialSecs > 0 ? (timerSecs / timerInitialSecs) * 100 : 0
   const timerBannerMod = timerDone ? styles.timerBannerDone : timerRunning ? styles.timerBannerRunning : timerSecs > 0 ? styles.timerBannerPaused : ''
-  const TIMER_PRESETS = [1, 3, 5, 10, 15, 20]
+  const TIMER_PRESETS = [1, 5, 10, 15, 20]
 
   return (
     <div className={styles.page}>
@@ -346,56 +347,46 @@ export default function CookModePage() {
               {timerIsActive && !timerDone ? `+${mins}m` : `${mins}m`}
             </button>
           ))}
-          <button
-            className={`${styles.timerPreset} ${customOpen ? styles.timerPresetActive : ''}`}
-            onClick={() => setCustomOpen(v => !v)}
-            aria-label="Set custom time"
-            aria-expanded={customOpen}
-          >
-            Custom
-          </button>
         </div>
 
-        {customOpen && (
-          <div className={styles.timerCustomRow}>
-            <div className={styles.timerCustomField}>
-              <input
-                type="number"
-                min="0"
-                max="99"
-                inputMode="numeric"
-                className={styles.timerCustomInput}
-                value={customMins}
-                onChange={e => setCustomMins(e.target.value)}
-                placeholder="00"
-                aria-label="Minutes"
-              />
-              <span className={styles.timerCustomUnit}>m</span>
-            </div>
-            <span className={styles.timerCustomSep}>:</span>
-            <div className={styles.timerCustomField}>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                inputMode="numeric"
-                className={styles.timerCustomInput}
-                value={customSecs}
-                onChange={e => setCustomSecs(e.target.value)}
-                placeholder="00"
-                aria-label="Seconds"
-              />
-              <span className={styles.timerCustomUnit}>s</span>
-            </div>
-            <button
-              className={styles.timerCustomSet}
-              onClick={setCustomTimer}
-              disabled={!customMins && !customSecs}
-            >
-              Set →
-            </button>
+        <div className={styles.timerCustomRow}>
+          <div className={styles.timerCustomField}>
+            <input
+              type="number"
+              min="0"
+              max="99"
+              inputMode="numeric"
+              className={styles.timerCustomInput}
+              value={customMins}
+              onChange={e => setCustomMins(e.target.value)}
+              placeholder="00"
+              aria-label="Minutes"
+            />
+            <span className={styles.timerCustomUnit}>m</span>
           </div>
-        )}
+          <span className={styles.timerCustomSep}>:</span>
+          <div className={styles.timerCustomField}>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              inputMode="numeric"
+              className={styles.timerCustomInput}
+              value={customSecs}
+              onChange={e => setCustomSecs(e.target.value)}
+              placeholder="00"
+              aria-label="Seconds"
+            />
+            <span className={styles.timerCustomUnit}>s</span>
+          </div>
+          <button
+            className={styles.timerCustomSet}
+            onClick={setCustomTimer}
+            disabled={!customMins && !customSecs}
+          >
+            Set →
+          </button>
+        </div>
 
         {timerInitialSecs > 0 && (
           <div className={styles.timerBannerProgress}>
