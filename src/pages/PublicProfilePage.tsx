@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { imageUrl, formatTime } from '../lib/utils'
 import { Avatar } from '../components/Avatar'
 import { DishIcon, StarIcon, ClockIcon } from '../components/icons'
+import { BackButton } from '../components/BackButton'
 import type { PublicProfile } from '../types'
 import styles from './PublicProfilePage.module.css'
 
@@ -101,6 +102,9 @@ export default function PublicProfilePage() {
       <main className="page-main">
         {/* Profile hero */}
         <div className={styles.hero}>
+          <div className={styles.heroNav}>
+            <BackButton variant="subtle" fallback="/chefs" />
+          </div>
           <div className="wide-col">
             <div className={styles.avatarWrap}>
               <Avatar

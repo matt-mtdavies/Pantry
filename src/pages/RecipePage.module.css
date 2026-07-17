@@ -13,6 +13,26 @@
   max-height: 480px;
 }
 
+.heroBackBtn {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-4);
+}
+
+.heroEmptyBackBtn {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-4);
+}
+
+.noHeroBack {
+  padding: var(--sp-4) var(--sp-5) 0;
+}
+
+@media (min-width: 600px) {
+  .noHeroBack { padding-left: var(--sp-8); padding-right: var(--sp-8); }
+}
+
 .heroShareBtn {
   position: absolute;
   top: var(--sp-3);

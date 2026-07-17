@@ -1,8 +1,19 @@
 .hero {
   background: #FAF7F2;
   border-bottom: 1px solid #E8E0D4;
-  padding: var(--sp-10) 0 var(--sp-8);
+  padding: var(--sp-4) 0 var(--sp-8);
   text-align: center;
+  position: relative;
+}
+
+.heroNav {
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 var(--sp-5) var(--sp-4);
+}
+
+@media (min-width: 600px) {
+  .heroNav { padding-left: var(--sp-8); }
 }
 
 .avatarWrap {

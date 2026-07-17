@@ -10,6 +10,7 @@ import { convertIngredient, convertStepText } from '../lib/units'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon, CollectionIcon } from '../components/icons'
 import { ShareListButton } from '../components/ShareListButton'
 import { Avatar } from '../components/Avatar'
+import { BackButton } from '../components/BackButton'
 import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
 
@@ -180,6 +181,7 @@ export default function RecipePage() {
         {recipe.hero_image_key ? (
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
+            <BackButton className={styles.heroBackBtn} fallback="/" />
             <button
               className={styles.heroShareBtn}
               onClick={handleShare}
@@ -223,6 +225,7 @@ export default function RecipePage() {
           </div>
         ) : isOwner ? (
           <div className={styles.heroEmpty}>
+            <BackButton className={styles.heroEmptyBackBtn} fallback="/" />
             <button
               className={styles.heroAddPhotoBtn}
               onClick={() => photoInputRef.current?.click()}
@@ -231,7 +234,11 @@ export default function RecipePage() {
               {photoUploading ? 'Uploading…' : <><CameraIcon size={14} /> Add a photo</>}
             </button>
           </div>
-        ) : null}
+        ) : (
+          <div className={styles.noHeroBack}>
+            <BackButton variant="subtle" fallback="/" />
+          </div>
+        )}
 
         <div className="content-col">
           <div className={styles.header}>

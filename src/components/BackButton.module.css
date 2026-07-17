@@ -1,0 +1,40 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+/* ── Ghost: dark frosted glass, for use over hero images ── */
+.ghost {
+  background: rgba(31, 27, 22, 0.52);
+  color: #FFFFFF;
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  letter-spacing: 0.01em;
+}
+
+.ghost:hover { background: rgba(31, 27, 22, 0.72); }
+.ghost:active { opacity: 0.85; }
+
+/* ── Subtle: minimal, for cream/light backgrounds ── */
+.subtle {
+  background: transparent;
+  color: #9C9189;
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-1);
+  letter-spacing: 0.01em;
+}
+
+.subtle:hover { color: #C4633E; }
+.subtle:active { opacity: 0.7; }
+
+.label {
+  line-height: 1;
+}
