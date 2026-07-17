@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getLeaderboard, getFeed } from '../lib/api'
 import { imageUrl, formatTime, timeAgo } from '../lib/utils'
@@ -20,7 +20,9 @@ export default function LeaderboardPage() {
   const [topChefs, setTopChefs] = useState<LeaderboardChef[]>([])
   const [feed, setFeed] = useState<FeedData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<Tab>('today')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab') as Tab | null) ?? 'today'
+  const setTab = (t: Tab) => setSearchParams({ tab: t }, { replace: true })
 
   useEffect(() => {
     Promise.all([getLeaderboard(), getFeed()])
