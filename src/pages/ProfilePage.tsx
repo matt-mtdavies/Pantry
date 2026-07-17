@@ -87,9 +87,15 @@ export default function ProfilePage() {
     if (cropUrlRef.current) URL.revokeObjectURL(cropUrlRef.current)
 
     try {
-      // createImageBitmap applies EXIF rotation; re-encoding to a canvas blob
-      // bakes the correct orientation into pixel data so drawImage sees it correctly.
-      const bitmap = await createImageBitmap(file)
+      // Re-encode through canvas to bake EXIF orientation into pixel data.
+      // Explicitly request 'from-image' so Safari honours the EXIF tag;
+      // older browsers that don't support the option fall back gracefully.
+      let bitmap: ImageBitmap
+      try {
+        bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' } as ImageBitmapOptions)
+      } catch {
+        bitmap = await createImageBitmap(file)
+      }
       const MAX = 2400
       const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height))
       const w = Math.round(bitmap.width * scale)
