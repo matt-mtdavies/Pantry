@@ -57,6 +57,10 @@ export default function EditRecipePage() {
   const addIng = () =>
     update('ingredients', [...(recipe.ingredients ?? []), { amount: '', unit: '', name: '' }])
 
+  const moveIng = (i: number, dir: -1 | 1) => {
+    const ings = [...(recipe.ingredients ?? [])];[ings[i], ings[i + dir]] = [ings[i + dir], ings[i]]; update('ingredients', ings)
+  }
+
   const updateStep = (i: number, val: string) => {
     const steps = [...(recipe.steps ?? [])]
     steps[i] = val
@@ -220,27 +224,33 @@ export default function EditRecipePage() {
               <div className={styles.ingredientsList}>
                 {(recipe.ingredients ?? []).map((ing, i) => (
                   <div key={i} className={styles.ingRow}>
-                    <input
-                      className={styles.ingAmount}
-                      placeholder="Amt"
-                      value={ing.amount}
-                      onChange={e => updateIng(i, 'amount', e.target.value)}
-                      aria-label={`Amount for ingredient ${i + 1}`}
-                    />
-                    <input
-                      className={styles.ingUnit}
-                      placeholder="Unit"
-                      value={ing.unit}
-                      onChange={e => updateIng(i, 'unit', e.target.value)}
-                      aria-label={`Unit for ingredient ${i + 1}`}
-                    />
-                    <input
-                      className={`${styles.ingName} ${styles.inputFlex}`}
-                      placeholder="Ingredient name"
-                      value={ing.name}
-                      onChange={e => updateIng(i, 'name', e.target.value)}
-                      aria-label={`Name of ingredient ${i + 1}`}
-                    />
+                    <div className={styles.ingControls}>
+                      <button className={styles.ingMoveBtn} onClick={() => moveIng(i, -1)} disabled={i === 0} aria-label={`Move ${ing.name || `ingredient ${i + 1}`} up`}><ArrowUpIcon size={12} /></button>
+                      <button className={styles.ingMoveBtn} onClick={() => moveIng(i, 1)} disabled={i === (recipe.ingredients ?? []).length - 1} aria-label={`Move ${ing.name || `ingredient ${i + 1}`} down`}><ArrowDownIcon size={12} /></button>
+                    </div>
+                    <div className={styles.ingFields}>
+                      <input
+                        className={styles.ingAmount}
+                        placeholder="Amt"
+                        value={ing.amount}
+                        onChange={e => updateIng(i, 'amount', e.target.value)}
+                        aria-label={`Amount for ingredient ${i + 1}`}
+                      />
+                      <input
+                        className={styles.ingUnit}
+                        placeholder="Unit"
+                        value={ing.unit}
+                        onChange={e => updateIng(i, 'unit', e.target.value)}
+                        aria-label={`Unit for ingredient ${i + 1}`}
+                      />
+                      <input
+                        className={`${styles.ingName} ${styles.inputFlex}`}
+                        placeholder="Ingredient name"
+                        value={ing.name}
+                        onChange={e => updateIng(i, 'name', e.target.value)}
+                        aria-label={`Name of ingredient ${i + 1}`}
+                      />
+                    </div>
                     <button
                       className={styles.removeBtn}
                       onClick={() => removeIng(i)}

@@ -102,6 +102,46 @@
   gap: var(--sp-2);
 }
 
+.ingControls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.ingMoveBtn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: #C4B8AC;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.ingMoveBtn:hover:not(:disabled) {
+  color: #C4633E;
+  background-color: #F5E8E2;
+}
+
+.ingMoveBtn:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ingFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+}
+
 .ingAmount, .ingUnit, .ingName {
   padding: var(--sp-3);
   border: 1.5px solid #E8E0D4;
@@ -308,7 +348,6 @@
 
 @media (max-width: 600px) {
   .metaRow { grid-template-columns: 1fr 1fr; }
-  .ingRow { flex-wrap: wrap; }
   .ingAmount, .ingUnit { width: calc(50% - var(--sp-1)); }
   .ingName { width: 100%; }
 }
