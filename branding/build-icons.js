@@ -61,6 +61,22 @@ async function main() {
       .toFile(file);
   };
 
+  // Circle mask — for the in-app brand mark only (a leather roundel).
+  // The home-screen / favicon icons stay square; platforms mask those themselves.
+  const circle = async (size, file) => {
+    const r = (size - 2) / 2;
+    const mask = Buffer.from(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">` +
+      `<circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="#fff"/></svg>`
+    );
+    await sharp(master)
+      .resize(size, size)
+      .ensureAlpha()
+      .composite([{ input: mask, blend: 'dest-in' }])
+      .png()
+      .toFile(file);
+  };
+
   // ── App Store / marketing master ──
   await fullBleed(1024, path.join(BRAND, 'icon-1024.png'));
 
@@ -97,11 +113,13 @@ async function main() {
   await fullBleed(192, path.join(PUBLIC, 'icon-192.png'));
   await fullBleed(512, path.join(PUBLIC, 'icon-512.png'));
 
-  // ── Web: favicons + in-app brand mark (rounded) ──
+  // ── Web: favicons stay square (browser-tab app icons) ──
   await rounded(180, path.join(PUBLIC, 'favicon-180.png'));
   await rounded(32, path.join(PUBLIC, 'favicon-32.png'));
   await rounded(16, path.join(PUBLIC, 'favicon-16.png'));
-  await rounded(256, path.join(PUBLIC, 'pantry-mark.png'));
+
+  // ── In-app brand mark — a leather circle (nav / auth / splash) ──
+  await circle(256, path.join(PUBLIC, 'pantry-mark.png'));
 
   console.log('icons built');
 }
