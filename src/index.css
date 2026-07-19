@@ -119,8 +119,10 @@ body {
 }
 
 img, video { max-width: 100%; height: auto; display: block; }
+/* Anchors never underline by default — the app's nav, tabs, cards and brand
+   are all anchors, and underlines belong only on inline text links in prose.
+   Those links opt in explicitly (e.g. legal text, verify-email, "resend"). */
 a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
 button {
   cursor: pointer;
   border: none;
