@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Pantry app icon — production master. Dyed-leather field, embossed cream P (spoon + leaf). -->
+  <defs>
+    <!-- pillowed leather field, light from upper-left (Sienna #A0522D) -->
+    <radialGradient id="leather" cx="38%" cy="30%" r="82%">
+      <stop offset="0%" stop-color="#AE5B34"/>
+      <stop offset="52%" stop-color="#A0522D"/>
+      <stop offset="100%" stop-color="#874523"/>
+    </radialGradient>
+    <!-- linen-cream face, subtle top-lit relief (#FAF0E6) -->
+    <linearGradient id="cream" x1="0" y1="0.05" x2="0" y2="0.95">
+      <stop offset="0%" stop-color="#FDF6EE"/>
+      <stop offset="100%" stop-color="#F0E4D2"/>
+    </linearGradient>
+    <!-- top sheen on the tile -->
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="34%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.12"/>
+    </linearGradient>
+
+    <!-- fine leather grain, kept inside the shape it is applied to -->
+    <filter id="grain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.34" numOctaves="2" seed="11" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0" result="na"/>
+      <feComposite in="na" in2="SourceAlpha" operator="in"/>
+    </filter>
+    <!-- coarse dye mottle -->
+    <filter id="mottle" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.016" numOctaves="2" seed="4" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0" result="na"/>
+      <feComposite in="na" in2="SourceAlpha" operator="in"/>
+    </filter>
+
+    <!-- embossed relief for the glyph -->
+    <filter id="emboss" x="-25%" y="-25%" width="150%" height="150%">
+      <!-- outer valley shadow: debossed channel where the cream meets the leather -->
+      <feGaussianBlur in="SourceAlpha" stdDeviation="7" result="vb"/>
+      <feOffset in="vb" dx="0" dy="4" result="vo"/>
+      <feFlood flood-color="#1c0c02" flood-opacity="0.5" result="vc"/>
+      <feComposite in="vc" in2="vo" operator="in" result="valley"/>
+
+      <!-- cream face -->
+      <feMerge result="face">
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+
+      <!-- inner bevel HIGHLIGHT along top-left edge -->
+      <feOffset in="SourceAlpha" dx="7" dy="7" result="dr"/>
+      <feComposite in="SourceAlpha" in2="dr" operator="out" result="hlc"/>
+      <feGaussianBlur in="hlc" stdDeviation="6" result="hlcb"/>
+      <feComposite in="hlcb" in2="SourceAlpha" operator="in" result="hlcClip"/>
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.6" result="hlf"/>
+      <feComposite in="hlf" in2="hlcClip" operator="in" result="hl"/>
+
+      <!-- inner bevel SHADOW along bottom-right edge -->
+      <feOffset in="SourceAlpha" dx="-7" dy="-7" result="ul"/>
+      <feComposite in="SourceAlpha" in2="ul" operator="out" result="shc"/>
+      <feGaussianBlur in="shc" stdDeviation="6" result="shcb"/>
+      <feComposite in="shcb" in2="SourceAlpha" operator="in" result="shcClip"/>
+      <feFlood flood-color="#5a3418" flood-opacity="0.55" result="shf"/>
+      <feComposite in="shf" in2="shcClip" operator="in" result="sh"/>
+
+      <feMerge>
+        <feMergeNode in="valley"/>
+        <feMergeNode in="face"/>
+        <feMergeNode in="sh"/>
+        <feMergeNode in="hl"/>
+      </feMerge>
+    </filter>
+
+    <path id="glyph" fill-rule="evenodd" d="
+      M 300 172
+      C 300 159 309 150 322 150
+      L 445 150
+      C 590 150 700 215 700 322
+      C 700 430 590 505 432 505
+      L 432 700
+      C 445 735 450 780 450 820
+      C 450 860 416 912 366 912
+      C 316 912 282 860 282 820
+      C 282 780 295 735 300 700
+      L 300 172
+      Z
+      M 432 258
+      C 432 251 437 248 447 248
+      C 528 248 572 286 572 324
+      C 572 362 528 400 447 400
+      C 437 400 432 397 432 390
+      L 432 258
+      Z
+      M 410 820
+      C 410 848 390 870 366 870
+      C 342 870 322 848 322 820
+      C 322 792 342 770 366 770
+      C 390 770 410 792 410 820
+      Z
+    "/>
+    <!-- leaf: pointed top, rounder base, with a short petiole -->
+    <path id="leaf" d="
+      M 0 -60
+      C 22 -26 23 20 4 58
+      C 3 66 9 72 15 78
+      C 6 74 -2 68 -3 58
+      C -22 22 -22 -26 0 -60
+      Z
+    "/>
+
+    <clipPath id="tile"><rect x="0" y="0" width="1024" height="1024" rx="228" ry="228"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <rect x="0" y="0" width="1024" height="1024" fill="url(#leather)"/>
+    <!-- dye mottle + grain over the whole field -->
+    <rect x="0" y="0" width="1024" height="1024" fill="#3a1d0c" opacity="0.05" filter="url(#mottle)"/>
+
+    <g transform="translate(-3,-4)">
+      <g filter="url(#emboss)">
+        <use href="#glyph" fill="url(#cream)"/>
+        <g transform="translate(500,312) rotate(18)">
+          <use href="#leaf" fill="url(#cream)"/>
+          <path fill="#A56A40" opacity="0.55" d="M -2 -44 C -2 -46 2 -46 2 -44 L 3 50 C 3 52 -3 52 -3 50 Z"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- grain across everything, letter included (same leather) -->
+    <rect x="0" y="0" width="1024" height="1024" fill="#000000" opacity="0.09" filter="url(#grain)"/>
+    <rect x="0" y="0" width="1024" height="1024" fill="#ffffff" opacity="0.05" filter="url(#grain)" transform="translate(1.5,1.5)"/>
+
+    <!-- tile sheen -->
+    <rect x="0" y="0" width="1024" height="1024" fill="url(#sheen)"/>
+  </g>
+</svg>
