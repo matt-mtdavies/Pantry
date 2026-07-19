@@ -52,7 +52,7 @@
   transition: border-color 150ms ease;
 }
 
-.search:focus { border-color: #C4633E; }
+.search:focus { border-color: var(--accent); }
 .search::placeholder { color: #C4C0B8; }
 
 /* ── Grid ─────────────────────────────────────────────────────────────────── */
@@ -144,7 +144,7 @@
   color: #6B6459;
 }
 
-.star { color: #C4633E; }
+.star { color: var(--accent); }
 
 /* ── Follow button — always pinned to bottom of card ─────────────────────── */
 
@@ -155,24 +155,24 @@
   font-size: var(--text-sm);
   font-weight: 600;
   border-radius: var(--radius-full);
-  border: 1.5px solid #C4633E;
+  border: 1.5px solid var(--accent);
   background: transparent;
-  color: #C4633E;
+  color: var(--accent);
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease;
   margin-top: var(--sp-4);
 }
 
-.followBtn:hover { background: #C4633E; color: #FFFFFF; }
+.followBtn:hover { background: var(--accent); color: #FFFFFF; }
 
 .followBtn.following {
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
 }
 
 .followBtn.following:hover {
-  background: #a8532f;
-  border-color: #a8532f;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 /* ── Skeleton ─────────────────────────────────────────────────────────────── */

@@ -111,7 +111,7 @@
 }
 
 .link.active {
-  color: #C4633E;
+  color: var(--accent);
   background-color: #F5E8E2;
 }
 
@@ -133,7 +133,7 @@
 }
 
 .profileLink:hover { background-color: #F3EFE8; }
-.profileLink:hover .avatar { border-color: #C4633E; }
+.profileLink:hover .avatar { border-color: var(--accent); }
 
 .avatar {
   font-size: 1.5rem;
@@ -187,8 +187,8 @@
 }
 
 .inviteBtn:hover {
-  color: #C4633E;
-  border-color: #C4633E;
+  color: var(--accent);
+  border-color: var(--accent);
   background-color: #F5E8E2;
 }
 
@@ -229,7 +229,7 @@
     transition: color 120ms ease;
   }
 
-  .tabActive { color: #C4633E; }
+  .tabActive { color: var(--accent); }
 
   .tabLabel {
     font-family: var(--font-ui);
@@ -257,9 +257,9 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #C4633E;
+    background: var(--accent);
     color: #FFFFFF;
-    box-shadow: 0 4px 20px rgba(196, 99, 62, 0.5), 0 1px 4px rgba(196, 99, 62, 0.3);
+    box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.5), 0 1px 4px rgba(var(--accent-rgb), 0.3);
     z-index: 101;
     text-decoration: none;
     transition: background-color 120ms ease, box-shadow 120ms ease;
@@ -267,11 +267,11 @@
 
   .fab:active {
     transform: translateX(-50%) scale(0.92);
-    box-shadow: 0 2px 8px rgba(196, 99, 62, 0.35);
-    background: #a8532f;
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.35);
+    background: var(--accent-strong);
   }
 
   .fabActive {
-    background: #a8532f;
+    background: var(--accent-strong);
   }
 }

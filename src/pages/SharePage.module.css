@@ -36,7 +36,7 @@
   display: inline-flex;
   align-items: center;
   padding: var(--sp-3) var(--sp-6);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -66,7 +66,7 @@
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 600;
-  color: #C4633E;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -79,7 +79,7 @@
 
 .saveBtn {
   padding: var(--sp-2) var(--sp-5);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -94,7 +94,7 @@
   flex-shrink: 0;
 }
 
-.saveBtn:hover { background: #a8532f; text-decoration: none; }
+.saveBtn:hover { background: var(--accent-strong); text-decoration: none; }
 .saveBtn:disabled { opacity: 0.6; }
 
 .savedBadge {
@@ -234,7 +234,7 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -270,5 +270,5 @@
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: #C4633E;
+  color: var(--accent);
 }

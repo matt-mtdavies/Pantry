@@ -14,7 +14,7 @@
   font-family: var(--font-display);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: #C4633E;
+  color: var(--accent);
   text-decoration: none;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -22,7 +22,7 @@
   margin-bottom: var(--sp-4);
 }
 
-.brand:hover { color: #a8532f; text-decoration: none; }
+.brand:hover { color: var(--accent-strong); text-decoration: none; }
 
 .title {
   font-family: var(--font-display);
@@ -81,11 +81,11 @@
 }
 
 .body a {
-  color: #C4633E;
+  color: var(--accent);
   text-decoration: underline;
 }
 
-.body a:hover { color: #a8532f; }
+.body a:hover { color: var(--accent-strong); }
 
 .body strong {
   color: #1F1B16;
@@ -121,7 +121,7 @@
   transition: color 150ms ease;
 }
 
-.footerLink:hover { color: #C4633E; text-decoration: none; }
+.footerLink:hover { color: var(--accent); text-decoration: none; }
 
 @media (max-width: 600px) {
   .title { font-size: var(--text-3xl); }

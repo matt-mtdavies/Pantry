@@ -44,8 +44,8 @@
 .tab:hover { color: #1F1B16; }
 
 .tabActive {
-  color: #C4633E;
-  border-bottom-color: #C4633E;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .tabIcon { flex-shrink: 0; display: block; }
@@ -111,7 +111,7 @@
   text-decoration: none;
 }
 
-.rowAuthorLink:hover { color: #C4633E; text-decoration: none; }
+.rowAuthorLink:hover { color: var(--accent); text-decoration: none; }
 
 /* Rank badge */
 
@@ -229,7 +229,7 @@
   display: inline-flex;
   align-items: center;
   padding: var(--sp-3) var(--sp-6);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -239,7 +239,7 @@
   transition: background-color 150ms ease;
 }
 
-.emptyBtn:hover { background: #a8532f; text-decoration: none; }
+.emptyBtn:hover { background: var(--accent-strong); text-decoration: none; }
 
 /* ── Today tab ── */
 
@@ -252,7 +252,7 @@
 .tipCard {
   background: #F5F0E8;
   border: 1px solid #E8E0D4;
-  border-left: 4px solid #C4633E;
+  border-left: 4px solid var(--accent);
   border-radius: var(--radius-lg);
   padding: var(--sp-5) var(--sp-6);
   margin-top: var(--sp-4);
@@ -269,7 +269,7 @@
 .tipIcon {
   display: flex;
   align-items: center;
-  color: #C4633E;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -279,7 +279,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #C4633E;
+  color: var(--accent);
 }
 
 .tipText {
@@ -338,7 +338,7 @@
   text-decoration: none;
 }
 
-.feedAuthorLink:hover { color: #C4633E; text-decoration: none; }
+.feedAuthorLink:hover { color: var(--accent); text-decoration: none; }
 
 .feedThumb {
   width: 48px;

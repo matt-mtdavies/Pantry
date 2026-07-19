@@ -120,9 +120,9 @@ function WelcomeIllustration() {
       <path d="M126 128 Q136 117 148 128 Q160 139 172 128" stroke="#DFA088" strokeWidth="2.25" strokeLinecap="round" />
       <path d="M132 138 Q142 127 154 138 Q164 147 172 140" stroke="#DFA088" strokeWidth="2" strokeLinecap="round" />
       {/* Sauce dots */}
-      <circle cx="138" cy="113" r="3" fill="#C4633E" opacity="0.4" />
-      <circle cx="164" cy="140" r="2.5" fill="#C4633E" opacity="0.35" />
-      <circle cx="158" cy="112" r="2" fill="#C4633E" opacity="0.3" />
+      <circle cx="138" cy="113" r="3" fill="#A0522D" opacity="0.4" />
+      <circle cx="164" cy="140" r="2.5" fill="#A0522D" opacity="0.35" />
+      <circle cx="158" cy="112" r="2" fill="#A0522D" opacity="0.3" />
       {/* Herb garnish */}
       <line x1="148" y1="107" x2="152" y2="118" stroke="#7A8B6F" strokeWidth="1.5" strokeLinecap="round" />
       <path d="M152 118 C147 109 151 104 154 111" stroke="#7A8B6F" strokeWidth="1.75" strokeLinecap="round" />
@@ -183,14 +183,14 @@ function ImportIllustration() {
       <path d="M96 85 Q88 85 98 100" stroke="#7A8B6F" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
       {/* Link bubble (right) */}
       <circle cx="234" cy="155" r="30" fill="#F5E8E2" />
-      <path d="M224 155 Q224 148 231 148 h6 Q244 148 244 155 Q244 162 237 162 h-6 Q224 162 224 155 z" fill="none" stroke="#C4633E" strokeWidth="1.75" strokeLinecap="round" />
-      <line x1="228" y1="155" x2="236" y2="155" stroke="#C4633E" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M224 155 Q224 148 231 148 h6 Q244 148 244 155 Q244 162 237 162 h-6 Q224 162 224 155 z" fill="none" stroke="#A0522D" strokeWidth="1.75" strokeLinecap="round" />
+      <line x1="228" y1="155" x2="236" y2="155" stroke="#A0522D" strokeWidth="1.75" strokeLinecap="round" />
       {/* Arrow from link to phone */}
-      <path d="M204 150 Q210 145 202 132" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+      <path d="M204 150 Q210 145 202 132" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
       {/* Sparkles */}
-      <path d="M84 126 l2 4 4 2 -4 2 -2 4 -2-4 -4-2 4-2 z" fill="#C4633E" opacity="0.55" />
+      <path d="M84 126 l2 4 4 2 -4 2 -2 4 -2-4 -4-2 4-2 z" fill="#A0522D" opacity="0.55" />
       <path d="M218 108 l1.5 3 3 1.5 -3 1.5 -1.5 3 -1.5-3 -3-1.5 3-1.5 z" fill="#7A8B6F" opacity="0.65" />
-      <circle cx="220" cy="84" r="3" fill="#C4633E" opacity="0.35" />
+      <circle cx="220" cy="84" r="3" fill="#A0522D" opacity="0.35" />
       <circle cx="78" cy="153" r="2.5" fill="#7A8B6F" opacity="0.4" />
     </svg>
   )
@@ -207,12 +207,12 @@ function CookIllustration() {
       <rect x="55" y="28" width="190" height="52" rx="16" fill="#F5E8E2" />
       <rect x="55" y="64" width="190" height="16" fill="#F5E8E2" />
       {/* Header text */}
-      <rect x="80" y="42" width="90" height="8" rx="4" fill="#C4633E" opacity="0.5" />
+      <rect x="80" y="42" width="90" height="8" rx="4" fill="#A0522D" opacity="0.5" />
       <rect x="80" y="56" width="60" height="5" rx="2.5" fill="#DFA088" opacity="0.6" />
       {/* Timer icon in header */}
-      <circle cx="214" cy="51" r="14" fill="none" stroke="#C4633E" strokeWidth="1.75" opacity="0.6" />
-      <line x1="214" y1="51" x2="214" y2="44" stroke="#C4633E" strokeWidth="1.75" strokeLinecap="round" opacity="0.6" />
-      <line x1="214" y1="51" x2="218" y2="54" stroke="#C4633E" strokeWidth="1.75" strokeLinecap="round" opacity="0.6" />
+      <circle cx="214" cy="51" r="14" fill="none" stroke="#A0522D" strokeWidth="1.75" opacity="0.6" />
+      <line x1="214" y1="51" x2="214" y2="44" stroke="#A0522D" strokeWidth="1.75" strokeLinecap="round" opacity="0.6" />
+      <line x1="214" y1="51" x2="218" y2="54" stroke="#A0522D" strokeWidth="1.75" strokeLinecap="round" opacity="0.6" />
       {/* Step 1 - done */}
       <circle cx="82" cy="104" r="12" fill="#EBF0E8" />
       <path d="M77 104 l3.5 3.5 6-6" stroke="#7A8B6F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -224,7 +224,7 @@ function CookIllustration() {
       <rect x="102" y="140" width="112" height="6" rx="3" fill="#E8E0D4" />
       <rect x="102" y="151" width="82" height="4" rx="2" fill="#F3EFE8" />
       {/* Step 3 - active */}
-      <circle cx="82" cy="188" r="12" fill="#C4633E" />
+      <circle cx="82" cy="188" r="12" fill="#A0522D" />
       <rect x="79.5" y="185.5" width="5" height="5" rx="1" fill="#FFFFFF" />
       <rect x="102" y="183" width="120" height="6" rx="3" fill="#1F1B16" opacity="0.15" />
       <rect x="102" y="193" width="88" height="4" rx="2" fill="#1F1B16" opacity="0.08" />
@@ -256,11 +256,11 @@ function ExploreIllustration() {
       <rect x="46" y="36" width="96" height="50" rx="12" fill="#F5E8E2" />
       <rect x="46" y="75" width="96" height="11" fill="#F5E8E2" />
       <ellipse cx="94" cy="58" rx="18" ry="14" fill="#DFA088" opacity="0.35" />
-      <path d="M80 64 Q94 46 108 64" fill="none" stroke="#C4633E" strokeWidth="1.5" />
+      <path d="M80 64 Q94 46 108 64" fill="none" stroke="#A0522D" strokeWidth="1.5" />
       <rect x="54" y="94" width="60" height="5" rx="2.5" fill="#E8E0D4" />
       <rect x="54" y="104" width="44" height="4" rx="2" fill="#F3EFE8" />
       {/* Stars on top-left card */}
-      <text x="54" y="118" fontSize="11" fill="#C4633E" opacity="0.8">★★★★☆</text>
+      <text x="54" y="118" fontSize="11" fill="#A0522D" opacity="0.8">★★★★☆</text>
 
       {/* Card top-right */}
       <rect x="158" y="36" width="96" height="86" rx="12" fill="#FFFFFF" stroke="#E8E0D4" strokeWidth="1.25" />
@@ -284,23 +284,23 @@ function ExploreIllustration() {
       <rect x="158" y="134" width="96" height="86" rx="12" fill="#FFFFFF" stroke="#E8E0D4" strokeWidth="1.25" />
       <rect x="158" y="134" width="96" height="50" rx="12" fill="#F5E8E2" />
       <rect x="158" y="173" width="96" height="11" fill="#F5E8E2" />
-      <ellipse cx="206" cy="157" rx="22" ry="14" fill="#C4633E" opacity="0.15" />
-      <path d="M192 161 l8-12 8 12" fill="none" stroke="#C4633E" strokeWidth="1.5" strokeLinejoin="round" />
-      <line x1="206" y1="149" x2="206" y2="145" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" />
+      <ellipse cx="206" cy="157" rx="22" ry="14" fill="#A0522D" opacity="0.15" />
+      <path d="M192 161 l8-12 8 12" fill="none" stroke="#A0522D" strokeWidth="1.5" strokeLinejoin="round" />
+      <line x1="206" y1="149" x2="206" y2="145" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" />
       <rect x="166" y="192" width="68" height="5" rx="2.5" fill="#E8E0D4" />
       <rect x="166" y="202" width="48" height="4" rx="2" fill="#F3EFE8" />
 
       {/* Magnifying glass overlay */}
       <circle cx="206" cy="56" r="0" fill="none" />
-      <circle cx="212" cy="122" r="36" fill="rgba(250,247,242,0.88)" stroke="#C4633E" strokeWidth="2.5" />
-      <line x1="240" y1="150" x2="255" y2="165" stroke="#C4633E" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="212" cy="122" r="36" fill="rgba(250,247,242,0.88)" stroke="#A0522D" strokeWidth="2.5" />
+      <line x1="240" y1="150" x2="255" y2="165" stroke="#A0522D" strokeWidth="3" strokeLinecap="round" />
       {/* Dice/wizard icon inside magnifier */}
-      <rect x="198" y="108" width="28" height="28" rx="7" fill="none" stroke="#C4633E" strokeWidth="1.75" />
-      <circle cx="206" cy="116" r="2.5" fill="#C4633E" />
-      <circle cx="220" cy="116" r="2.5" fill="#C4633E" />
-      <circle cx="213" cy="122" r="2.5" fill="#C4633E" />
-      <circle cx="206" cy="128" r="2.5" fill="#C4633E" />
-      <circle cx="220" cy="128" r="2.5" fill="#C4633E" />
+      <rect x="198" y="108" width="28" height="28" rx="7" fill="none" stroke="#A0522D" strokeWidth="1.75" />
+      <circle cx="206" cy="116" r="2.5" fill="#A0522D" />
+      <circle cx="220" cy="116" r="2.5" fill="#A0522D" />
+      <circle cx="213" cy="122" r="2.5" fill="#A0522D" />
+      <circle cx="206" cy="128" r="2.5" fill="#A0522D" />
+      <circle cx="220" cy="128" r="2.5" fill="#A0522D" />
 
       {/* Decorative */}
       <circle cx="38" cy="46" r="4" fill="#F5E8E2" />
@@ -329,20 +329,20 @@ function ShareIllustration() {
       <circle cx="198" cy="108" r="18" fill="#F5E8E2" />
       <path d="M164 152 Q164 134 198 134 Q232 134 232 152" fill="#F5E8E2" />
       {/* Right avatar icon */}
-      <circle cx="198" cy="108" r="10" fill="#C4633E" opacity="0.25" />
-      <path d="M192 108 h12 M198 102 v12" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+      <circle cx="198" cy="108" r="10" fill="#A0522D" opacity="0.25" />
+      <path d="M192 108 h12 M198 102 v12" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
 
       {/* Overlap circle center */}
       <circle cx="150" cy="118" r="28" fill="#FFFFFF" stroke="#E8E0D4" strokeWidth="1.5" />
       {/* Heart */}
-      <path d="M150 128 C150 128 138 120 138 113 a6 6 0 0 1 12-1 a6 6 0 0 1 12 1 C162 120 150 128 150 128 z" fill="#C4633E" opacity="0.85" />
+      <path d="M150 128 C150 128 138 120 138 113 a6 6 0 0 1 12-1 a6 6 0 0 1 12 1 C162 120 150 128 150 128 z" fill="#A0522D" opacity="0.85" />
 
       {/* Trophy top */}
       <circle cx="150" cy="46" r="22" fill="#FFFFFF" stroke="#E8E0D4" strokeWidth="1.5" />
-      <path d="M141 52 l4-8 5 4 5-4 4 8 z" fill="none" stroke="#C4633E" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M147 44 h6" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="150" y1="52" x2="150" y2="58" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="144" y1="58" x2="156" y2="58" stroke="#C4633E" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M141 52 l4-8 5 4 5-4 4 8 z" fill="none" stroke="#A0522D" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M147 44 h6" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="150" y1="52" x2="150" y2="58" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="144" y1="58" x2="156" y2="58" stroke="#A0522D" strokeWidth="1.75" strokeLinecap="round" />
 
       {/* Leaderboard bars */}
       <rect x="50" y="168" width="16" height="38" rx="4" fill="#EBF0E8" />
@@ -352,7 +352,7 @@ function ShareIllustration() {
       <rect x="57" y="163" width="4" height="4" rx="1" fill="#7A8B6F" opacity="0.4" />
 
       {/* Share arcs */}
-      <path d="M102 68 Q150 40 198 68" stroke="#C4633E" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3" opacity="0.4" />
+      <path d="M102 68 Q150 40 198 68" stroke="#A0522D" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 3" opacity="0.4" />
 
       {/* Confetti dots */}
       <circle cx="54" cy="108" r="4" fill="#F5E8E2" />

@@ -25,8 +25,8 @@
 }
 
 .btn:hover {
-  color: #C4633E;
-  border-color: #C4633E;
+  color: var(--accent);
+  border-color: var(--accent);
   background-color: #F5E8E2;
 }
 

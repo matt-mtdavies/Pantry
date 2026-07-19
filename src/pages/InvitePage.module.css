@@ -14,7 +14,7 @@
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 50vh;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(196,99,62,0.09) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(var(--accent-rgb),0.09) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -53,7 +53,7 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #C4633E 0%, #E8A87C 60%, #C4633E 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #E8A87C 60%, var(--accent) 100%);
   padding: 3px;
   margin-bottom: var(--sp-1);
   flex-shrink: 0;
@@ -140,7 +140,7 @@
 }
 
 .featureIcon {
-  color: #C4633E;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -152,7 +152,7 @@
   justify-content: center;
   width: 100%;
   padding: var(--sp-4) var(--sp-6);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -165,7 +165,7 @@
 }
 
 .cta:hover {
-  background: #a8532f;
+  background: var(--accent-strong);
   color: #FFFFFF;
   text-decoration: none;
   transform: translateY(-1px);
@@ -226,7 +226,7 @@
 .alreadyMember {
   font-family: var(--font-ui);
   font-size: var(--text-base);
-  color: #C4633E;
+  color: var(--accent);
   font-weight: 600;
   text-align: center;
 }

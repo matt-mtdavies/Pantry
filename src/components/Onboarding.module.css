@@ -27,7 +27,7 @@
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 600;
-  color: #C4633E;
+  color: var(--accent);
   letter-spacing: -0.02em;
 }
 
@@ -137,14 +137,14 @@
 
 .dotActive {
   width: 28px;
-  background: #C4633E;
+  background: var(--accent);
 }
 
 .nextBtn {
   width: 100%;
   max-width: 380px;
   padding: var(--sp-4) var(--sp-6);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -157,7 +157,7 @@
   -webkit-text-fill-color: #FFFFFF;
 }
 
-.nextBtn:hover { background: #a8532f; }
+.nextBtn:hover { background: var(--accent-strong); }
 .nextBtn:active { transform: scale(0.97); }
 
 /* ── Animation ───────────────────────────────────────────────────────── */

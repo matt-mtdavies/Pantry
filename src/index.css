@@ -9,7 +9,15 @@
   --ink:          #1F1B16;
   --ink-soft:     #6B6459;
   --ink-muted:    #9C9189;
-  --terracotta:   #C4633E;
+
+  /* Brand accent — matches the leather app icon (sienna).
+     Single source of truth: change these three to re-tone the whole app. */
+  --accent:        #A0522D;
+  --accent-strong: #8A4522;
+  --accent-rgb:    160, 82, 45;
+
+  /* Legacy alias — kept pointing at the accent so any stragglers stay on-brand. */
+  --terracotta:   var(--accent);
   --terra-light:  #F5E8E2;
   --terra-mid:    #DFA088;
   --sage:         #7A8B6F;
@@ -106,7 +114,7 @@ body {
 }
 
 img, video { max-width: 100%; height: auto; display: block; }
-a { color: #C4633E; text-decoration: none; }
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button {
   cursor: pointer;
@@ -118,7 +126,7 @@ button {
 input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
 
 :focus-visible {
-  outline: 2px solid #C4633E;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -229,7 +237,7 @@ body.has-verify-banner { --banner-height: 40px; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #E8E0D4; border-radius: var(--radius-full); }
-::-webkit-scrollbar-thumb:hover { background: #C4633E; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* === SAFE AREA INSETS === */
 .pb-safe { padding-bottom: max(var(--sp-6), env(safe-area-inset-bottom)); }

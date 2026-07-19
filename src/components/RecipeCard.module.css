@@ -65,7 +65,7 @@
 }
 
 .heartActive {
-  color: #C4633E;
+  color: var(--accent);
 }
 
 .body {
@@ -108,7 +108,7 @@
 }
 
 .titleLink:hover .title {
-  color: #C4633E;
+  color: var(--accent);
 }
 
 .description {
@@ -197,7 +197,7 @@
 }
 
 .author:hover .authorName {
-  color: #C4633E;
+  color: var(--accent);
 }
 
 /* ── Collection toggle overlay ───────────────────────────────────────────── */
@@ -224,18 +224,18 @@
 
 .colToggle:hover {
   transform: scale(1.1);
-  border-color: #C4633E;
-  color: #C4633E;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .colToggleIn {
-  background: #C4633E;
-  border-color: #C4633E;
+  background: var(--accent);
+  border-color: var(--accent);
   color: #FFFFFF;
 }
 
 .colToggleIn:hover {
-  background: #a8532f;
-  border-color: #a8532f;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
   color: #FFFFFF;
 }

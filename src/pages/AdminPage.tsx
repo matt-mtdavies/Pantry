@@ -55,13 +55,13 @@ const fmtBytes = (b: number) => {
 }
 
 const CHART_COLORS = {
-  primary: '#C4633E',
+  primary: '#A0522D',
   secondary: '#9C9189',
-  screenshot: '#C4633E',
+  screenshot: '#A0522D',
   url: '#6B8FBF',
   dinner: '#8BAF6B',
   tts: '#B07CC6',
-  visits: '#C4633E',
+  visits: '#A0522D',
 }
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: boolean }) {

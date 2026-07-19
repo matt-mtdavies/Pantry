@@ -107,11 +107,11 @@
   transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
 }
 
-.categoryBtn:hover { border-color: #C4633E; color: #C4633E; }
+.categoryBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 .categoryBtnActive {
-  border-color: #C4633E;
-  color: #C4633E;
+  border-color: var(--accent);
+  color: var(--accent);
   background: #F5E8E2;
 }
 
@@ -151,7 +151,7 @@
   line-height: 1.6;
 }
 
-.textarea:focus { outline: none; border-color: #C4633E; }
+.textarea:focus { outline: none; border-color: var(--accent); }
 .textarea::placeholder { color: #9C9189; }
 
 .charCount {
@@ -164,7 +164,7 @@
 .errorMsg {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #C4633E;
+  color: var(--accent);
   background: #F5E8E2;
   border-radius: var(--radius-md);
   padding: var(--sp-3) var(--sp-4);
@@ -174,7 +174,7 @@
   width: 100%;
   min-height: 52px;
   padding: var(--sp-3) var(--sp-4);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -183,7 +183,7 @@
   transition: background-color 150ms ease, opacity 150ms ease;
 }
 
-.submitBtn:hover:not(:disabled) { background: #a8532f; }
+.submitBtn:hover:not(:disabled) { background: var(--accent-strong); }
 .submitBtn:disabled { opacity: 0.5; cursor: default; }
 
 /* Success state */
@@ -237,4 +237,4 @@
   transition: border-color 150ms ease, color 150ms ease;
 }
 
-.doneBtn:hover { border-color: #C4633E; color: #C4633E; }
+.doneBtn:hover { border-color: var(--accent); color: var(--accent); }

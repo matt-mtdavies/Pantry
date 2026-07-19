@@ -33,7 +33,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <button
             onClick={() => window.location.href = '/'}
             style={{
-              padding: '1rem 2rem', background: '#C4633E', color: '#fff',
+              padding: '1rem 2rem', background: '#A0522D', color: '#fff',
               border: 'none', borderRadius: '8px', fontSize: '1rem',
               fontFamily: 'system-ui, sans-serif', fontWeight: 600, cursor: 'pointer',
             }}

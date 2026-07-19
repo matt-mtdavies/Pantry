@@ -599,7 +599,7 @@ export default function CookModePage() {
               <ellipse cx="100" cy="172" rx="56" ry="7"   fill="#FAF7F2" />
 
               <g className={styles.revealFood}>
-                <ellipse cx="100" cy="169" rx="24" ry="5.5" fill="#C4633E" />
+                <ellipse cx="100" cy="169" rx="24" ry="5.5" fill="#A0522D" />
                 <circle cx="72"  cy="169" r="5.5" fill="#7A8B6F" />
                 <circle cx="128" cy="169" r="5.5" fill="#7A8B6F" />
                 <circle cx="87"  cy="166.5" r="2.5" fill="#E8A87C" />

@@ -49,7 +49,7 @@
 
 .search:focus {
   outline: none;
-  border-color: #C4633E;
+  border-color: var(--accent);
 }
 
 .searchHasValue {
@@ -74,7 +74,7 @@
 }
 
 .searchClear:hover {
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
 }
 
@@ -103,8 +103,8 @@
 
 .filterToggle:hover,
 .filterToggleOpen {
-  border-color: #C4633E;
-  color: #C4633E;
+  border-color: var(--accent);
+  color: var(--accent);
   background: #F5E8E2;
 }
 
@@ -159,13 +159,13 @@
 }
 
 .cuisineChip:hover {
-  border-color: #C4633E;
-  color: #C4633E;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .cuisineChipActive {
-  background: #C4633E;
-  border-color: #C4633E;
+  background: var(--accent);
+  border-color: var(--accent);
   color: #FFFFFF;
   -webkit-text-fill-color: #FFFFFF;
 }
@@ -216,7 +216,7 @@
 .filterInput:focus,
 .filterSelect:focus {
   outline: none;
-  border-color: #C4633E;
+  border-color: var(--accent);
 }
 
 .filterInput::placeholder { color: #9C9189; }
@@ -324,14 +324,14 @@
 }
 
 .heartBtn:hover {
-  color: #C4633E;
+  color: var(--accent);
   background: #fff;
 }
 
 .heartBtn:active { transform: scale(0.88); }
 
 .heartBtnActive {
-  color: #C4633E;
+  color: var(--accent);
 }
 
 .cardBody {
@@ -351,7 +351,7 @@
 .cardTag {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #C4633E;
+  color: var(--accent);
   background: #F5E8E2;
   padding: 2px 8px;
   border-radius: var(--radius-full);
@@ -410,7 +410,7 @@
   white-space: nowrap;
 }
 
-.authorLink:hover { color: #C4633E; text-decoration: none; }
+.authorLink:hover { color: var(--accent); text-decoration: none; }
 
 .empty {
   text-align: center;
@@ -442,16 +442,16 @@
   font-family: var(--font-ui);
   font-size: var(--text-base);
   font-weight: 600;
-  color: #C4633E;
+  color: var(--accent);
   background: #FEF7F4;
-  border: 1.5px solid #C4633E;
+  border: 1.5px solid var(--accent);
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease;
 }
 
 .generateBtn:hover:not(:disabled) {
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
 }
 
@@ -467,13 +467,13 @@
   gap: var(--sp-2);
   margin-top: var(--sp-4);
   padding: var(--sp-3) var(--sp-5);
-  background: linear-gradient(135deg, #C4633E 0%, #a8532f 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
   border-radius: var(--radius-full);
-  box-shadow: 0 3px 12px rgba(196,99,62,0.35);
+  box-shadow: 0 3px 12px rgba(var(--accent-rgb),0.35);
   transition: transform 150ms ease, box-shadow 150ms ease;
   cursor: pointer;
   border: none;
@@ -481,7 +481,7 @@
 
 .dinnerBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 16px rgba(196,99,62,0.45);
+  box-shadow: 0 5px 16px rgba(var(--accent-rgb),0.45);
 }
 
 .dinnerBtn:active { transform: translateY(0); }
@@ -595,7 +595,7 @@
   transition: border-color 150ms ease;
 }
 
-.wizardTextarea:focus { outline: none; border-color: #C4633E; }
+.wizardTextarea:focus { outline: none; border-color: var(--accent); }
 
 .wizardServings {
   display: flex;
@@ -619,7 +619,7 @@
   transition: border-color 150ms ease, color 150ms ease;
 }
 
-.wizardServingsBtn:hover { border-color: #C4633E; color: #C4633E; }
+.wizardServingsBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 .wizardServingsNum {
   font-family: var(--font-display);
@@ -632,7 +632,7 @@
 
 .wizardFindBtn {
   padding: var(--sp-4) var(--sp-6);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -645,7 +645,7 @@
   margin-top: var(--sp-2);
 }
 
-.wizardFindBtn:hover:not(:disabled) { background: #a8532f; }
+.wizardFindBtn:hover:not(:disabled) { background: var(--accent-strong); }
 .wizardFindBtn:disabled { opacity: 0.5; cursor: default; }
 
 .wizardLoading {
@@ -745,7 +745,7 @@
 }
 
 .wizardModeBtnActive {
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
 }
 
@@ -775,7 +775,7 @@
 .createdTag {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #C4633E;
+  color: var(--accent);
   background: #F5E8E2;
   padding: 2px 8px;
   border-radius: var(--radius-full);
@@ -865,7 +865,7 @@
 }
 
 .createdShopCheck {
-  color: #C4633E;
+  color: var(--accent);
   font-size: 1rem;
   flex-shrink: 0;
 }
@@ -887,7 +887,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-xs);
@@ -916,7 +916,7 @@
 .createdSaveBtn {
   width: 100%;
   padding: var(--sp-4) var(--sp-6);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -928,7 +928,7 @@
   transition: background-color 150ms ease;
 }
 
-.createdSaveBtn:hover:not(:disabled) { background: #a8532f; }
+.createdSaveBtn:hover:not(:disabled) { background: var(--accent-strong); }
 .createdSaveBtn:disabled { opacity: 0.5; cursor: default; }
 
 .createdSavedLink {
@@ -1009,11 +1009,11 @@
   white-space: nowrap;
 }
 
-.chip:hover { border-color: #C4633E; color: #C4633E; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
 
 .chipActive {
-  border-color: #C4633E;
-  color: #C4633E;
+  border-color: var(--accent);
+  color: var(--accent);
   background: #F5E8E2;
 }
 
@@ -1058,7 +1058,7 @@
 .summaryCard:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
-  border-color: #C4633E;
+  border-color: var(--accent);
 }
 
 .summaryImgWrap {
@@ -1130,7 +1130,7 @@
 
 .wizardTryAgain {
   padding: var(--sp-3) var(--sp-5);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -1142,7 +1142,7 @@
   transition: background-color 150ms ease;
 }
 
-.wizardTryAgain:hover { background: #a8532f; }
+.wizardTryAgain:hover { background: var(--accent-strong); }
 
 .loadMore {
   display: flex;
@@ -1153,8 +1153,8 @@
 .loadMoreBtn {
   padding: var(--sp-3) var(--sp-8);
   background: none;
-  border: 1.5px solid #C4633E;
-  color: #C4633E;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -1165,7 +1165,7 @@
 }
 
 .loadMoreBtn:hover {
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
 }
 
@@ -1205,7 +1205,7 @@
 
 .inviteCardBtn {
   flex-shrink: 0;
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -1218,7 +1218,7 @@
   white-space: nowrap;
 }
 
-.inviteCardBtn:hover { background: #a8532f; }
+.inviteCardBtn:hover { background: var(--accent-strong); }
 
 @media (max-width: 480px) {
   .inviteCard { flex-direction: column; align-items: flex-start; }

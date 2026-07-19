@@ -37,7 +37,7 @@
   font-family: var(--font-display);
   font-size: var(--text-2xl);
   font-weight: 600;
-  color: #C4633E;
+  color: var(--accent);
   letter-spacing: -0.02em;
 }
 
@@ -85,7 +85,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #C4633E;
+  border-color: var(--accent);
 }
 
 .input::placeholder { color: #9C9189; }
@@ -93,7 +93,7 @@
 .submit {
   margin-top: var(--sp-2);
   padding: var(--sp-4);
-  background: #C4633E;
+  background: var(--accent);
   color: #FFFFFF;
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -103,13 +103,13 @@
   transition: background-color 150ms ease, opacity 150ms ease;
 }
 
-.submit:hover:not(:disabled) { background: #a8532f; }
+.submit:hover:not(:disabled) { background: var(--accent-strong); }
 .submit:disabled { opacity: 0.55; cursor: default; }
 
 .error {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #C4633E;
+  color: var(--accent);
   background: #F5E8E2;
   padding: var(--sp-3) var(--sp-4);
   border-radius: var(--radius-md);
@@ -145,7 +145,7 @@
 }
 
 .resend {
-  color: #C4633E;
+  color: var(--accent);
   text-decoration: underline;
   font-family: inherit;
   font-size: inherit;
@@ -191,7 +191,7 @@
   margin-top: var(--sp-1);
 }
 
-.forgotLink:hover { color: #C4633E; }
+.forgotLink:hover { color: var(--accent); }
 
 .verifyText {
   font-family: var(--font-body);
@@ -214,4 +214,4 @@
   text-decoration: underline;
 }
 
-.legalLink:hover { color: #C4633E; }
+.legalLink:hover { color: var(--accent); }
