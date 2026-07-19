@@ -169,6 +169,7 @@ export default function Navigation() {
       <header className={styles.nav}>
         <div className={styles.inner}>
           <Link to="/" className={styles.brand}>
+            <img src="/pantry-mark.png" alt="" className={styles.brandMark} width="32" height="32" />
             <span className={styles.brandWord}>Pantry</span>
           </Link>
 

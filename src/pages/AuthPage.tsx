@@ -62,7 +62,10 @@ export default function AuthPage() {
     return (
       <div className={styles.page}>
         <div className={styles.card}>
-          <div className={styles.brand}>Pantry</div>
+          <div className={styles.brand}>
+            <img src="/pantry-mark.png" alt="" className={styles.brandMark} width="44" height="44" />
+            <span className={styles.brandWord}>Pantry</span>
+          </div>
           <div className={styles.sentBox}>
             <div className={styles.sentIcon}>✉️</div>
             <h2 className={styles.sentTitle}>Check your inbox</h2>
