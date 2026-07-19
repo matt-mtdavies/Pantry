@@ -594,7 +594,7 @@
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 500;
-  color: #7A8B6F;
+  color: var(--sage);
   padding: var(--sp-2) var(--sp-4);
   border: 1.5px dashed #C4D9BC;
   border-radius: var(--radius-md);
@@ -604,7 +604,7 @@
   text-decoration: none;
 }
 
-.addRowBtn:hover { border-color: #7A8B6F; background: #F0F5EE; }
+.addRowBtn:hover { border-color: var(--sage); background: #F0F5EE; }
 
 .stepsList { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
 
@@ -691,8 +691,8 @@
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 500;
-  color: #7A8B6F;
-  background: #EBF0E8;
+  color: var(--sage);
+  background: var(--sage-light);
   padding: 3px var(--sp-2);
   border-radius: var(--radius-full);
 }
@@ -785,8 +785,8 @@
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 500;
-  color: #7A8B6F;
-  background: #EBF0E8;
+  color: var(--sage);
+  background: var(--sage-light);
   padding: 3px var(--sp-3);
   border-radius: var(--radius-full);
 }

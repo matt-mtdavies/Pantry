@@ -201,8 +201,8 @@
   width: 56px;
   height: 56px;
   border-radius: var(--radius-full);
-  background: #EBF0E8;
-  color: #7A8B6F;
+  background: var(--sage-light);
+  color: var(--sage);
   font-size: 1.5rem;
   display: flex;
   align-items: center;

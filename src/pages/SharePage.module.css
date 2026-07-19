@@ -100,7 +100,7 @@
 .savedBadge {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #7A8B6F;
+  color: var(--sage);
   font-weight: 600;
 }
 
@@ -135,8 +135,8 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #7A8B6F;
-  background: #EBF0E8;
+  color: var(--sage);
+  background: var(--sage-light);
   padding: 3px var(--sp-3);
   border-radius: var(--radius-full);
 }

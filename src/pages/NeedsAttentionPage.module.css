@@ -43,7 +43,7 @@
 
 .emptyIcon {
   font-size: 4rem;
-  color: #7A8B6F;
+  color: var(--sage);
   margin-bottom: var(--sp-4);
 }
 

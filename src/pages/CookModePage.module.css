@@ -172,7 +172,7 @@
   margin-top: 3px;
   width: 20px;
   height: 20px;
-  accent-color: var(--accent);
+  accent-color: var(--sage-strong);
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -329,7 +329,7 @@
 
 .timerDotPaused { background: rgba(250,247,242,.4); }
 
-.timerDotDone { background: #7A8B6F; }
+.timerDotDone { background: var(--sage); }
 
 .timerActiveDisplay {
   font-family: var(--font-display);
@@ -350,7 +350,7 @@
 .timerBannerPaused .timerActiveDisplay { color: rgba(250,247,242,.6); }
 
 .timerBannerDone .timerActiveDisplay {
-  color: #7A8B6F;
+  color: var(--sage);
   text-shadow: 0 0 28px rgba(122,139,111,.5);
 }
 
@@ -615,7 +615,7 @@
   transition: width 1s linear;
 }
 
-.timerBannerDone .timerBannerProgressFill { background: #7A8B6F; }
+.timerBannerDone .timerBannerProgressFill { background: var(--sage); }
 
 .stepNav {
   display: flex;
@@ -658,8 +658,8 @@
 .navBtnNext:hover { background: var(--accent-strong) !important; border-color: var(--accent-strong) !important; color: #FFFFFF !important; }
 
 .navBtnDone {
-  background: #7A8B6F;
-  border-color: #7A8B6F;
+  background: var(--sage);
+  border-color: var(--sage);
   color: #FFFFFF;
 }
 

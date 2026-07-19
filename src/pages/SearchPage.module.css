@@ -1018,12 +1018,12 @@
 }
 
 .chipNone { color: #9C9189; }
-.chipNone:hover { border-color: #7A8B6F; color: #7A8B6F; }
+.chipNone:hover { border-color: var(--sage); color: var(--sage); }
 
 .chipNoneActive {
-  border-color: #7A8B6F;
-  color: #7A8B6F;
-  background: #EBF0E8;
+  border-color: var(--sage);
+  color: var(--sage);
+  background: var(--sage-light);
 }
 
 /* ── Summaries stage ─────────────────────────────────────────────── */

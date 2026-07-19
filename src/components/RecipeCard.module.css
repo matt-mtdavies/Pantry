@@ -83,8 +83,8 @@
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 500;
-  color: #7A8B6F;
-  background-color: #EBF0E8;
+  color: var(--sage-text);
+  background-color: var(--sage-light);
   padding: 2px var(--sp-2);
   border-radius: var(--radius-full);
   text-transform: uppercase;
@@ -159,8 +159,8 @@
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 500;
-  color: #5A6B50;
-  background: #EBF0E8;
+  color: var(--sage-text);
+  background: var(--sage-light);
   border: 1px solid #C8D4C2;
   padding: 2px var(--sp-2);
   border-radius: var(--radius-full);

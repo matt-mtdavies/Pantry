@@ -31,8 +31,8 @@
 }
 
 .btn.success {
-  color: #7A8B6F;
-  border-color: #7A8B6F;
-  background-color: #EBF0E8;
+  color: var(--sage);
+  border-color: var(--sage);
+  background-color: var(--sage-light);
   pointer-events: none;
 }

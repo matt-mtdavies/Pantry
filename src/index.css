@@ -16,12 +16,17 @@
   --accent-strong: #8A4522;
   --accent-rgb:    160, 82, 45;
 
+  /* Secondary — sage. Supports the accent: tags, done/checked states,
+     success, and "fresh" moments. Never primary actions or navigation. */
+  --sage:         #7A8B6F;  /* base: borders, dots, progress fills */
+  --sage-strong:  #5F7057;  /* filled checks / done indicators */
+  --sage-light:   #EBF0E8;  /* chip + tint backgrounds */
+  --sage-text:    #4F5E44;  /* chip/label text on --sage-light (AA) */
+
   /* Legacy alias — kept pointing at the accent so any stragglers stay on-brand. */
   --terracotta:   var(--accent);
   --terra-light:  #F5E8E2;
   --terra-mid:    #DFA088;
-  --sage:         #7A8B6F;
-  --sage-light:   #EBF0E8;
   --border:       #E8E0D4;
   --surface:      #F3EFE8;
   --white:        #FFFFFF;
