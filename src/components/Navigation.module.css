@@ -5,8 +5,8 @@
   right: 0;
   z-index: 101;
   height: 40px;
-  background: #92400E;
-  color: #FEF3C7;
+  background: var(--warning);
+  color: var(--warning-tint);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,7 +26,7 @@
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: #FEF3C7;
+  color: var(--warning-tint);
   text-decoration: underline;
   cursor: pointer;
   flex-shrink: 0;
@@ -70,7 +70,7 @@
 .brandMark {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: block;
   box-shadow: 0 1px 3px rgba(31, 27, 22, 0.18);
 }
@@ -112,7 +112,7 @@
 
 .link.active {
   color: var(--accent);
-  background-color: #F5E8E2;
+  background-color: var(--terra-light);
 }
 
 .user {
@@ -163,7 +163,7 @@
 .signOut {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   cursor: pointer;
   padding: var(--sp-2);
   transition: color 150ms ease;
@@ -189,7 +189,7 @@
 .inviteBtn:hover {
   color: var(--accent);
   border-color: var(--accent);
-  background-color: #F5E8E2;
+  background-color: var(--terra-light);
 }
 
 /* ── Mobile bottom tab bar ─────────────────────────────────────────────────── */
@@ -225,7 +225,7 @@
     padding: var(--sp-2) 0 var(--sp-1);
     text-decoration: none;
     min-height: 58px;
-    color: #9C9189;
+    color: var(--ink-soft);
     transition: color 120ms ease;
   }
 
@@ -233,10 +233,10 @@
 
   .tabLabel {
     font-family: var(--font-ui);
-    font-size: 9.5px;
+    /* 11px sentence case: legible and "Community" still fits a 320px screen. */
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
   }
 
 }
@@ -256,7 +256,7 @@
     transform: translateX(-50%);
     width: 56px;
     height: 56px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: var(--accent);
     color: #FFFFFF;
     box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.5), 0 1px 4px rgba(var(--accent-rgb), 0.3);

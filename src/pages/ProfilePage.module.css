@@ -18,7 +18,7 @@
   position: relative;
   width: 120px;
   height: 120px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: 2.5px solid #E8E0D4;
   background: #F3EFE8;
   cursor: pointer;
@@ -31,7 +31,7 @@
 .avatarInner {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -97,7 +97,7 @@
   display: block;
   width: 22px;
   height: 22px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: 2.5px solid rgba(255,255,255,0.3);
   border-top-color: #FFFFFF;
   animation: spin 0.7s linear infinite;
@@ -109,7 +109,7 @@
   right: 5px;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--accent);
   color: #FFFFFF;
   display: flex;
@@ -124,14 +124,14 @@
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 500;
-  color: #9C9189;
+  color: var(--ink-soft);
   background: transparent;
   border: 1.5px solid #E8E0D4;
   border-radius: var(--radius-full);
   padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
   transition: border-color 150ms ease, color 150ms ease;
-  min-height: 30px;
+  min-height: 40px;
 }
 
 .avatarRemoveBtn:hover { border-color: #B91C1C; color: #B91C1C; }
@@ -156,7 +156,7 @@
 .profileEmail {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   margin-bottom: var(--sp-5);
 }
 
@@ -189,7 +189,7 @@
 .profileStatLabel {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .viewProfileLink {
@@ -234,7 +234,7 @@
 .hint {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .input {
@@ -249,7 +249,7 @@
   min-height: 52px;
 }
 
-.input:focus { outline: none; border-color: var(--accent); }
+.input:focus { border-color: var(--accent); }
 .input::placeholder { color: #9C9189; }
 
 .select {
@@ -266,11 +266,11 @@
   transition: border-color 150ms ease;
 }
 
-.select:focus { outline: none; border-color: var(--accent); }
+.select:focus { border-color: var(--accent); }
 
 .optional {
   font-weight: 400;
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .toggle {
@@ -296,7 +296,7 @@
 .toggleBtnActive {
   border-color: var(--accent);
   color: var(--accent);
-  background: #F5E8E2;
+  background: var(--terra-light);
 }
 
 
@@ -566,7 +566,7 @@
 .iosHint {
   margin-top: var(--sp-2);
   padding: var(--sp-3) var(--sp-4);
-  background: #F5E8E2;
+  background: var(--terra-light);
   border: 1px solid #E8C4A8;
   border-radius: var(--radius-md);
   display: flex;
@@ -603,7 +603,7 @@
 .iosHintClose {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   flex-shrink: 0;
   padding: 2px 4px;
   transition: color 150ms ease;
@@ -625,7 +625,7 @@
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
-  color: #9C9189;
+  color: var(--ink-soft);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: var(--sp-4);
@@ -770,13 +770,13 @@
 }
 
 .wizardClose {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: #9C9189;
+  color: var(--ink-soft);
   background: transparent;
   font-size: var(--text-base);
   transition: color 150ms ease, background-color 150ms ease;
@@ -788,7 +788,7 @@
 .cropHint {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-align: center;
   margin-top: calc(var(--sp-2) * -1);
 }
@@ -796,7 +796,7 @@
 .cropCircle {
   width: 280px;
   height: 280px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   overflow: hidden;
   position: relative;
   cursor: grab;
@@ -872,9 +872,10 @@
 .legalFooterLink {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-decoration: none;
   transition: color 150ms ease;
 }
 
 .legalFooterLink:hover { color: var(--accent); }
+.saveError { margin-top: var(--sp-3); }

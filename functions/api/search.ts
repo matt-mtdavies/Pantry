@@ -9,8 +9,6 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const q          = url.searchParams.get('q')?.trim() ?? ''
   const author     = url.searchParams.get('author')?.trim() ?? ''
   const country    = url.searchParams.get('country')?.trim() ?? ''
-  const gender     = url.searchParams.get('gender')?.trim() ?? ''
-  const ageBracket = url.searchParams.get('age_bracket')?.trim() ?? ''
   const calMin     = toInt(url.searchParams.get('cal_min'))
   const calMax     = toInt(url.searchParams.get('cal_max'))
   const costMin    = toFloat(url.searchParams.get('cost_min'))
@@ -35,14 +33,6 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   if (country) {
     wheres.push('LOWER(u.country) LIKE LOWER(?)')
     binds.push(`%${country}%`)
-  }
-  if (gender) {
-    wheres.push('u.gender = ?')
-    binds.push(gender)
-  }
-  if (ageBracket) {
-    wheres.push('u.age_bracket = ?')
-    binds.push(ageBracket)
   }
   if (calMin !== null) {
     wheres.push('r.calories_per_serving IS NOT NULL AND r.calories_per_serving >= ?')

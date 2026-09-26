@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getLeaderboard, getFeed } from '../lib/api'
 import { imageUrl, formatTime, timeAgo } from '../lib/utils'
 import { Avatar } from '../components/Avatar'
+import LoadError from '../components/LoadError'
 import { TrophyIcon, PersonIcon, DishIcon, StarIcon, SunIcon, ClockIcon, TechniqueIcon, IngredientIcon, StorageIcon, FlavourIcon, KitchenIcon } from '../components/icons'
 import type { LeaderboardRecipe, LeaderboardChef, FeedData } from '../types'
 import styles from './LeaderboardPage.module.css'
@@ -20,20 +21,25 @@ export default function LeaderboardPage() {
   const [topChefs, setTopChefs] = useState<LeaderboardChef[]>([])
   const [feed, setFeed] = useState<FeedData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = (searchParams.get('tab') as Tab | null) ?? 'today'
   const setTab = (t: Tab) => setSearchParams({ tab: t }, { replace: true })
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setLoadFailed(false)
     Promise.all([getLeaderboard(), getFeed()])
       .then(([lb, fd]) => {
         setTopRecipes(lb.topRecipes)
         setTopChefs(lb.topChefs)
         setFeed(fd)
       })
-      .catch(() => {})
+      .catch(() => setLoadFailed(true))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => { load() }, [load])
 
   return (
     <div className="page-shell">
@@ -78,6 +84,12 @@ export default function LeaderboardPage() {
                 <div key={i} className={`skeleton ${styles.skeletonRow}`} />
               ))}
             </div>
+          ) : loadFailed ? (
+            <LoadError
+              title="Couldn't load the community"
+              message="We couldn't reach Pantry. Check your connection and try again."
+              onRetry={load}
+            />
           ) : tab === 'today' ? (
             <TodayTab feed={feed} />
           ) : tab === 'recipes' ? (
@@ -85,6 +97,7 @@ export default function LeaderboardPage() {
               <EmptyState text="No rated recipes yet. Be the first to rate a recipe from the Explore page!" />
             ) : (
               <div className={styles.list}>
+                <p className={styles.windowLabel}>Highest-rated public recipes · all time</p>
                 {topRecipes.map((r, i) => <RecipeRow key={r.id} recipe={r} rank={i + 1} />)}
               </div>
             )
@@ -93,6 +106,7 @@ export default function LeaderboardPage() {
               <EmptyState text="No chefs have ratings yet. Share a recipe and start collecting stars!" />
             ) : (
               <div className={styles.list}>
+                <p className={styles.windowLabel}>Highest average rating across their recipes · all time</p>
                 {topChefs.map((c, i) => <ChefRow key={c.id} chef={c} rank={i + 1} />)}
               </div>
             )
@@ -116,6 +130,10 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
 
   return (
     <div className={styles.todayWrap}>
+      <p className={styles.todayDate}>
+        {new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+      </p>
+
       {/* Daily tip */}
       <div className={styles.tipCard}>
         <div className={styles.tipHeader}>
@@ -209,9 +227,6 @@ function TodayTab({ feed }: { feed: FeedData | null }) {
         </div>
       )}
 
-      <p className={styles.todayDate}>
-        {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-      </p>
     </div>
   )
 }

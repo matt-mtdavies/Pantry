@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage, deleteHeroImage, listCollections, toggleRecipeInCollection, createCollection } from '../lib/api'
-import { formatTime, imageUrl } from '../lib/utils'
-import { getCurrencySymbol } from '../lib/currency'
+import { formatTime, imageUrl, scaleIngredient } from '../lib/utils'
+import { formatCost } from '../lib/currency'
 import { convertIngredient, convertStepText } from '../lib/units'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon, CollectionIcon } from '../components/icons'
 import { ShareListButton } from '../components/ShareListButton'
 import { Avatar } from '../components/Avatar'
 import { BackButton } from '../components/BackButton'
+import ServingsStepper from '../components/ServingsStepper'
 import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
 
@@ -49,6 +50,20 @@ export default function RecipePage() {
   const [collections, setCollections] = useState<Collection[]>([])
   const [newColName, setNewColName] = useState('')
   const [creatingCol, setCreatingCol] = useState(false)
+  const [servings, setServings] = useState<number | null>(null)
+
+  // Reset the scaler whenever a different recipe loads.
+  useEffect(() => { setServings(recipe?.servings ?? null) }, [recipe?.id, recipe?.servings])
+
+  const displayIngredients = useMemo(() => {
+    if (!recipe) return []
+    const unitPref = user?.unit_system ?? 'metric'
+    return recipe.ingredients.map(ing => {
+      const scaled = recipe.servings && servings ? scaleIngredient(ing, recipe.servings, servings) : ing
+      const c = convertIngredient(scaled.amount, scaled.unit, unitPref)
+      return { name: ing.name, amount: c.amount, unit: c.unit }
+    })
+  }, [recipe, servings, user?.unit_system])
 
   useEffect(() => {
     if (!id) return
@@ -315,7 +330,7 @@ export default function RecipePage() {
               {recipe.cost_per_serving != null && (
                 <div className={styles.metaItem}>
                   <span className={styles.metaLabel}>Est. cost</span>
-                  <span className={styles.metaValue}>~{getCurrencySymbol(recipe.cost_currency)}{recipe.cost_per_serving.toFixed(2)}</span>
+                  <span className={styles.metaValue}>~{formatCost(recipe.cost_per_serving, recipe.cost_currency)}</span>
                 </div>
               )}
             </div>
@@ -333,7 +348,10 @@ export default function RecipePage() {
 
             {/* Actions */}
             <div className={styles.actions}>
-              <Link to={`/recipe/${recipe.id}/cook`} className={styles.cookBtn}>Cook this recipe</Link>
+              <Link
+                to={`/recipe/${recipe.id}/cook${servings && servings !== recipe.servings ? `?serves=${servings}` : ''}`}
+                className={styles.cookBtn}
+              >Cook this recipe</Link>
               {user && (
                 <button
                   className={`${styles.iconBtn} ${recipe.is_favourite ? styles.iconBtnActive : ''}`}
@@ -435,24 +453,24 @@ export default function RecipePage() {
           <hr className={styles.divider} />
 
           <section className={styles.section} aria-labelledby="ingredients-heading">
-            <h2 id="ingredients-heading" className={styles.sectionTitle}>Ingredients</h2>
+            <div className={styles.sectionHeader}>
+              <h2 id="ingredients-heading" className={styles.sectionTitle}>Ingredients</h2>
+              {recipe.servings != null && servings != null && (
+                <ServingsStepper value={servings} onChange={setServings} base={recipe.servings} />
+              )}
+            </div>
             <ul className={styles.ingredients}>
-              {recipe.ingredients.map((ing, i) => {
-                const unitPref = user?.unit_system ?? 'metric'
-                const c = convertIngredient(ing.amount, ing.unit, unitPref)
-                return (
-                  <li key={i} className={styles.ingredient}>
-                    <span className={styles.ingAmount}>{c.amount} {c.unit}</span>
-                    <span className={styles.ingName}>{ing.name}</span>
-                  </li>
-                )
-              })}
+              {displayIngredients.map((ing, i) => (
+                <li key={i} className={styles.ingredient}>
+                  <span className={styles.ingAmount}>{ing.amount} {ing.unit}</span>
+                  <span className={styles.ingName}>{ing.name}</span>
+                </li>
+              ))}
             </ul>
             <ShareListButton
-              items={recipe.ingredients.map(ing => {
-                const c = convertIngredient(ing.amount, ing.unit, user?.unit_system ?? 'metric')
-                return [c.amount, c.unit, ing.name].filter(Boolean).join(' ').trim()
-              })}
+              items={displayIngredients.map(ing =>
+                [ing.amount, ing.unit, ing.name].filter(Boolean).join(' ').trim()
+              )}
               recipeName={recipe.title}
             />
           </section>

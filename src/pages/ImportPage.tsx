@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
@@ -10,6 +10,19 @@ import styles from './ImportPage.module.css'
 
 type Stage = 'upload' | 'extracting' | 'review' | 'saving' | 'error'
 type ExtractMode = 'screenshot' | 'url'
+
+const MAX_SCREENSHOTS = 10
+
+/** Distinctive titles so the needs-attention tray isn't a list of identical rows. */
+function draftTitle(mode: ExtractMode, url: string): string {
+  const when = new Date().toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  if (mode === 'url') {
+    let host = url
+    try { host = new URL(url).hostname.replace(/^www\./, '') } catch { /* keep raw */ }
+    return `Link · ${host} · ${when}`
+  }
+  return `Screenshot · ${when}`
+}
 
 const PROGRESS_MSGS: Record<ExtractMode, string[]> = {
   screenshot: [
@@ -40,6 +53,7 @@ export default function ImportPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [dragOver, setDragOver] = useState(false)
   const [urlInput, setUrlInput] = useState('')
+  const [capNotice, setCapNotice] = useState(false)
 
   useEffect(() => {
     if (stage !== 'extracting') return
@@ -51,12 +65,31 @@ export default function ImportPage() {
     return () => clearInterval(id)
   }, [stage, extractMode])
 
-  const handleFiles = useCallback((selected: File[]) => {
+  const handleFiles = (selected: File[]) => {
     const valid = selected.filter(f => f.type.startsWith('image/'))
     if (!valid.length) return
-    setFiles(prev => [...prev, ...valid])
-    setPreviews(prev => [...prev, ...valid.map(f => URL.createObjectURL(f))])
-  }, [])
+    const room = Math.max(0, MAX_SCREENSHOTS - files.length)
+    const accepted = valid.slice(0, room)
+    setCapNotice(valid.length > room)
+    if (!accepted.length) return
+    setFiles(prev => [...prev, ...accepted])
+    setPreviews(prev => [...prev, ...accepted.map(f => URL.createObjectURL(f))])
+  }
+
+  const removeFile = (index: number) => {
+    URL.revokeObjectURL(previews[index])
+    setPreviews(prev => prev.filter((_, i) => i !== index))
+    setFiles(prev => prev.filter((_, i) => i !== index))
+    setCapNotice(false)
+  }
+
+  const startOver = () => {
+    previews.forEach(url => URL.revokeObjectURL(url))
+    setFiles([])
+    setPreviews([])
+    setCapNotice(false)
+    setStage('upload')
+  }
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFiles(Array.from(e.target.files ?? []))
@@ -100,13 +133,17 @@ export default function ImportPage() {
   const handleSaveAsDraft = async () => {
     setStage('saving')
     try {
+      const fromUrl = extractMode === 'url'
       const recipe = await createRecipe({
-        title: 'Untitled recipe (from screenshot)',
+        title: draftTitle(extractMode, urlInput.trim()),
         needs_attention: true,
         screenshot_keys: [],
+        source_url: fromUrl ? urlInput.trim() : null,
       } as Parameters<typeof createRecipe>[0])
-      for (const file of files) {
-        try { await uploadImage(file, recipe.id, 'screenshot') } catch { /* non-fatal */ }
+      if (!fromUrl) {
+        for (const file of files) {
+          try { await uploadImage(file, recipe.id, 'screenshot') } catch { /* non-fatal */ }
+        }
       }
       navigate('/needs-attention')
     } catch {
@@ -166,7 +203,7 @@ export default function ImportPage() {
               <div className={styles.errorActions}>
                 <button className={styles.retryBtn} onClick={() => setStage('upload')}>Try again</button>
                 <button className={styles.draftBtn} onClick={handleSaveAsDraft}>
-                  Save to needs-attention tray
+                  Save for later
                 </button>
               </div>
             </div>
@@ -218,22 +255,42 @@ export default function ImportPage() {
                       fill="#A0522D" opacity="0.35" />
                   </svg>
                 </div>
-                <p className={styles.dropTitle}>Tap to choose a screenshot</p>
+                <p className={styles.dropTitle}>Choose screenshots</p>
                 <p className={styles.dropHint}>
-                  Add up to 10 screenshots — we'll combine them into one recipe.
+                  Add up to {MAX_SCREENSHOTS} screenshots — we'll combine them into one recipe.
                 </p>
               </div>
             ) : (
               <div className={styles.previews}>
                 {previews.map((src, i) => (
-                  <img key={i} src={src} alt={`Screenshot ${i + 1}`} className={styles.preview} />
+                  <div key={src} className={styles.previewItem}>
+                    <img src={src} alt={`Screenshot ${i + 1}`} className={styles.preview} />
+                    <button
+                      className={styles.previewRemove}
+                      onClick={e => { e.stopPropagation(); removeFile(i) }}
+                      onKeyDown={e => e.stopPropagation()}
+                      aria-label={`Remove screenshot ${i + 1}`}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" />
+                      </svg>
+                    </button>
+                  </div>
                 ))}
-                <div className={styles.previewAdd}>
-                  <span>+ Add more ({files.length} added)</span>
-                </div>
+                {files.length < MAX_SCREENSHOTS && (
+                  <div className={styles.previewAdd}>
+                    <span>+ Add more ({files.length} of {MAX_SCREENSHOTS})</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
+
+          {capNotice && (
+            <p className={`form-hint ${styles.capNotice}`} role="status">
+              Keeping the first {MAX_SCREENSHOTS} — that's plenty for one recipe.
+            </p>
+          )}
 
           {files.length > 0 && (
             <div className={styles.actions}>
@@ -242,7 +299,7 @@ export default function ImportPage() {
               </button>
               <button
                 className={styles.clearBtn}
-                onClick={() => { setFiles([]); setPreviews([]); setStage('upload') }}
+                onClick={startOver}
               >
                 Start over
               </button>
@@ -260,7 +317,7 @@ export default function ImportPage() {
               <input
                 className={styles.urlInput}
                 type="url"
-                placeholder="https://www.example.com/recipes/pasta"
+                placeholder="Paste a link, e.g. bbcgoodfood.com/recipes/…"
                 value={urlInput}
                 onChange={e => setUrlInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleExtractUrl() }}
@@ -309,6 +366,8 @@ function ReviewScreen({
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState<ExtractedRecipe>({ ...initial })
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [titleHint, setTitleHint] = useState(false)
   const [newTag, setNewTag] = useState('')
   const isEmptyExtraction = initial.ingredients.length === 0 && initial.steps.length === 0
   const [editMode, setEditMode] = useState(isEmptyExtraction)
@@ -367,6 +426,9 @@ function ReviewScreen({
   const moveStep = (i: number, dir: -1 | 1) => setRecipe(r => {
     const s = [...r.steps];[s[i], s[i + dir]] = [s[i + dir], s[i]]; return { ...r, steps: s }
   })
+  const moveIng = (i: number, dir: -1 | 1) => setRecipe(r => {
+    const ings = [...r.ingredients];[ings[i], ings[i + dir]] = [ings[i + dir], ings[i]]; return { ...r, ingredients: ings }
+  })
   const addTag = () => {
     const t = newTag.trim().toLowerCase()
     if (t && !recipe.tags.includes(t)) setRecipe(r => ({ ...r, tags: [...r.tags, t] }))
@@ -374,6 +436,13 @@ function ReviewScreen({
   }
 
   const handleSave = async () => {
+    if (!recipe.title.trim()) {
+      // Title lives in edit mode; take the user there and say why.
+      setEditMode(true)
+      setTitleHint(true)
+      return
+    }
+    setSaveError('')
     setSaving(true)
     try {
       const created = await createRecipe({
@@ -412,9 +481,9 @@ function ReviewScreen({
       }
 
       navigate(`/recipe/${created.id}`)
-    } catch (err) {
+    } catch {
       setSaving(false)
-      alert(err instanceof Error ? err.message : 'Save failed')
+      setSaveError("Couldn't save — check your connection and try again.")
     }
   }
 
@@ -506,10 +575,11 @@ function ReviewScreen({
             </section>
 
             <div className={styles.previewActions}>
+              {saveError && <p className="form-error" role="alert">{saveError}</p>}
               <button
                 className={styles.saveBtn}
                 onClick={handleSave}
-                disabled={saving || !recipe.title.trim()}
+                disabled={saving}
               >
                 {saving ? 'Saving…' : 'Save recipe →'}
               </button>
@@ -579,12 +649,20 @@ function ReviewScreen({
 
             {/* Title */}
             <div className={styles.field}>
-              <label className={styles.label}>Recipe title</label>
+              <label className={styles.label} htmlFor="review-title">Recipe title</label>
               <input
+                id="review-title"
                 className={styles.input}
                 value={recipe.title}
-                onChange={e => setRecipe(r => ({ ...r, title: e.target.value }))}
+                onChange={e => { setRecipe(r => ({ ...r, title: e.target.value })); setTitleHint(false); setSaveError('') }}
+                placeholder="e.g. Roast chicken with herbs"
+                autoFocus={titleHint}
+                aria-invalid={titleHint || undefined}
+                aria-describedby={titleHint ? 'review-title-hint' : undefined}
               />
+              {titleHint && (
+                <p id="review-title-hint" className={styles.fieldError}>Give your recipe a title first.</p>
+              )}
             </div>
 
             {/* Description */}
@@ -594,6 +672,7 @@ function ReviewScreen({
                 className={`${styles.input} ${styles.textarea}`}
                 value={recipe.description ?? ''}
                 onChange={e => setRecipe(r => ({ ...r, description: e.target.value }))}
+                placeholder="A short description of the dish…"
                 rows={3}
               />
             </div>
@@ -608,6 +687,7 @@ function ReviewScreen({
                   min={0}
                   value={recipe.prep_time ?? ''}
                   onChange={e => setRecipe(r => ({ ...r, prep_time: parseInt(e.target.value) || null }))}
+                  placeholder="15"
                 />
               </div>
               <div className={styles.field}>
@@ -618,6 +698,7 @@ function ReviewScreen({
                   min={0}
                   value={recipe.cook_time ?? ''}
                   onChange={e => setRecipe(r => ({ ...r, cook_time: parseInt(e.target.value) || null }))}
+                  placeholder="30"
                 />
               </div>
               <div className={styles.field}>
@@ -628,6 +709,7 @@ function ReviewScreen({
                   min={1}
                   value={recipe.servings ?? ''}
                   onChange={e => setRecipe(r => ({ ...r, servings: parseInt(e.target.value) || null }))}
+                  placeholder="4"
                 />
               </div>
             </div>
@@ -638,10 +720,16 @@ function ReviewScreen({
               <div className={styles.ingredientsList}>
                 {recipe.ingredients.map((ing, i) => (
                   <div key={i} className={styles.ingRow}>
-                    <input className={styles.ingAmount} placeholder="Amount" value={ing.amount} onChange={e => updateIng(i, 'amount', e.target.value)} />
-                    <input className={styles.ingUnit} placeholder="Unit" value={ing.unit} onChange={e => updateIng(i, 'unit', e.target.value)} />
-                    <input className={`${styles.ingName} ${styles.inputFlex}`} placeholder="Ingredient" value={ing.name} onChange={e => updateIng(i, 'name', e.target.value)} />
-                    <button className={styles.removeBtn} onClick={() => removeIng(i)} aria-label={`Remove ${ing.name}`}>✕</button>
+                    <div className={styles.ingControls}>
+                      <button className={styles.ingMoveBtn} onClick={() => moveIng(i, -1)} disabled={i === 0} aria-label={`Move ${ing.name || `ingredient ${i + 1}`} up`}><ArrowUpIcon size={12} /></button>
+                      <button className={styles.ingMoveBtn} onClick={() => moveIng(i, 1)} disabled={i === recipe.ingredients.length - 1} aria-label={`Move ${ing.name || `ingredient ${i + 1}`} down`}><ArrowDownIcon size={12} /></button>
+                    </div>
+                    <div className={styles.ingFields}>
+                      <input className={styles.ingAmount} placeholder="Amount" value={ing.amount} onChange={e => updateIng(i, 'amount', e.target.value)} aria-label={`Amount for ingredient ${i + 1}`} />
+                      <input className={styles.ingUnit} placeholder="Unit" value={ing.unit} onChange={e => updateIng(i, 'unit', e.target.value)} aria-label={`Unit for ingredient ${i + 1}`} />
+                      <input className={`${styles.ingName} ${styles.inputFlex}`} placeholder="Ingredient name" value={ing.name} onChange={e => updateIng(i, 'name', e.target.value)} aria-label={`Name of ingredient ${i + 1}`} />
+                    </div>
+                    <button className={styles.removeBtn} onClick={() => removeIng(i)} aria-label={`Remove ${ing.name || `ingredient ${i + 1}`}`}>✕</button>
                   </div>
                 ))}
                 <button className={styles.addRowBtn} onClick={addIng}>+ Add ingredient</button>
@@ -675,6 +763,7 @@ function ReviewScreen({
             {/* Tags */}
             <div className={styles.field}>
               <label className={styles.label}>Tags</label>
+              <p className={styles.hint}>e.g. dinner, baking, quick, vegetarian</p>
               <div className={styles.tagsField}>
                 {recipe.tags.map(tag => (
                   <span key={tag} className={styles.tagChip}>
@@ -684,7 +773,7 @@ function ReviewScreen({
                 ))}
                 <input
                   className={styles.tagInput}
-                  placeholder="Add tag…"
+                  placeholder="Type a tag, press Enter…"
                   value={newTag}
                   onChange={e => setNewTag(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() } }}
@@ -692,8 +781,10 @@ function ReviewScreen({
               </div>
             </div>
 
+            {saveError && <p className="form-error" role="alert">{saveError}</p>}
+
             <div className={styles.saveRow}>
-              <button className={styles.saveBtn} onClick={handleSave} disabled={saving || !recipe.title.trim()}>
+              <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving…' : 'Save recipe'}
               </button>
             </div>

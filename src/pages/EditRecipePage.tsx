@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { getRecipe, createRecipe, updateRecipe } from '../lib/api'
+import { getRecipe, createRecipe, updateRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import { getCurrencySymbol } from '../lib/currency'
 import type { Recipe, Ingredient } from '../types'
 import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
@@ -32,6 +32,54 @@ export default function EditRecipePage() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [newTag, setNewTag] = useState('')
+  const [saveError, setSaveError] = useState('')
+  const [titleHint, setTitleHint] = useState(false)
+  const [confirmHollow, setConfirmHollow] = useState(false)
+  const titleRef = useRef<HTMLInputElement>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
+  // Photo (new recipes only — existing recipes change photo from the recipe page)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [photoOptions, setPhotoOptions] = useState<{ url: string; thumb: string }[]>([])
+  const [searchingPhotos, setSearchingPhotos] = useState(false)
+  const [photoSearchFailed, setPhotoSearchFailed] = useState(false)
+
+  useEffect(() => () => { if (photoPreview) URL.revokeObjectURL(photoPreview) }, [photoPreview])
+
+  const choosePhotoFile = (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+    setPhotoUrl(null)
+  }
+
+  const chooseStockPhoto = (url: string) => {
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setPhotoUrl(url)
+  }
+
+  const clearPhoto = () => {
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setPhotoUrl(null)
+  }
+
+  const findPhotos = async () => {
+    const q = recipe.title?.trim()
+    if (!q) { setTitleHint(true); titleRef.current?.focus(); return }
+    setSearchingPhotos(true)
+    setPhotoSearchFailed(false)
+    try {
+      setPhotoOptions(await searchImages(q))
+    } catch {
+      setPhotoSearchFailed(true)
+    } finally {
+      setSearchingPhotos(false)
+    }
+  }
 
   useEffect(() => {
     if (isNew) return
@@ -43,6 +91,9 @@ export default function EditRecipePage() {
 
   const update = <K extends keyof Recipe>(key: K, val: Recipe[K]) => {
     setRecipe(r => ({ ...r, [key]: val }))
+    setSaveError('')
+    setConfirmHollow(false)
+    if (key === 'title') setTitleHint(false)
   }
 
   const updateIng = (i: number, field: keyof Ingredient, val: string) => {
@@ -85,22 +136,44 @@ export default function EditRecipePage() {
     setNewTag('')
   }
 
-  const handleSave = async () => {
-    if (!recipe.title?.trim()) return
+  const isHollow =
+    !(recipe.ingredients ?? []).some(i => i.name.trim()) &&
+    !(recipe.steps ?? []).some(st => st.trim())
+
+  const handleSave = async (force = false) => {
+    if (!recipe.title?.trim()) {
+      setTitleHint(true)
+      titleRef.current?.focus()
+      return
+    }
+    if (isHollow && !force) {
+      setConfirmHollow(true)
+      return
+    }
+    setConfirmHollow(false)
+    setSaveError('')
     setSaving(true)
     try {
       if (isNew) {
         const created = await createRecipe(recipe)
+        // Photo is best-effort: the recipe is saved either way.
+        if (photoFile) {
+          try { await uploadImage(photoFile, created.id, 'hero') } catch { /* non-fatal */ }
+        } else if (photoUrl) {
+          try { await fetchRecipeImage(created.id, photoUrl) } catch { /* non-fatal */ }
+        }
         navigate(`/recipe/${created.id}`)
       } else {
         await updateRecipe(id, recipe)
         navigate(`/recipe/${id}`)
       }
-    } catch (err) {
+    } catch {
       setSaving(false)
-      alert(err instanceof Error ? err.message : 'Save failed')
+      setSaveError("Couldn't save — check your connection and try again.")
     }
   }
+
+  const heroPreview = photoPreview ?? photoUrl
 
   if (loading) {
     return (
@@ -131,12 +204,68 @@ export default function EditRecipePage() {
               <label className={styles.label} htmlFor="title">Recipe title</label>
               <input
                 id="title"
+                ref={titleRef}
                 className={styles.input}
+                aria-invalid={titleHint || undefined}
+                aria-describedby={titleHint ? 'title-hint' : undefined}
                 value={recipe.title ?? ''}
                 onChange={e => update('title', e.target.value)}
                 placeholder="e.g. Roast chicken with herbs"
               />
+              {titleHint && (
+                <p id="title-hint" className={styles.fieldError}>Give your recipe a title first.</p>
+              )}
             </div>
+
+            {isNew && (
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  Recipe photo <span className={styles.optional}>(optional)</span>
+                </label>
+                {heroPreview && (
+                  <div className={styles.imgPreviewWrap}>
+                    <img src={heroPreview} alt="Chosen recipe photo" className={styles.imgPreview} />
+                  </div>
+                )}
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={e => { choosePhotoFile(e.target.files?.[0]); e.target.value = '' }}
+                />
+                <div className={styles.imgThumbs}>
+                  <button type="button" className={styles.photoAction} onClick={() => photoInputRef.current?.click()}>
+                    {photoFile ? 'Choose a different photo' : 'Upload a photo'}
+                  </button>
+                  <button type="button" className={styles.photoAction} onClick={findPhotos} disabled={searchingPhotos}>
+                    {searchingPhotos ? 'Finding…' : 'Suggest photos'}
+                  </button>
+                  {heroPreview && (
+                    <button type="button" className={styles.photoAction} onClick={clearPhoto}>No photo</button>
+                  )}
+                </div>
+                {photoOptions.length > 0 && (
+                  <div className={styles.imgThumbs}>
+                    {photoOptions.map((opt, i) => (
+                      <button
+                        key={opt.url}
+                        type="button"
+                        className={`${styles.imgThumb} ${photoUrl === opt.url ? styles.imgThumbActive : ''}`}
+                        onClick={() => chooseStockPhoto(opt.url)}
+                        aria-label={`Use suggested photo ${i + 1}`}
+                        aria-pressed={photoUrl === opt.url}
+                      >
+                        <img src={opt.thumb} alt="" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {photoSearchFailed && (
+                  <p className={styles.fieldError}>Couldn't find photos right now — try again or upload your own.</p>
+                )}
+              </div>
+            )}
 
             <div className={styles.field}>
               <label className={styles.label} htmlFor="description">
@@ -231,7 +360,7 @@ export default function EditRecipePage() {
                     <div className={styles.ingFields}>
                       <input
                         className={styles.ingAmount}
-                        placeholder="Amt"
+                        placeholder="Amount"
                         value={ing.amount}
                         onChange={e => updateIng(i, 'amount', e.target.value)}
                         aria-label={`Amount for ingredient ${i + 1}`}
@@ -330,11 +459,25 @@ export default function EditRecipePage() {
               />
             </div>
 
+            {confirmHollow && (
+              <div className={styles.hollowConfirm} role="alert">
+                <p className={styles.hollowText}>
+                  No ingredients or steps yet — save anyway? You can add them later.
+                </p>
+                <div className={styles.hollowActions}>
+                  <button className={styles.hollowSave} onClick={() => handleSave(true)}>Save anyway</button>
+                  <button className={styles.hollowCancel} onClick={() => setConfirmHollow(false)}>Keep editing</button>
+                </div>
+              </div>
+            )}
+
+            {saveError && <p className="form-error" role="alert">{saveError}</p>}
+
             <div className={styles.saveRow}>
               <button
                 className={styles.saveBtn}
-                onClick={handleSave}
-                disabled={saving || !recipe.title?.trim()}
+                onClick={() => handleSave()}
+                disabled={saving}
               >
                 {saving ? 'Saving…' : isNew ? 'Save recipe' : 'Save changes'}
               </button>

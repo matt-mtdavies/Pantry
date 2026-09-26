@@ -227,6 +227,32 @@
 
 /* ── TTS pill button ─────────────────────────────────────────────────────── */
 
+.stepTimers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.stepTimerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  border: 1.5px solid rgba(var(--accent-rgb), .6);
+  background: rgba(var(--accent-rgb), .15);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #FAF7F2;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.stepTimerChip:hover { background: rgba(var(--accent-rgb), .3); border-color: var(--accent); }
+
 .ttsToggle {
   display: inline-flex;
   align-items: center;
@@ -554,7 +580,6 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  outline: none;
   -moz-appearance: textfield;
   appearance: textfield;
   transition: border-color 150ms ease, background 150ms ease;

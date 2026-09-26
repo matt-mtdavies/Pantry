@@ -27,7 +27,7 @@
 /* ── Subtle: minimal, for cream/light backgrounds ── */
 .subtle {
   background: transparent;
-  color: #9C9189;
+  color: var(--ink-soft);
   padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-1);
   letter-spacing: 0.01em;
 }

@@ -52,7 +52,7 @@
 .avatarRing {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--accent) 0%, #E8A87C 60%, var(--accent) 100%);
   padding: 3px;
   margin-bottom: var(--sp-1);
@@ -62,7 +62,7 @@
 .avatarInner {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: #FFFFFF;
   padding: 2px;
   display: flex;
@@ -75,7 +75,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: block;
 }
 
@@ -105,7 +105,7 @@
 .inviteText {
   font-family: var(--font-ui);
   font-size: var(--text-base);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-align: center;
   margin: 0;
 }
@@ -184,7 +184,7 @@
 .signinLink {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-decoration: none;
   transition: color 150ms ease;
 }
@@ -196,7 +196,7 @@
 .avatarSkeleton {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: #E8E0D4;
   animation: pulse 1.5s ease-in-out infinite;
   margin-bottom: var(--sp-2);

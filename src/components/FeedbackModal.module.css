@@ -68,7 +68,7 @@
 .sub {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .closeBtn {
@@ -112,7 +112,7 @@
 .categoryBtnActive {
   border-color: var(--accent);
   color: var(--accent);
-  background: #F5E8E2;
+  background: var(--terra-light);
 }
 
 /* Form */
@@ -151,7 +151,7 @@
   line-height: 1.6;
 }
 
-.textarea:focus { outline: none; border-color: var(--accent); }
+.textarea:focus { border-color: var(--accent); }
 .textarea::placeholder { color: #9C9189; }
 
 .charCount {
@@ -164,8 +164,8 @@
 .errorMsg {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: var(--accent);
-  background: #F5E8E2;
+  color: var(--error);
+  background: var(--error-tint);
   border-radius: var(--radius-md);
   padding: var(--sp-3) var(--sp-4);
 }
@@ -221,7 +221,7 @@
 .successSub {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   margin-bottom: var(--sp-4);
 }
 

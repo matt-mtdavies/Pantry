@@ -4,9 +4,8 @@
   "description": "Your recipe home — import, organise, cook, and share.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#C4633E",
+  "background_color": "#A0522D",
   "theme_color": "#FAF7F2",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",

@@ -29,7 +29,7 @@
 .brandMark {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   box-shadow: 0 3px 9px rgba(160, 82, 45, 0.26);
 }
 
@@ -84,7 +84,6 @@
 }
 
 .input:focus {
-  outline: none;
   border-color: var(--accent);
 }
 
@@ -109,8 +108,8 @@
 .error {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: var(--accent);
-  background: #F5E8E2;
+  color: var(--error);
+  background: var(--error-tint);
   padding: var(--sp-3) var(--sp-4);
   border-radius: var(--radius-md);
 }
@@ -141,7 +140,7 @@
 .sentHint {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .resend {
@@ -179,14 +178,14 @@
 
 .optional {
   font-weight: 400;
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .forgotLink {
   text-align: center;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   transition: color 150ms ease;
   margin-top: var(--sp-1);
 }
@@ -203,14 +202,14 @@
 .legalNote {
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-align: center;
   line-height: 1.5;
   margin-bottom: var(--sp-1);
 }
 
 .legalLink {
-  color: #9C9189;
+  color: var(--ink-soft);
   text-decoration: underline;
 }
 

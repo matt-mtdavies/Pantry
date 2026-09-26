@@ -33,12 +33,12 @@
 
 .dropZone:hover, .dropZone:focus-visible {
   border-color: var(--accent);
-  background: #F5E8E2;
+  background: var(--terra-light);
 }
 
 .dragOver {
   border-color: var(--accent);
-  background: #F5E8E2;
+  background: var(--terra-light);
   transform: scale(1.01);
 }
 
@@ -110,7 +110,7 @@
   justify-content: center;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .actions {
@@ -167,7 +167,7 @@
   padding: 0 var(--sp-4);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 /* URL import */
@@ -204,7 +204,6 @@
 }
 
 .urlInput:focus {
-  outline: none;
   border-color: var(--accent);
 }
 
@@ -303,7 +302,7 @@
 
 /* Error */
 .errorBox {
-  background: #F5E8E2;
+  background: var(--terra-light);
   border: 1px solid #DFA088;
   border-radius: var(--radius-lg);
   padding: var(--sp-6);
@@ -360,7 +359,7 @@
 .imgSearching {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   padding: var(--sp-3) 0;
 }
 
@@ -411,7 +410,7 @@
 .imgThumbNone {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
   padding: var(--sp-2) var(--sp-3);
   border: 1.5px solid #E8E0D4;
   border-radius: var(--radius-md);
@@ -486,7 +485,7 @@
 
 .optional {
   font-weight: 400;
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .input {
@@ -501,7 +500,7 @@
   min-height: 52px;
 }
 
-.input:focus { outline: none; border-color: var(--accent); }
+.input:focus { border-color: var(--accent); }
 .textarea { min-height: auto; resize: vertical; }
 
 .inputSm {
@@ -516,7 +515,7 @@
   transition: border-color 150ms ease;
 }
 
-.inputSm:focus { outline: none; border-color: var(--accent); }
+.inputSm:focus { border-color: var(--accent); }
 
 .metaRow {
   display: grid;
@@ -571,7 +570,7 @@
   transition: border-color 150ms ease;
 }
 
-.ingAmount:focus, .ingUnit:focus, .ingName:focus { outline: none; border-color: var(--accent); }
+.ingAmount:focus, .ingUnit:focus, .ingName:focus { border-color: var(--accent); }
 
 .inputFlex { flex: 1; }
 
@@ -581,7 +580,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9C9189;
+  color: var(--ink-soft);
   font-size: 0.75rem;
   border-radius: var(--radius-full);
   flex-shrink: 0;
@@ -645,14 +644,15 @@
 }
 
 .stepMoveBtn {
-  width: 22px;
-  height: 22px;
+  position: relative;
+  width: 32px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: none;
-  color: #C4B8AC;
+  color: var(--ink-soft);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 0;
@@ -661,7 +661,7 @@
 
 .stepMoveBtn:hover:not(:disabled) {
   color: var(--accent);
-  background-color: #F5E8E2;
+  background-color: var(--terra-light);
 }
 
 .stepMoveBtn:disabled {
@@ -682,7 +682,7 @@
   transition: border-color 150ms ease;
 }
 
-.tagsField:focus-within { border-color: var(--accent); }
+.tagsField:focus-within { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .tagChip {
   display: flex;
@@ -699,7 +699,7 @@
 
 .tagRemove {
   font-size: 0.6rem;
-  color: #9C9189;
+  color: var(--ink-soft);
   transition: color 150ms ease;
 }
 
@@ -737,7 +737,6 @@
 
 @media (max-width: 600px) {
   .metaRow { grid-template-columns: 1fr 1fr; }
-  .ingRow { flex-wrap: wrap; }
   .ingAmount, .ingUnit { width: calc(50% - var(--sp-1)); }
   .ingName { width: 100%; }
 }
@@ -825,7 +824,7 @@
 .previewMetaLabel {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -927,7 +926,7 @@
 .editDetailsBtn {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-align: center;
   padding: var(--sp-2);
   transition: color 150ms ease;
@@ -937,3 +936,79 @@
 
 /* When no hero image, add top padding to back button */
 .backBtn { padding-top: var(--sp-6); display: block; }
+
+/* Touch targets: extend hit areas to ~44px without changing the visuals. */
+.stepMoveBtn::after, .ingMoveBtn::after { content: ''; position: absolute; inset: -4px -6px; }
+.removeBtn { position: relative; }
+.removeBtn::after { content: ''; position: absolute; inset: -4px; }
+
+/* ── Screenshot previews: per-file remove ────────────────────────────────── */
+
+.previewItem { position: relative; flex-shrink: 0; }
+
+.previewRemove {
+  position: absolute;
+  top: var(--sp-1);
+  right: var(--sp-1);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--ink-rgb), .7);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 150ms ease;
+}
+
+.previewRemove:hover { background: rgba(var(--ink-rgb), .9); }
+.previewRemove::after { content: ''; position: absolute; inset: -8px; }
+
+.capNotice { margin-top: var(--sp-3); text-align: center; }
+
+/* ── Review edit: ingredient reorder + validation (mirrors the editor) ───── */
+
+.hint {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  margin-top: calc(-1 * var(--sp-1));
+}
+
+.fieldError {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--error);
+  margin-top: var(--sp-1);
+}
+
+.ingControls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.ingMoveBtn {
+  position: relative;
+  width: 32px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+  padding: 0;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.ingMoveBtn:hover:not(:disabled) { color: var(--accent); background-color: var(--terra-light); }
+.ingMoveBtn:disabled { opacity: 0; pointer-events: none; }
+
+.ingFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+}

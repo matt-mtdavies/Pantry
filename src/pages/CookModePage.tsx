@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
-import { scaleIngredient } from '../lib/utils'
+import { scaleIngredient, detectTimerMinutes } from '../lib/utils'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useAuth } from '../hooks/useAuth'
 import { convertIngredient, convertStepText } from '../lib/units'
@@ -11,6 +11,37 @@ import styles from './CookModePage.module.css'
 
 
 const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
+
+// Matches the CSS breakpoint where the ingredients sidebar stacks above the step.
+const NARROW_QUERY = '(max-width: 768px)'
+const isNarrow = () => typeof window !== 'undefined' && window.matchMedia?.(NARROW_QUERY).matches
+
+function formatTimerLabel(mins: number): string {
+  if (mins < 60) return `${mins}:00`
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m ? `${h}h ${m}m` : `${h}h`
+}
+
+/** Three soft two-tone chimes through the shared AudioContext. */
+function playChime(ctx: AudioContext) {
+  const now = ctx.currentTime
+  for (let i = 0; i < 3; i++) {
+    for (const [offset, freq] of [[0, 880], [0.18, 1318.5]] as const) {
+      const t = now + i * 0.9 + offset
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.0001, t)
+      gain.gain.exponentialRampToValueAtTime(0.35, t + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(t)
+      osc.stop(t + 0.75)
+    }
+  }
+}
 
 function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
   if (!voices.length) return null
@@ -28,12 +59,14 @@ function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
 export default function CookModePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(0)
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set())
   const [servings, setServings] = useState<number>(2)
-  const [showIngredients, setShowIngredients] = useState(true)
+  // Collapsed on phones so the current step isn't pushed below the fold.
+  const [showIngredients, setShowIngredients] = useState(() => !isNarrow())
   const [ttsEnabled, setTtsEnabled] = useState(false)
   const [ttsSpeaking, setTtsSpeaking] = useState(false)
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
@@ -51,7 +84,6 @@ export default function CookModePage() {
   const [timerInitialSecs, setTimerInitialSecs] = useState(0)
   const [timerDone, setTimerDone] = useState(false)
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const timerDoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const timerAutoCollapseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [timerExpanded, setTimerExpanded] = useState(false)
   const [customOpen, setCustomOpen] = useState(false)
@@ -61,10 +93,15 @@ export default function CookModePage() {
   useEffect(() => {
     if (!id) return
     getRecipe(id)
-      .then(r => { setRecipe(r); setServings(r.servings ?? 2) })
+      .then(r => {
+        setRecipe(r)
+        // Carry over servings scaled on the recipe page (?serves=N).
+        const requested = parseInt(searchParams.get('serves') ?? '', 10)
+        setServings(requested > 0 ? requested : r.servings ?? 2)
+      })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
-  }, [id, navigate])
+  }, [id, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Screen always stays on while cooking
   useEffect(() => {
@@ -72,28 +109,38 @@ export default function CookModePage() {
     return () => release()
   }, [acquire, release])
 
+  // Create/resume the shared AudioContext. Must run synchronously inside a
+  // click handler (before any await) or iOS won't let it make sound later.
+  const ensureAudioCtx = () => {
+    try {
+      if (!audioCtxRef.current) audioCtxRef.current = new AudioContext()
+      if (audioCtxRef.current.state === 'suspended') void audioCtxRef.current.resume()
+    } catch { /* Web Audio unavailable — vibration + visual state still work */ }
+    return audioCtxRef.current
+  }
+
   // Global timer
   useEffect(() => {
     if (!timerRunning) return
-    timerIntervalRef.current = setInterval(() => {
-      setTimerSecs(s => {
-        if (s <= 1) {
-          setTimerRunning(false)
-          setTimerDone(true)
-          if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
-          timerDoneTimeoutRef.current = setTimeout(() => setTimerDone(false), 5000)
-          if (navigator.vibrate) navigator.vibrate([300, 150, 300])
-          return 0
-        }
-        return s - 1
-      })
-    }, 1000)
+    timerIntervalRef.current = setInterval(() => setTimerSecs(s => Math.max(0, s - 1)), 1000)
     return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current) }
   }, [timerRunning])
 
+  // Completion: stays in "done" until dismissed, with a chime for desktop cooks.
+  useEffect(() => {
+    if (!timerRunning || timerSecs > 0) return
+    setTimerRunning(false)
+    setTimerDone(true)
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300])
+    const ctx = audioCtxRef.current
+    if (ctx) {
+      try { playChime(ctx) } catch { /* ignore */ }
+    }
+  }, [timerRunning, timerSecs])
+
   const loadTimer = (mins: number) => {
+    ensureAudioCtx()
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
     if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     const secs = mins * 60
     setTimerDone(false)
@@ -108,7 +155,6 @@ export default function CookModePage() {
 
   const clearTimer = () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
     if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     setTimerRunning(false)
     setTimerSecs(0)
@@ -157,7 +203,6 @@ export default function CookModePage() {
       audioCtxRef.current?.close()
       if (ttsSupported) window.speechSynthesis.cancel()
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-      if (timerDoneTimeoutRef.current) clearTimeout(timerDoneTimeoutRef.current)
       if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     }
   }, [])
@@ -272,6 +317,7 @@ export default function CookModePage() {
   if (!recipe) return null
 
   const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
+  const stepTimers = detectTimerMinutes(recipe.steps[currentStep] ?? '')
   const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
   const timerM = Math.floor(timerSecs / 60)
   const timerS = timerSecs % 60
@@ -302,7 +348,7 @@ export default function CookModePage() {
               <div className={styles.timerActiveLeft}>
                 <span className={`${styles.timerDot} ${timerDotMod}`} aria-hidden="true" />
                 <span className={styles.timerActiveDisplay} aria-label={`Timer: ${String(timerM).padStart(2,'0')}:${String(timerS).padStart(2,'0')}`}>
-                  {timerDone ? 'Done!' : (
+                  {timerDone ? 'Timer done!' : (
                     <>
                       {String(timerM).padStart(2, '0')}
                       <span className={styles.timerActiveColon}>:</span>
@@ -333,7 +379,7 @@ export default function CookModePage() {
                 <button
                   className={`${styles.timerCtrlBtn} ${timerDone ? styles.timerCtrlBtnDone : ''}`}
                   onClick={clearTimer}
-                  aria-label="Clear timer"
+                  aria-label={timerDone ? 'Dismiss timer' : 'Clear timer'}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                     <line x1="18" y1="6" x2="6" y2="18"/>
@@ -522,6 +568,26 @@ export default function CookModePage() {
 
           <p className={styles.stepText}>{step}</p>
 
+          {stepTimers.length > 0 && (
+            <div className={styles.stepTimers}>
+              {stepTimers.map(mins => (
+                <button
+                  key={mins}
+                  className={styles.stepTimerChip}
+                  onClick={() => loadTimer(mins)}
+                  aria-label={`Start a ${mins} minute timer`}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="13" r="8"/>
+                    <polyline points="12 9 12 13 15 15"/>
+                    <line x1="9" y1="3" x2="15" y2="3"/>
+                  </svg>
+                  Start {formatTimerLabel(mins)} timer
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Prominent labelled TTS pill — visible right below the step text */}
           <button
             className={`${styles.ttsToggle} ${ttsEnabled ? styles.ttsToggleOn : ''}`}
@@ -566,7 +632,7 @@ export default function CookModePage() {
                 className={`${styles.navBtn} ${styles.navBtnDone}`}
                 onClick={() => {
                   setShowCelebration(true)
-                  if (ttsEnabled) speakText('Nice job you little champion! Enjoy your fabulous creation!', true)
+                  if (ttsEnabled) speakText('Nicely done. Enjoy your meal!', true)
                 }}
               >
                 All done! ✓
