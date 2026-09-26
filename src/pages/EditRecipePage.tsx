@@ -4,6 +4,7 @@ import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe, createRecipe, updateRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import { getCurrencySymbol } from '../lib/currency'
+import { useCurrency } from '../hooks/useCurrency'
 import type { Recipe, Ingredient } from '../types'
 import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
 import styles from './EditRecipePage.module.css'
@@ -16,7 +17,6 @@ const EMPTY_RECIPE = (): Partial<Recipe> => ({
   cook_time: null,
   calories_per_serving: null,
   cost_per_serving: null,
-  cost_currency: 'USD',
   ingredients: [],
   steps: [],
   tags: [],
@@ -28,7 +28,8 @@ export default function EditRecipePage() {
   const navigate = useNavigate()
   const isNew = !id
 
-  const [recipe, setRecipe] = useState<Partial<Recipe>>(EMPTY_RECIPE())
+  const { currency, convert } = useCurrency()
+  const [recipe, setRecipe] = useState<Partial<Recipe>>(() => ({ ...EMPTY_RECIPE(), cost_currency: currency }))
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [newTag, setNewTag] = useState('')
@@ -84,10 +85,23 @@ export default function EditRecipePage() {
   useEffect(() => {
     if (isNew) return
     getRecipe(id)
-      .then(r => setRecipe(r))
+      .then(r => {
+        // Edit costs in the user's own currency; older recipes may be stored in another.
+        if (r.cost_per_serving != null && r.cost_currency !== currency) {
+          const converted = convert(r.cost_per_serving, r.cost_currency)
+          if (converted != null) {
+            const digits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2
+            const factor = 10 ** digits
+            r = { ...r, cost_per_serving: Math.round(converted * factor) / factor, cost_currency: currency }
+          }
+        } else if (r.cost_per_serving == null) {
+          r = { ...r, cost_currency: currency }
+        }
+        setRecipe(r)
+      })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
-  }, [id, isNew, navigate])
+  }, [id, isNew, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const update = <K extends keyof Recipe>(key: K, val: Recipe[K]) => {
     setRecipe(r => ({ ...r, [key]: val }))
@@ -334,7 +348,7 @@ export default function EditRecipePage() {
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.label} htmlFor="cost">Cost / serving {getCurrencySymbol(recipe.cost_currency ?? 'USD')} <span className={styles.optional}>(est.)</span></label>
+                <label className={styles.label} htmlFor="cost">Cost / serving {getCurrencySymbol(recipe.cost_currency ?? currency)} <span className={styles.optional}>(est.)</span></label>
                 <input
                   id="cost"
                   className={styles.inputSm}

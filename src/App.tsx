@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, lazy, Suspense } from '
 
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 import { AuthProvider, useAuth } from './hooks/useAuth'
+import { CurrencyProvider } from './hooks/useCurrency'
 import HomePage from './pages/HomePage'
 import RecipePage from './pages/RecipePage'
 import CookModePage from './pages/CookModePage'
@@ -91,7 +92,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <CurrencyProvider>
+        <AppRoutes />
+      </CurrencyProvider>
     </AuthProvider>
   )
 }

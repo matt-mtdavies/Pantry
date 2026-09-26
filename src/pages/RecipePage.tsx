@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { getRecipe, deleteRecipe, getShareLink, toggleFavourite, rateRecipe, uploadImage, deleteHeroImage, listCollections, toggleRecipeInCollection, createCollection } from '../lib/api'
 import { formatTime, imageUrl, scaleIngredient } from '../lib/utils'
-import { formatCost } from '../lib/currency'
+import { useCurrency } from '../hooks/useCurrency'
 import { convertIngredient, convertStepText } from '../lib/units'
 import { HeartIcon, CameraIcon, ShareIcon, EditIcon, CollectionIcon } from '../components/icons'
 import { ShareListButton } from '../components/ShareListButton'
@@ -19,6 +19,7 @@ export default function RecipePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { formatCost } = useCurrency()
   const { acquire: acquireWakeLock, release: releaseWakeLock } = useWakeLock()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)

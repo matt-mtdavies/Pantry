@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Recipe } from '../types'
 import { formatTime, imageUrl } from '../lib/utils'
-import { formatCost } from '../lib/currency'
+import { useCurrency } from '../hooks/useCurrency'
 import { ClockIcon, PersonIcon, HeartIcon, DishIcon, CollectionIcon } from './icons'
 import { Avatar } from './Avatar'
 import styles from './RecipeCard.module.css'
@@ -35,6 +35,7 @@ interface Props {
 export default function RecipeCard({
   recipe, onToggleFavourite, showAuthor, currentUserId, inCollection, onToggleCollection, collectionNames, compact,
 }: Props) {
+  const { formatCost } = useCurrency()
   const heroSrc = imageUrl(recipe.hero_image_key)
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0)
   const ratingCount = recipe.rating_count ?? 0

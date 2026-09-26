@@ -81,8 +81,8 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
   const now = Math.floor(Date.now() / 1000)
 
   const existing = await ctx.env.DB.prepare(
-    'SELECT id FROM recipes WHERE id = ? AND user_id = ? AND is_deleted = 0'
-  ).bind(id, userId).first()
+    'SELECT id, cost_currency FROM recipes WHERE id = ? AND user_id = ? AND is_deleted = 0'
+  ).bind(id, userId).first<{ id: string; cost_currency: string | null }>()
   if (!existing) return json({ error: 'Not found' }, 404)
 
   await ctx.env.DB.prepare(`
@@ -105,7 +105,7 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     body.needs_attention ? 1 : 0,
     typeof body.calories_per_serving === 'number' ? body.calories_per_serving : null,
     typeof body.cost_per_serving === 'number' ? body.cost_per_serving : null,
-    typeof body.cost_currency === 'string' ? body.cost_currency : 'USD',
+    typeof body.cost_currency === 'string' ? body.cost_currency : (existing.cost_currency ?? 'USD'),
     now, id, userId,
   ).run()
 

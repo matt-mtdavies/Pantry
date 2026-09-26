@@ -1,4 +1,5 @@
 import type { Env } from '../../env'
+import { getCurrency } from '../../lib/currency'
 
 function generateId(): string {
   const arr = new Uint8Array(16)
@@ -87,7 +88,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     body.needs_attention ? 1 : 0,
     typeof body.calories_per_serving === 'number' ? body.calories_per_serving : null,
     typeof body.cost_per_serving === 'number' ? body.cost_per_serving : null,
-    typeof body.cost_currency === 'string' ? body.cost_currency : 'USD',
+    typeof body.cost_currency === 'string' ? body.cost_currency : await userCurrency(ctx.env.DB, userId),
     now, now,
   ).run()
 
@@ -100,4 +101,10 @@ function json(data: unknown, status = 200): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+/** Currency for costs entered without one: the owner's profile currency. */
+async function userCurrency(db: D1Database, userId: string): Promise<string> {
+  const row = await db.prepare('SELECT country FROM users WHERE id = ?').bind(userId).first<{ country: string | null }>()
+  return getCurrency(row?.country)
 }

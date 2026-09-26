@@ -9,7 +9,8 @@ import { ShareListButton } from '../components/ShareListButton'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage, toggleFavourite } from '../lib/api'
 import type { GeneratedRecipe } from '../lib/api'
 import { formatTime } from '../lib/utils'
-import { formatCost } from '../lib/currency'
+import { useCurrency } from '../hooks/useCurrency'
+import { getCurrencySymbol } from '../lib/currency'
 import { useAuth } from '../hooks/useAuth'
 import type { Recipe } from '../types'
 import styles from './SearchPage.module.css'
@@ -37,6 +38,10 @@ function activeFilterCount(f: Filters) {
 
 export default function SearchPage() {
   const { user } = useAuth()
+  const { currency } = useCurrency()
+  // doSearch is memoised once, so read the viewer's currency through a ref.
+  const currencyRef = useRef(currency)
+  currencyRef.current = currency
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -56,7 +61,10 @@ export default function SearchPage() {
     if (f.author)      params.set('author', f.author)
     if (f.country)     params.set('country', f.country)
     if (f.cal_max)     params.set('cal_max', f.cal_max)
-    if (f.cost_max)    params.set('cost_max', f.cost_max)
+    if (f.cost_max) {
+      params.set('cost_max', f.cost_max)
+      params.set('currency', currencyRef.current) // cost_max is in the viewer's currency
+    }
     if (f.max_prep)     params.set('max_prep', f.max_prep)
     if (f.cuisine)      params.set('cuisine', f.cuisine)
     if (pg > 0)        params.set('page', String(pg))
@@ -255,7 +263,7 @@ export default function SearchPage() {
                     />
                   </div>
                   <div className={styles.filterField}>
-                    <label className={styles.filterLabel}>Max cost / serving (USD)</label>
+                    <label className={styles.filterLabel}>Max cost / serving ({getCurrencySymbol(currency)})</label>
                     <input
                       className={styles.filterInput}
                       type="number"
@@ -351,6 +359,7 @@ const PANTRY_CHIPS = [
 type WizardStage = 'form' | 'loading' | 'summaries' | 'detail' | 'error'
 
 function DinnerWizard({ onClose, initialQuery }: { onClose: () => void; initialQuery?: string }) {
+  const { formatCost } = useCurrency()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [mode, setMode] = useState<'match' | 'create'>('create')
   const [stage, setStage] = useState<WizardStage>(initialQuery ? 'loading' : 'form')
