@@ -33,6 +33,17 @@ export default function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Say what's missing instead of leaving a dead, disabled button.
+    const missing =
+      !email.trim() ? 'Enter your email address.'
+      : mode !== 'forgot' && !password ? 'Enter your password.'
+      : mode === 'register' && password.length < 8 ? 'Choose a password of at least 8 characters.'
+      : ''
+    if (missing) {
+      setStatus('error')
+      setError(missing)
+      return
+    }
     setStatus('submitting')
     setError('')
 
@@ -117,7 +128,7 @@ export default function AuthPage() {
           </>
         )}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form} noValidate>
           {mode === 'register' && (
             <>
               <label htmlFor="displayName" className={styles.label}>
@@ -188,11 +199,7 @@ export default function AuthPage() {
           <button
             type="submit"
             className={styles.submit}
-            disabled={
-              status === 'submitting' ||
-              !email.trim() ||
-              (mode !== 'forgot' && !password.trim())
-            }
+            disabled={status === 'submitting'}
           >
             {status === 'submitting'
               ? mode === 'signin' ? 'Signing in…'

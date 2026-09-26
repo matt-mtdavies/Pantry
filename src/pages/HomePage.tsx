@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import Navigation from '../components/Navigation'
 import RecipeCard from '../components/RecipeCard'
+import LoadError from '../components/LoadError'
 import { SearchIcon, DishIcon, WarningIcon, CollectionIcon, HeartIcon } from '../components/icons'
 import { listRecipes, toggleFavourite, listCollections, createCollection, deleteCollection, backfillImages, toggleRecipeInCollection } from '../lib/api'
 import { useAuth } from '../hooks/useAuth'
@@ -22,6 +23,7 @@ export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
   const [collectionsOpen, setCollectionsOpen] = useState(false)
@@ -30,19 +32,24 @@ export default function HomePage() {
   const [creatingCol, setCreatingCol] = useState(false)
   const [collectionEditMode, setCollectionEditMode] = useState(false)
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setLoadFailed(false)
     Promise.all([listRecipes(), listCollections()])
       .then(([r, c]) => {
         setRecipes(r)
         setCollections(c)
         if (r.some(recipe => !recipe.hero_image_key)) {
           backfillImages()
-            .then(({ updated }) => { if (updated > 0) listRecipes().then(setRecipes) })
+            .then(({ updated }) => { if (updated > 0) listRecipes().then(setRecipes).catch(() => {}) })
             .catch(() => {})
         }
       })
+      .catch(() => setLoadFailed(true))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => { load() }, [load])
 
   const fuse = useMemo(() =>
     new Fuse(recipes, {
@@ -160,7 +167,9 @@ export default function HomePage() {
           <div className="wide-col">
             <h1 className={styles.heroTitle}>Your recipes</h1>
             <p className={styles.heroSub}>
-              {ownRecipes.length === 0 && !loading
+              {loadFailed
+                ? 'Your collection'
+                : ownRecipes.length === 0 && !loading
                 ? 'Your collection is waiting — add your first recipe below.'
                 : `${ownRecipes.length} recipe${ownRecipes.length === 1 ? '' : 's'} in your collection`}
             </p>
@@ -292,7 +301,7 @@ export default function HomePage() {
           {needsAttentionCount > 0 && (
             <Link to="/needs-attention" className={styles.attentionBanner}>
               <WarningIcon size={16} />
-              <span>{needsAttentionCount} screenshot{needsAttentionCount > 1 ? 's need' : ' needs'} attention</span>
+              <span>{needsAttentionCount} import{needsAttentionCount > 1 ? 's need' : ' needs'} attention</span>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={styles.attentionArrow}><path d="M2 7h10M8 3l4 4-4 4"/></svg>
             </Link>
           )}
@@ -323,6 +332,12 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+          ) : loadFailed ? (
+            <LoadError
+              title="Couldn't load your recipes"
+              message="Your recipes are safe — we just couldn't reach Pantry. Check your connection and try again."
+              onRetry={load}
+            />
           ) : filtered.length === 0 ? (
             <div className={styles.empty}>
               <DishIcon size={56} className={styles.emptyIcon} />

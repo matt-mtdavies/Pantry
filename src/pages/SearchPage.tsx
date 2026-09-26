@@ -2,19 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { SearchIcon, DishIcon, DiceIcon, HeartIcon } from '../components/icons'
+import RecipeCard from '../components/RecipeCard'
+import LoadError from '../components/LoadError'
+import { SearchIcon, DishIcon, DiceIcon } from '../components/icons'
 import { ShareListButton } from '../components/ShareListButton'
-import { Avatar } from '../components/Avatar'
 import { searchPublicRecipes, getDinnerSuggestions, createRecipe, searchImages, fetchRecipeImage, toggleFavourite } from '../lib/api'
 import type { GeneratedRecipe } from '../lib/api'
-import { imageUrl, formatTime } from '../lib/utils'
-import { getCurrencySymbol } from '../lib/currency'
+import { formatTime } from '../lib/utils'
+import { formatCost } from '../lib/currency'
 import { useAuth } from '../hooks/useAuth'
 import type { Recipe } from '../types'
 import styles from './SearchPage.module.css'
 
-const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Other']
-const AGE_OPTIONS = ['Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+']
 const CUISINE_OPTIONS = [
   'Italian', 'Greek', 'Indian', 'Mexican', 'Japanese', 'Thai', 'French',
   'Chinese', 'Spanish', 'Turkish', 'American', 'British', 'Vietnamese',
@@ -24,18 +23,16 @@ const CUISINE_OPTIONS = [
 interface Filters {
   author: string
   country: string
-  gender: string
-  age_bracket: string
   cal_max: string
   cost_max: string
   max_prep: string
   cuisine: string
 }
 
-const EMPTY_FILTERS: Filters = { author: '', country: '', gender: '', age_bracket: '', cal_max: '', cost_max: '', max_prep: '', cuisine: '' }
+const EMPTY_FILTERS: Filters = { author: '', country: '', cal_max: '', cost_max: '', max_prep: '', cuisine: '' }
 
 function activeFilterCount(f: Filters) {
-  return [f.author, f.country, f.gender, f.age_bracket, f.cal_max, f.cost_max, f.max_prep, f.cuisine].filter(Boolean).length
+  return [f.author, f.country, f.cal_max, f.cost_max, f.max_prep, f.cuisine].filter(Boolean).length
 }
 
 export default function SearchPage() {
@@ -48,6 +45,8 @@ export default function SearchPage() {
   const [page, setPage] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false)
   const [wizardOpen, setWizardOpen] = useState(false)
   const [wizardQuery, setWizardQuery] = useState('')
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -56,8 +55,6 @@ export default function SearchPage() {
     const params = new URLSearchParams({ q })
     if (f.author)      params.set('author', f.author)
     if (f.country)     params.set('country', f.country)
-    if (f.gender)      params.set('gender', f.gender)
-    if (f.age_bracket) params.set('age_bracket', f.age_bracket)
     if (f.cal_max)     params.set('cal_max', f.cal_max)
     if (f.cost_max)    params.set('cost_max', f.cost_max)
     if (f.max_prep)     params.set('max_prep', f.max_prep)
@@ -68,23 +65,26 @@ export default function SearchPage() {
 
   const doSearch = useCallback((q: string, f: Filters) => {
     setLoading(true)
+    setLoadFailed(false)
+    setLoadMoreFailed(false)
     setPage(0)
     searchPublicRecipes(buildParams(q, f, 0))
       .then(data => { setResults(data.results); setHasMore(data.has_more) })
-      .catch(() => { setResults([]); setHasMore(false) })
+      .catch(() => { setResults([]); setHasMore(false); setLoadFailed(true) })
       .finally(() => setLoading(false))
   }, [])
 
   const loadMore = () => {
     const nextPage = page + 1
     setLoadingMore(true)
+    setLoadMoreFailed(false)
     searchPublicRecipes(buildParams(query, filters, nextPage))
       .then(data => {
         setResults(prev => [...prev, ...data.results])
         setHasMore(data.has_more)
         setPage(nextPage)
       })
-      .catch(() => {})
+      .catch(() => setLoadMoreFailed(true))
       .finally(() => setLoadingMore(false))
   }
 
@@ -226,28 +226,6 @@ export default function SearchPage() {
                       onChange={e => handleFilterChange({ country: e.target.value })}
                     />
                   </div>
-                  <div className={styles.filterField}>
-                    <label className={styles.filterLabel}>Gender</label>
-                    <select
-                      className={styles.filterSelect}
-                      value={filters.gender}
-                      onChange={e => handleFilterChange({ gender: e.target.value })}
-                    >
-                      <option value="">Any</option>
-                      {GENDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  </div>
-                  <div className={styles.filterField}>
-                    <label className={styles.filterLabel}>Age group</label>
-                    <select
-                      className={styles.filterSelect}
-                      value={filters.age_bracket}
-                      onChange={e => handleFilterChange({ age_bracket: e.target.value })}
-                    >
-                      <option value="">Any</option>
-                      {AGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  </div>
                 </div>
               </div>
 
@@ -299,6 +277,12 @@ export default function SearchPage() {
                 <div key={i} className={`skeleton ${styles.skeletonCard}`} />
               ))}
             </div>
+          ) : loadFailed ? (
+            <LoadError
+              title="Couldn't load recipes"
+              message="We couldn't reach Pantry to search community recipes. Check your connection and try again."
+              onRetry={() => doSearch(query, filters)}
+            />
           ) : results.length === 0 ? (
             <div className={styles.empty}>
               <p className={styles.emptyTitle}>No recipes found</p>
@@ -321,17 +305,21 @@ export default function SearchPage() {
               <p className={styles.count}>{results.length}{hasMore ? '+' : ''} recipe{results.length !== 1 ? 's' : ''}</p>
               <div className={styles.grid}>
                 {results.map(r => (
-                  <SearchCard
+                  <RecipeCard
                     key={r.id}
                     recipe={r}
                     onToggleFavourite={user ? handleToggleFavourite : undefined}
+                    showAuthor
                   />
                 ))}
               </div>
               {hasMore && (
                 <div className={styles.loadMore}>
+                  {loadMoreFailed && (
+                    <p className={styles.loadMoreError} role="alert">Couldn't load more recipes.</p>
+                  )}
                   <button className={styles.loadMoreBtn} onClick={loadMore} disabled={loadingMore}>
-                    {loadingMore ? 'Loading…' : 'Load more'}
+                    {loadingMore ? 'Loading…' : loadMoreFailed ? 'Try again' : 'Load more'}
                   </button>
                 </div>
               )}
@@ -350,65 +338,6 @@ export default function SearchPage() {
   )
 }
 
-function SearchCard({ recipe: r, onToggleFavourite }: { recipe: Recipe; onToggleFavourite?: (id: string, value: boolean) => void }) {
-  const thumb = r.hero_image_key ? imageUrl(r.hero_image_key) : null
-  const totalTime = (r.prep_time ?? 0) + (r.cook_time ?? 0)
-
-  return (
-    <div className={styles.card}>
-      <Link to={`/recipe/${r.id}`} className={styles.cardOverlay} aria-label={r.title} />
-      {onToggleFavourite && (
-        <button
-          className={`${styles.heartBtn} ${r.is_favourite ? styles.heartBtnActive : ''}`}
-          onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFavourite(r.id, !r.is_favourite) }}
-          aria-label={r.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
-          aria-pressed={!!r.is_favourite}
-        >
-          <HeartIcon filled={!!r.is_favourite} size={15} />
-        </button>
-      )}
-      <div className={styles.cardImg}>
-        {thumb
-          ? <img src={thumb} alt={r.title} className={styles.cardPhoto} />
-          : <DishIcon size={36} className={styles.cardPlaceholder} />
-        }
-        {(r.rating_count ?? 0) > 0 && (
-          <div className={styles.cardBadge}>
-            <span className={styles.badgeStar}>★</span>
-            <span>{(r.avg_rating ?? 0).toFixed(1)}</span>
-            <span className={styles.badgeCount}>({r.rating_count})</span>
-          </div>
-        )}
-      </div>
-      <div className={styles.cardBody}>
-        {(r.tags ?? []).length > 0 && (
-          <div className={styles.cardTags}>
-            {(r.tags as string[]).slice(0, 2).map(t => (
-              <span key={t} className={styles.cardTag}>{t}</span>
-            ))}
-          </div>
-        )}
-        <h3 className={styles.cardTitle}>{r.title}</h3>
-        <div className={styles.cardMeta}>
-          {totalTime > 0 && <span>{formatTime(totalTime)}</span>}
-          {r.calories_per_serving && <span>~{r.calories_per_serving} kcal</span>}
-          {r.cost_per_serving != null && <span>~{getCurrencySymbol(r.cost_currency)}{r.cost_per_serving.toFixed(2)}</span>}
-        </div>
-        {(r.avg_rating ?? 0) > 0 && (
-          <div className={styles.cardStars}>
-            {'★'.repeat(Math.round(r.avg_rating ?? 0))}{'☆'.repeat(5 - Math.round(r.avg_rating ?? 0))}
-          </div>
-        )}
-        <div className={styles.cardAuthor}>
-          <Avatar imageKey={r.author_avatar_key} avatarId={r.author_avatar} size={20} className={styles.authorAvatar} />
-          <Link to={`/user/${r.user_id}`} className={styles.authorLink}>
-            {r.author_name ?? 'Anonymous'}
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const PANTRY_CHIPS = [
   'Eggs', 'Onion', 'Garlic', 'Tomatoes', 'Chicken', 'Pasta', 'Rice',
@@ -641,7 +570,7 @@ function DinnerWizard({ onClose, initialQuery }: { onClose: () => void; initialQ
                 {activeRecipe.cook_time > 0 && <span>Cook {activeRecipe.cook_time}m</span>}
                 <span>Serves {activeRecipe.servings}</span>
                 {activeRecipe.calories_per_serving != null && <span>~{activeRecipe.calories_per_serving} kcal</span>}
-                {activeRecipe.cost_per_serving != null && <span>~${activeRecipe.cost_per_serving.toFixed(2)}/serve</span>}
+                {activeRecipe.cost_per_serving != null && <span>~{formatCost(activeRecipe.cost_per_serving, activeRecipe.cost_currency)}/serve</span>}
               </div>
 
               <div className={styles.createdSection}>

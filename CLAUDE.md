@@ -29,19 +29,26 @@ A recipe management web app. Users save, share, discover, and cook from a person
 ## Design System
 
 ### Colour palette
+Always use the CSS variables from `src/index.css`, not raw hexes.
 ```
-Terracotta (primary): #C4633E
-Terracotta dark:       #a8532f
-Terracotta bg:         #F5E8E2
-Cream bg:              #FAF7F2
-Off-white border:      #E8E0D4
-Hover bg:              #F3EFE8
-Dark text:             #1F1B16
-Mid text:              #6B6459
-Muted text:            #9C9189
-Verify banner bg:      #92400E
-Verify banner text:    #FEF3C7
+--accent          #A0522D   Sienna — primary actions, links, brand
+--accent-strong   #8A4522   Hover / pressed accent
+--terra-light     #F5E8E2   Accent tint backgrounds
+--sage / -strong / -light / -text   Secondary: tags, done states, success
+--ivory           #FAF7F2   Page background
+--border          #E8E0D4   Borders
+--surface         #F3EFE8   Hover / placeholder backgrounds
+--ink             #1F1B16   Body text
+--ink-soft        #6B6459   Secondary text (use for all muted TEXT — passes AA)
+--ink-muted       #9C9189   Icons + placeholders only (fails AA as text)
+--error / --error-tint       #B3261E / #FBEAE8   Errors — never use --accent for errors
+--warning / --warning-tint   #92400E / #FEF3C7   Warnings, verify-email banner
+--ink-rgb / --ivory-rgb / --accent-rgb          For rgba() overlays
 ```
+Shared UI: `.form-error` / `.form-hint` (index.css), `<LoadError onRetry>` for failed
+fetches (never show the empty state on error), `<RecipeCard>` is the only recipe card
+(`compact` for 2-up grids), `<ServingsStepper>` for serving scalers.
+Don't add `outline: none` to focus styles — the global `:focus-visible` ring must show.
 
 ### Design tokens (defined in `src/index.css`)
 ```css
@@ -135,7 +142,7 @@ Full-screen overlay, shown once on first sign-in. `localStorage('onboarding-comp
 
 - `<Onboarding onClose={fn} />` above the router in `App.tsx`.
 - `OnboardingContext` with `open()` for re-triggering from any component.
-- 5 slides: Welcome · Save recipes · Cook mode · Discover · Share. Each has an inline SVG illustration.
+- 3 slides: Welcome · Save recipes · Cook mode. Each has an inline SVG illustration.
 - Swipe navigation via `touchstart`/`touchend` (50px threshold). Dot nav + Next/Skip buttons.
 - Last slide CTA: "Get cooking →".
 

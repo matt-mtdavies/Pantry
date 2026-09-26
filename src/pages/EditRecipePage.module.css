@@ -43,14 +43,14 @@
 
 .optional {
   font-weight: 400;
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .hint {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
-  margin-top: -var(--sp-1);
+  color: var(--ink-soft);
+  margin-top: calc(-1 * var(--sp-1));
 }
 
 .input {
@@ -65,7 +65,7 @@
   min-height: 52px;
 }
 
-.input:focus { outline: none; border-color: var(--accent); }
+.input:focus { border-color: var(--accent); }
 .input::placeholder { color: #9C9189; }
 .textarea { min-height: auto; resize: vertical; }
 
@@ -81,7 +81,7 @@
   transition: border-color 150ms ease;
 }
 
-.inputSm:focus { outline: none; border-color: var(--accent); }
+.inputSm:focus { border-color: var(--accent); }
 .inputSm::placeholder { color: #9C9189; }
 
 .metaRow {
@@ -110,14 +110,15 @@
 }
 
 .ingMoveBtn {
-  width: 22px;
-  height: 22px;
+  position: relative;
+  width: 32px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: none;
-  color: #C4B8AC;
+  color: var(--ink-soft);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 0;
@@ -126,7 +127,7 @@
 
 .ingMoveBtn:hover:not(:disabled) {
   color: var(--accent);
-  background-color: #F5E8E2;
+  background-color: var(--terra-light);
 }
 
 .ingMoveBtn:disabled {
@@ -153,7 +154,7 @@
   transition: border-color 150ms ease;
 }
 
-.ingAmount:focus, .ingUnit:focus, .ingName:focus { outline: none; border-color: var(--accent); }
+.ingAmount:focus, .ingUnit:focus, .ingName:focus { border-color: var(--accent); }
 .ingAmount::placeholder, .ingUnit::placeholder, .ingName::placeholder { color: #9C9189; }
 
 .ingAmount { width: 70px; }
@@ -166,7 +167,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9C9189;
+  color: var(--ink-soft);
   font-size: 0.75rem;
   border-radius: var(--radius-full);
   flex-shrink: 0;
@@ -230,14 +231,15 @@
 }
 
 .stepMoveBtn {
-  width: 22px;
-  height: 22px;
+  position: relative;
+  width: 32px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: none;
-  color: #C4B8AC;
+  color: var(--ink-soft);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 0;
@@ -246,7 +248,7 @@
 
 .stepMoveBtn:hover:not(:disabled) {
   color: var(--accent);
-  background-color: #F5E8E2;
+  background-color: var(--terra-light);
 }
 
 .stepMoveBtn:disabled {
@@ -267,7 +269,7 @@
   transition: border-color 150ms ease;
 }
 
-.tagsField:focus-within { border-color: var(--accent); }
+.tagsField:focus-within { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .tagChip {
   display: flex;
@@ -284,7 +286,7 @@
 
 .tagRemove {
   font-size: 0.6rem;
-  color: #9C9189;
+  color: var(--ink-soft);
   transition: color 150ms ease;
 }
 
@@ -351,3 +353,114 @@
   .ingAmount, .ingUnit { width: calc(50% - var(--sp-1)); }
   .ingName { width: 100%; }
 }
+
+/* Touch targets: extend hit areas to ~44px without changing the visuals. */
+.stepMoveBtn::after, .ingMoveBtn::after { content: ''; position: absolute; inset: -4px -6px; }
+.removeBtn { position: relative; }
+.removeBtn::after { content: ''; position: absolute; inset: -4px; }
+
+/* ── Inline validation ───────────────────────────────────────────────────── */
+
+.fieldError {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--error);
+  margin-top: var(--sp-1);
+}
+
+/* ── Photo picker (new recipes; mirrors the import review screen) ────────── */
+
+.imgPreviewWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  margin-bottom: var(--sp-3);
+}
+
+.imgPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imgThumbs {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.imgThumbs + .imgThumbs { margin-top: var(--sp-3); }
+
+.imgThumb {
+  width: 72px;
+  height: 54px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  transition: border-color 150ms ease;
+}
+
+.imgThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imgThumb:hover { border-color: var(--accent); }
+.imgThumbActive { border-color: var(--accent) !important; }
+
+.photoAction {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink);
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.photoAction:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.photoAction:disabled { opacity: .6; cursor: default; }
+
+/* ── "No ingredients yet — save anyway?" ─────────────────────────────────── */
+
+.hollowConfirm {
+  background: var(--warning-tint);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.hollowText {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--warning);
+  line-height: var(--leading-snug);
+}
+
+.hollowActions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+.hollowSave,
+.hollowCancel {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border-radius: var(--radius-md);
+}
+
+.hollowSave { background: var(--accent); color: var(--white); }
+.hollowSave:hover { background: var(--accent-strong); }
+.hollowCancel { color: var(--ink); border: 1.5px solid var(--border); background: var(--white); }

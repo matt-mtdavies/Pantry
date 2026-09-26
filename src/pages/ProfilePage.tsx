@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>(user?.unit_system ?? 'metric')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [backfilling, setBackfilling] = useState(false)
@@ -167,8 +168,9 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true)
     setSaved(false)
+    setSaveError('')
     try {
-      await fetch('/api/me', {
+      const res = await fetch('/api/me', {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -183,9 +185,12 @@ export default function ProfilePage() {
           unit_system: unitSystem,
         }),
       })
+      if (!res.ok) throw new Error(`Save failed (${res.status})`)
       await refetch()
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
+    } catch {
+      setSaveError("Couldn't save your changes — check your connection and try again.")
     } finally {
       setSaving(false)
     }
@@ -393,6 +398,7 @@ export default function ProfilePage() {
               <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save changes'}
               </button>
+              {saveError && <p className={`form-error ${styles.saveError}`} role="alert">{saveError}</p>}
             </div>
           </div>
 

@@ -107,7 +107,7 @@
 .rowAuthorLink {
   position: relative;
   z-index: 1;
-  color: #9C9189;
+  color: var(--ink-soft);
   text-decoration: none;
 }
 
@@ -131,7 +131,7 @@
 .rankGold   { background: #F59E0B; color: #FFFFFF; width: 32px; }
 .rankSilver { background: #9CA3AF; color: #FFFFFF; width: 32px; }
 .rankBronze { background: #CD7F32; color: #FFFFFF; width: 32px; }
-.rankPlain  { color: #9C9189; font-size: var(--text-xs); background: none; }
+.rankPlain  { color: var(--ink-soft); font-size: var(--text-xs); background: none; }
 
 .rowThumb {
   width: 56px;
@@ -185,7 +185,7 @@
 .rowMeta {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
   margin-top: 2px;
 }
 
@@ -208,7 +208,7 @@
 .rowCount {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 /* Empty state */
@@ -334,7 +334,7 @@
 .feedAuthorLink {
   position: relative;
   z-index: 1;
-  color: #9C9189;
+  color: var(--ink-soft);
   text-decoration: none;
 }
 
@@ -378,7 +378,7 @@
 .feedMeta {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #9C9189;
+  color: var(--ink-soft);
   margin-top: 1px;
   display: flex;
   align-items: center;
@@ -390,7 +390,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .feedTimeIcon { display: block; flex-shrink: 0; }
@@ -405,7 +405,15 @@
 .todayDate {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
-  color: #C4C0B8;
-  text-align: center;
-  padding-top: var(--sp-4);
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.windowLabel {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  margin-bottom: var(--sp-2);
 }

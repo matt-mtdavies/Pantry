@@ -73,7 +73,7 @@
 .bannerText {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   flex: 1;
 }
 
@@ -177,7 +177,7 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .metaValue {

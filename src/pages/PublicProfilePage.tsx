@@ -3,9 +3,9 @@ import { useParams, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { getPublicProfile, followChef, unfollowChef } from '../lib/api'
 import { useAuth } from '../hooks/useAuth'
-import { imageUrl, formatTime } from '../lib/utils'
 import { Avatar } from '../components/Avatar'
-import { DishIcon, StarIcon, ClockIcon } from '../components/icons'
+import RecipeCard from '../components/RecipeCard'
+import { DishIcon, StarIcon } from '../components/icons'
 import { BackButton } from '../components/BackButton'
 import type { PublicProfile } from '../types'
 import styles from './PublicProfilePage.module.css'
@@ -163,7 +163,7 @@ export default function PublicProfilePage() {
           ) : (
             <div className={styles.grid}>
               {profile.recipes.map(r => (
-                <ProfileRecipeCard key={r.id} recipe={r} />
+                <RecipeCard key={r.id} recipe={r} compact />
               ))}
             </div>
           )}
@@ -173,35 +173,3 @@ export default function PublicProfilePage() {
   )
 }
 
-function ProfileRecipeCard({ recipe: r }: { recipe: PublicProfile['recipes'][number] }) {
-  const thumb = r.hero_image_key ? imageUrl(r.hero_image_key) : null
-  const totalTime = (r.prep_time ?? 0) + (r.cook_time ?? 0)
-
-  return (
-    <Link to={`/recipe/${r.id}`} className={styles.card}>
-      <div className={styles.cardThumb}>
-        {thumb
-          ? <img src={thumb} alt={r.title} className={styles.cardImg} />
-          : <DishIcon size={32} className={styles.cardPlaceholder} />
-        }
-      </div>
-      <div className={styles.cardBody}>
-        <p className={styles.cardTitle}>{r.title}</p>
-        <div className={styles.cardMeta}>
-          {totalTime > 0 && (
-            <span className={styles.cardMetaItem}>
-              <ClockIcon size={11} className={styles.cardMetaIcon} />
-              {formatTime(totalTime)}
-            </span>
-          )}
-          {r.avg_rating != null && (
-            <span className={styles.cardMetaItem}>
-              <StarIcon size={11} className={styles.cardStarIcon} />
-              {r.avg_rating.toFixed(1)}
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  )
-}

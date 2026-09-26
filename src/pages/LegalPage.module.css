@@ -37,7 +37,7 @@
 .updated {
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
 }
 
 .body {
@@ -93,7 +93,7 @@
 }
 
 .notice {
-  background: #F5E8E2;
+  background: var(--terra-light);
   border: 1px solid #DFA088;
   border-radius: var(--radius-md);
   padding: var(--sp-4) var(--sp-5);
@@ -116,7 +116,7 @@
 .footerLink {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: #9C9189;
+  color: var(--ink-soft);
   text-decoration: none;
   transition: color 150ms ease;
 }

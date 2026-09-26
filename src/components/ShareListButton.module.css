@@ -21,13 +21,13 @@
   text-decoration: none;
   transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
   white-space: nowrap;
-  min-height: 36px;
+  min-height: 44px;
 }
 
 .btn:hover {
   color: var(--accent);
   border-color: var(--accent);
-  background-color: #F5E8E2;
+  background-color: var(--terra-light);
 }
 
 .btn.success {
