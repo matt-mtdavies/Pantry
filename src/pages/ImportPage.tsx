@@ -6,6 +6,7 @@ import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage, sear
 import { formatTime } from '../lib/utils'
 import type { ExtractedRecipe, Ingredient } from '../types'
 import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
+import { useCurrency } from '../hooks/useCurrency'
 import styles from './ImportPage.module.css'
 
 type Stage = 'upload' | 'extracting' | 'review' | 'saving' | 'error'
@@ -364,6 +365,7 @@ function ReviewScreen({
   onBack: () => void
 }) {
   const navigate = useNavigate()
+  const { currency } = useCurrency()
   const [recipe, setRecipe] = useState<ExtractedRecipe>({ ...initial })
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -459,7 +461,7 @@ function ReviewScreen({
         screenshot_keys: [],
         calories_per_serving: recipe.calories_per_serving ?? null,
         cost_per_serving: recipe.cost_per_serving ?? null,
-        cost_currency: recipe.cost_currency ?? 'USD',
+        cost_currency: recipe.cost_currency ?? currency,
       } as Parameters<typeof createRecipe>[0])
 
       // Only upload files that are actual images; non-image uploads (PDFs, text, etc.) are skipped

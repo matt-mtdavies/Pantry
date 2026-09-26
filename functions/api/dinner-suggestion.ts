@@ -1,6 +1,7 @@
 import type { Env } from '../env'
 import { checkRateLimit } from '../lib/rateLimit'
 import { logAiUsage } from '../lib/logAiUsage'
+import { getCurrency, getCurrencySymbol } from '../lib/currency'
 
 const DAILY_SUGGESTION_LIMIT = 5
 const ONE_DAY_SECONDS = 86_400
@@ -37,7 +38,20 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const ingredients = body.ingredients ?? []
   const mode = body.mode ?? 'create'
 
-  const recipeSchema = `{"title":"string","description":"1-2 sentence description","servings":2,"prep_time":15,"cook_time":30,"ingredients":[{"amount":"200","unit":"g","name":"ingredient"}],"steps":["step text"],"tags":["tag"],"shopping_list":[],"calories_per_serving":450,"cost_per_serving":3.50,"cost_currency":"USD"}`
+  // Price estimates in the user's own currency (from their profile country).
+  let currency = 'USD'
+  let country = ''
+  if (userId) {
+    const userRow = await ctx.env.DB.prepare('SELECT country FROM users WHERE id = ?')
+      .bind(userId).first<{ country: string | null }>()
+    if (userRow?.country) {
+      currency = getCurrency(userRow.country)
+      country = userRow.country
+    }
+  }
+  const costNote = `cost_per_serving is the estimated cost per serving in ${currency} (${getCurrencySymbol(currency)})${country ? ` at typical ${country} supermarket prices` : ''}.`
+
+  const recipeSchema = `{"title":"string","description":"1-2 sentence description","servings":2,"prep_time":15,"cook_time":30,"ingredients":[{"amount":"200","unit":"g","name":"ingredient"}],"steps":["step text"],"tags":["tag"],"shopping_list":[],"calories_per_serving":450,"cost_per_serving":3.50,"cost_currency":"${currency}"}`
 
   let prompt: string
 
@@ -47,6 +61,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 Recipe 1: the classic or traditional version.
 Recipe 2: a creative variation or modern twist.
 Each recipe serves 2-4 people. Include ALL ingredients needed in shopping_list.
+${costNote}
 
 Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation):
 {"recipes":[${recipeSchema},${recipeSchema}]}`
@@ -64,6 +79,7 @@ Available ingredients: ${ingredientStr}.
 ${shoppingNote}
 Make the 3 recipes clearly different — vary cuisines, cooking styles, or main protein.
 Each recipe serves 2 people.
+${costNote}
 
 Respond with ONLY a valid JSON object (no markdown, no code fences, no explanation):
 {"recipes":[${recipeSchema},${recipeSchema},${recipeSchema}]}`
@@ -94,7 +110,9 @@ Respond with ONLY a valid JSON object (no markdown, no code fences, no explanati
     if (!jsonMatch) return json({ error: 'Could not parse generated recipes' }, 500)
     const parsed = JSON.parse(jsonMatch[0]) as { recipes: GeneratedRecipe[] }
     await logAiUsage(ctx.env.DB, 'dinner')
-    return json({ recipes: parsed.recipes ?? [] })
+    // Trust our currency, not the model's echo of it.
+    const recipes = (parsed.recipes ?? []).map(r => ({ ...r, cost_currency: currency }))
+    return json({ recipes })
   } catch {
     return json({ error: 'Failed to generate recipes' }, 500)
   }

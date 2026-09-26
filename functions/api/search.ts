@@ -1,4 +1,19 @@
 import type { Env } from '../env'
+import { getRates } from '../lib/fx'
+import { CURRENCY_SYMBOL } from '../lib/currency'
+
+/** SQL expression for r.cost_per_serving converted into `target`. Codes come
+ *  from our own currency table and factors are numbers, so inlining is safe
+ *  (and keeps us well under D1's bound-parameter limit). */
+async function costInCurrencyExpr(target: string): Promise<string> {
+  const { rates } = await getRates()
+  const to = rates[target] ?? 1
+  const cases = Object.keys(CURRENCY_SYMBOL)
+    .filter(code => /^[A-Z]{3}$/.test(code) && rates[code])
+    .map(code => `WHEN '${code}' THEN ${Number(to / rates[code])}`)
+    .join(' ')
+  return `(r.cost_per_serving * (CASE r.cost_currency ${cases} ELSE ${Number(to / (rates.USD ?? 1))} END))`
+}
 
 const PAGE_SIZE = 24
 
@@ -14,6 +29,8 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const costMin    = toFloat(url.searchParams.get('cost_min'))
   const costMax    = toFloat(url.searchParams.get('cost_max'))
   const maxPrep    = toInt(url.searchParams.get('max_prep'))
+  const currencyParam = (url.searchParams.get('currency') ?? '').toUpperCase()
+  const costCurrency  = currencyParam in CURRENCY_SYMBOL ? currencyParam : 'USD'
   const cuisine    = url.searchParams.get('cuisine')?.trim().toLowerCase() ?? ''
   const page       = Math.max(0, toInt(url.searchParams.get('page')) ?? 0)
 
@@ -42,13 +59,17 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     wheres.push('r.calories_per_serving IS NOT NULL AND r.calories_per_serving <= ?')
     binds.push(calMax)
   }
-  if (costMin !== null) {
-    wheres.push('r.cost_per_serving IS NOT NULL AND r.cost_per_serving >= ?')
-    binds.push(costMin)
-  }
-  if (costMax !== null) {
-    wheres.push('r.cost_per_serving IS NOT NULL AND r.cost_per_serving <= ?')
-    binds.push(costMax)
+  // Cost filters are in the viewer's currency; recipes store their own.
+  if (costMin !== null || costMax !== null) {
+    const costExpr = await costInCurrencyExpr(costCurrency)
+    if (costMin !== null) {
+      wheres.push(`r.cost_per_serving IS NOT NULL AND ${costExpr} >= ?`)
+      binds.push(costMin)
+    }
+    if (costMax !== null) {
+      wheres.push(`r.cost_per_serving IS NOT NULL AND ${costExpr} <= ?`)
+      binds.push(costMax)
+    }
   }
   if (maxPrep !== null) {
     wheres.push('r.prep_time IS NOT NULL AND r.prep_time <= ?')
@@ -65,7 +86,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       SELECT
         r.id, r.title, r.description, r.tags, r.hero_image_key,
         r.prep_time, r.cook_time, r.servings, r.user_id,
-        r.calories_per_serving, r.cost_per_serving,
+        r.calories_per_serving, r.cost_per_serving, r.cost_currency,
         u.display_name                                                                  AS author_name,
         u.avatar_id                                                                     AS author_avatar,
         u.avatar_image_key                                                              AS author_avatar_key,
@@ -89,7 +110,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       SELECT
         r.id, r.title, r.description, r.tags, r.hero_image_key,
         r.prep_time, r.cook_time, r.servings, r.user_id,
-        r.calories_per_serving, r.cost_per_serving,
+        r.calories_per_serving, r.cost_per_serving, r.cost_currency,
         u.display_name                                                              AS author_name,
         u.avatar_id                                                                 AS author_avatar,
         u.avatar_image_key                                                          AS author_avatar_key,

@@ -5,6 +5,7 @@ const PUBLIC_PREFIXES = [
   '/api/share/',
   '/api/images/',
   '/api/invites/',  // GET /api/invites/:token — public invite lookup
+  '/api/fx',        // exchange rates — no user data, needed by shared/guest pages
 ]
 
 function getCookie(header: string, name: string): string | null {

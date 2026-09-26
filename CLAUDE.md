@@ -209,6 +209,16 @@ Solution: FAB pattern — 5 destination tabs in `mobileNav`, `/import` as a floa
 ### Email verify banner
 `document.body.classList.toggle('has-verify-banner', showBanner)` drives a CSS `--banner-height` custom property that shifts all fixed-position content down. Pages must use `calc(var(--nav-height) + var(--banner-height, 0px))` for top padding.
 
+### Prices & currency
+Recipes store `cost_per_serving` + `cost_currency` (whatever currency the estimate was made in).
+**Always display prices in the viewer's currency** — never raw or USD:
+- `useCurrency()` (`src/hooks/useCurrency.tsx`) → `{ currency, convert, formatCost }`. Viewer currency =
+  profile `country` → currency, else browser region, else USD.
+- Rates: `GET /api/fx` (public) — live from open.er-api.com, edge-cached 12h, falls back to
+  `FALLBACK_USD_RATES` in `shared/currency.ts` (shared by app + API).
+- AI estimates (extract, extract-url, dinner-suggestion, backfill) are generated in the user's currency.
+- Explore's cost filter sends `currency=`; `/api/search` converts in SQL before comparing.
+
 ### Cloudflare Analytics
 Use `httpRequests1dGroups` (available on all plans). `httpRequestsAdaptiveGroups` requires a paid plan and silently returns empty data.
 
