@@ -77,6 +77,8 @@ export interface ExtractedRecipe {
   cost_per_serving?: number | null;
   cost_currency?: string;
   food_image_index?: number | null;
+  /** Where the import came from (web, tiktok, youtube, facebook, pinterest, text…). */
+  import_source?: string;
 }
 
 export interface LeaderboardRecipe {

@@ -1,5 +1,6 @@
 import type { Env } from '../../env'
 import { getCurrency } from '../../lib/currency'
+import { recordImportOutcome } from '../../lib/importOutcomes'
 
 function generateId(): string {
   const arr = new Uint8Array(16)
@@ -91,6 +92,8 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     typeof body.cost_currency === 'string' ? body.cost_currency : await userCurrency(ctx.env.DB, userId),
     now, now,
   ).run()
+
+  if (body.import_meta) await recordImportOutcome(ctx.env.DB, id, userId, body.import_meta)
 
   const row = await ctx.env.DB.prepare('SELECT * FROM recipes WHERE id = ?').bind(id).first<Record<string, unknown>>()
   return json(parseRecipe(row!), 201)

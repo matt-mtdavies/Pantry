@@ -1,4 +1,5 @@
 import type { Env } from '../../env'
+import { CREATE_IMPORT_OUTCOMES } from '../../lib/importOutcomes'
 
 async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>>): Promise<Response> {
   const userEmail = ctx.data.email as string
@@ -102,6 +103,10 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
     )
   `)
   await run('idx_feedback_created', `CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback (created_at DESC)`)
+
+  // Import quality (zero-edit rate by source)
+  await run('import_outcomes table', CREATE_IMPORT_OUTCOMES)
+  await run('idx_import_outcomes_created', `CREATE INDEX IF NOT EXISTS idx_import_outcomes_created ON import_outcomes (created_at)`)
 
   return json({ steps, errors, ok: errors.length === 0 })
 }

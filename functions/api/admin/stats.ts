@@ -3,7 +3,8 @@ import type { Env } from '../../env'
 // Cost per successful AI call (USD)
 const COST = {
   screenshot: 0.015,  // Claude Sonnet — ~1K tokens in+out
-  url:        0.004,  // Claude Haiku
+  url:        0.004,  // Claude Haiku (web pages and social captions)
+  text:       0.003,  // Claude Haiku — pasted text (short input)
   dinner:     0.005,  // Claude Haiku
   tts:        0.003,  // OpenAI tts-1 — ~200 chars avg step
 }
@@ -128,7 +129,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   } catch { /* table not yet created */ }
 
   // ── AI usage ───────────────────────────────────────────────────────────────
-  let aiThisMonth = { screenshot: 0, url: 0, dinner: 0, tts: 0 }
+  let aiThisMonth = { screenshot: 0, url: 0, text: 0, dinner: 0, tts: 0 }
   let aiDaily: Array<{ date: string; type: string; count: number }> = []
   try {
     const [aiMonth, aiDailyRes] = await ctx.env.DB.batch([
@@ -142,6 +143,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     for (const row of (aiMonth.results ?? []) as Array<{ type: string; n: number }>) {
       if (row.type === 'screenshot') aiThisMonth.screenshot = row.n
       if (row.type === 'url') aiThisMonth.url = row.n
+      if (row.type === 'text') aiThisMonth.text = row.n
       if (row.type === 'dinner') aiThisMonth.dinner = row.n
       if (row.type === 'tts') aiThisMonth.tts = row.n
     }
@@ -151,10 +153,22 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const anthropicCostUsd =
     aiThisMonth.screenshot * COST.screenshot +
     aiThisMonth.url * COST.url +
+    aiThisMonth.text * COST.text +
     aiThisMonth.dinner * COST.dinner
 
   const openaiCostUsd = aiThisMonth.tts * COST.tts
   const totalAiCostUsd = anthropicCostUsd + openaiCostUsd
+
+  // ── Import quality: zero-edit rate by source (last 30 days) ──────────────────
+  let imports: Array<{ source: string; total: number; zeroEdit: number }> = []
+  try {
+    const { results } = await ctx.env.DB.prepare(`
+      SELECT source, COUNT(*) AS total, SUM(CASE WHEN edited = 0 THEN 1 ELSE 0 END) AS zero_edit
+      FROM import_outcomes WHERE created_at > unixepoch('now', '-30 days')
+      GROUP BY source ORDER BY total DESC
+    `).all<{ source: string; total: number; zero_edit: number }>()
+    imports = (results ?? []).map(r => ({ source: r.source, total: Number(r.total), zeroEdit: Number(r.zero_edit) }))
+  } catch { /* table not yet migrated */ }
 
   // ── Cloudflare zone analytics ──────────────────────────────────────────────
   let cloudflare: { totalVisits: number; totalBytes: number; daily: Array<{ date: string; visits: number; bytes: number }> } | null = null
@@ -313,6 +327,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       totalCostUsd: Math.round(totalAiCostUsd * 100) / 100,
       daily: buildAiDaily(aiDaily),
     },
+    imports,
     cloudflare,
     cfDebug,
     email,

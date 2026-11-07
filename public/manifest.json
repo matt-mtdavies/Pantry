@@ -32,6 +32,18 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["food", "lifestyle"],
-  "lang": "en-GB"
+  "categories": [
+    "food",
+    "lifestyle"
+  ],
+  "lang": "en-GB",
+  "share_target": {
+    "action": "/import",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

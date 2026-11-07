@@ -97,7 +97,21 @@ Acceptance:
 - The tour entry stays visible for the whole tour, including after a mid-tour exit.
 - Verified at desktop and 390px.
 
-## Step 4 — Social import spike (report before building)
+## Step 4 — Social import spike + caption-first import (done on `claude/determined-ritchie-wrwelh`, awaiting merge)
+
+Spike report: [`2026-11-07-social-import-spike.md`](./2026-11-07-social-import-spike.md).
+Built:
+- Caption-first social import (TikTok, Facebook, YouTube title plus optional description, Pinterest).
+- Caption recipe links are followed.
+- No AI call when the text has no recipe.
+- Paste-text import.
+- JSON-LD Recipe data for recipe sites.
+- Android share target.
+- Zero-edit rate by source in Admin.
+
+Not built: server-side video download, transcripts and frame sampling (ToS and infrastructure decision needed). Proposed next step: "upload your saved video" with frame sampling.
+
+**Original spec:**
 
 - Run 20 real links: TikTok, Instagram Reels, YouTube incl. Shorts, Facebook, Pinterest. Mix captioned, silent and ASMR videos.
 - Per source, report:

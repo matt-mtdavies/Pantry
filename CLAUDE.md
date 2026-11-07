@@ -135,6 +135,23 @@ Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favo
 - `<TourPill>` is the always-visible entry on landing and demo pages. Progress lives in sessionStorage
   (`lib/tourState.ts`), so the pill offers "Resume tour" after a mid-tour exit.
 
+### Recipe import (web, social, text)
+- `POST /api/extract-url` routes by host (`functions/lib/social.ts`):
+  - **Web pages:** schema.org Recipe JSON-LD plus the visible text go to Haiku.
+  - **TikTok:** caption from the public video page's data block.
+  - **Facebook:** caption from `og:title`.
+  - **YouTube:** oEmbed title, plus the description when `YOUTUBE_API_KEY` is set.
+  - **Pinterest:** og tags plus the outbound link.
+  - **Instagram:** can't be read without Meta app review, so the user is asked to paste the caption.
+- `recipeSignal()` decides before any AI spend.
+  - A strong caption is extracted.
+  - A caption link ("get the recipe: …") is followed.
+  - Otherwise return 422 with `code: no_recipe_in_caption | caption_unreachable` and **no AI call**. The import page then opens the paste-text panel.
+- `POST /api/extract-text` imports pasted text. The prompt and model call are shared in `functions/lib/extractRecipe.ts`.
+- Never add logins, private platform APIs, anti-bot workarounds or video downloads here. See `docs/briefs/2026-11-07-social-import-spike.md`.
+- `import_outcomes` (recipe_id, user_id, source, edited) records whether each import was saved without edits. Admin shows the zero-edit rate by source. Reseeding the demo clears its rows.
+- Android share sheet: `share_target` in `public/manifest.json` → `/import?url=&text=&title=` auto-imports the first link.
+
 ### After every schema change
 Hit `https://myopenpantry.com/api/admin/migrate` after deploying to run any new `CREATE TABLE IF NOT EXISTS` statements.
 
@@ -216,6 +233,7 @@ APP_URL             https://myopenpantry.com
 ADMIN_EMAILS        matt.t.davies@gmail.com (comma-separated)
 CF_ZONE_ID          Cloudflare zone ID (32-char hex, no trailing chars)
 CF_API_TOKEN        Cloudflare token with Zone Analytics Read permission
+YOUTUBE_API_KEY     Optional — YouTube Data API v3 key; lets imports read video descriptions
 ```
 
 ---
@@ -264,7 +282,8 @@ Mobile FAB:   Floating + button (terracotta circle) above tab bar → /import
 ## AI Cost Reference
 ```
 screenshot (Claude Sonnet): ~$0.015/call
-url import (Claude Haiku):  ~$0.004/call
+url import (Claude Haiku):  ~$0.004/call (web pages + social captions)
+text import (Claude Haiku): ~$0.003/call
 dinner suggestion (Haiku):  ~$0.005/call
 tts step (OpenAI tts-1):    ~$0.003/call
 tts celebration (tts-1-hd): ~$0.003/call
