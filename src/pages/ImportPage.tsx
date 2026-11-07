@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { extractFromScreenshots, extractFromUrl, findRecipeBySource, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
+import { extractFromScreenshots, extractFromUrl, extractFromText, ApiError, findRecipeBySource, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import { formatTime } from '../lib/utils'
 import type { ExtractedRecipe, Ingredient } from '../types'
 import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
@@ -10,13 +10,14 @@ import { useCurrency } from '../hooks/useCurrency'
 import styles from './ImportPage.module.css'
 
 type Stage = 'upload' | 'extracting' | 'review' | 'saving' | 'error'
-type ExtractMode = 'screenshot' | 'url'
+type ExtractMode = 'screenshot' | 'url' | 'text'
 
 const MAX_SCREENSHOTS = 10
 
 /** Distinctive titles so the needs-attention tray isn't a list of identical rows. */
 function draftTitle(mode: ExtractMode, url: string): string {
   const when = new Date().toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  if (mode === 'text') return `Pasted recipe · ${when}`
   if (mode === 'url') {
     let host = url
     try { host = new URL(url).hostname.replace(/^www\./, '') } catch { /* keep raw */ }
@@ -31,6 +32,12 @@ const PROGRESS_MSGS: Record<ExtractMode, string[]> = {
     'Spotting the ingredients…',
     'Reading the cooking steps…',
     'Checking amounts and timings…',
+    'Almost ready…',
+  ],
+  text: [
+    'Reading your text…',
+    'Spotting the ingredients…',
+    'Reading the cooking steps…',
     'Almost ready…',
   ],
   url: [
@@ -57,6 +64,12 @@ export default function ImportPage() {
   const [capNotice, setCapNotice] = useState(false)
   const [duplicate, setDuplicate] = useState<{ id: string; title: string; url: string } | null>(null)
   const [checkingUrl, setCheckingUrl] = useState(false)
+  const [errorCode, setErrorCode] = useState<string | undefined>()
+  // "Paste the recipe text" panel — opened by the user, or for posts whose caption we can't read.
+  const [textOpen, setTextOpen] = useState(false)
+  const [pasteText, setPasteText] = useState('')
+  const textRef = useRef<HTMLTextAreaElement>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     if (stage !== 'extracting') return
@@ -118,8 +131,23 @@ export default function ImportPage() {
     }
   }
 
-  const handleExtractUrl = async (force = false) => {
-    const url = urlInput.trim()
+  // Android share sheet (PWA share_target) and deep links: /import?url=…&text=…
+  useEffect(() => {
+    const shared = [searchParams.get('url'), searchParams.get('text'), searchParams.get('title')].filter(Boolean).join(' ')
+    if (!shared) return
+    setSearchParams({}, { replace: true })
+    const link = shared.match(/https?:\/\/\S+/)?.[0]
+    if (link) {
+      setUrlInput(link)
+      void handleExtractUrl(false, link)
+    } else {
+      setPasteText(shared)
+      setTextOpen(true)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleExtractUrl = async (force = false, given?: string) => {
+    const url = (given ?? urlInput).trim()
     if (!url || checkingUrl) return
     setDuplicate(null)
     if (!force) {
@@ -134,12 +162,43 @@ export default function ImportPage() {
     }
     setExtractMode('url')
     setStage('extracting')
+    setErrorCode(undefined)
     try {
       const result = await extractFromUrl(url)
       setExtracted(result)
       setStage('review')
     } catch (err) {
+      const code = err instanceof ApiError ? err.code : undefined
       setErrorMsg(err instanceof Error ? err.message : 'Could not import from that URL')
+      setErrorCode(code)
+      setStage('error')
+      // Social post without a readable recipe: go straight to "paste the text".
+      if (code === 'caption_unreachable' || code === 'no_recipe_in_caption') {
+        setTextOpen(true)
+        setTimeout(() => textRef.current?.focus(), 50)
+      }
+    }
+  }
+
+  const handleExtractText = async () => {
+    const text = pasteText.trim()
+    if (text.length < 30) {
+      setErrorMsg('Paste a bit more — at least the ingredients or the steps.')
+      setErrorCode('text_too_short')
+      setStage('error')
+      return
+    }
+    const fromLink = /^https?:\/\//.test(urlInput.trim()) ? urlInput.trim() : null
+    setExtractMode('text')
+    setStage('extracting')
+    setErrorCode(undefined)
+    try {
+      const result = await extractFromText(text, fromLink)
+      setExtracted(result)
+      setStage('review')
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Could not import that text')
+      setErrorCode(err instanceof ApiError ? err.code : undefined)
       setStage('error')
     }
   }
@@ -176,7 +235,7 @@ export default function ImportPage() {
             <h2 className={styles.extractingTitle}>{msgs[progressIdx]}</h2>
             <p className={styles.extractingText}>
               Pulling out all the ingredients and steps.
-              This takes about 10–20 seconds.
+              This takes about {extractMode === 'text' ? '5–10' : '10–20'} seconds.
             </p>
             <div className={styles.progressDots}>
               {msgs.map((_, i) => (
@@ -193,6 +252,7 @@ export default function ImportPage() {
     return <ReviewScreen
       extracted={extracted}
       files={files}
+      importSource={extractMode === 'screenshot' ? 'screenshot' : extracted.import_source ?? (extractMode === 'text' ? 'text' : 'web')}
       onBack={() => setStage('upload')}
     />
   }
@@ -205,8 +265,8 @@ export default function ImportPage() {
           <div className={styles.header}>
             <h1 className={styles.title}>Import recipe</h1>
             <p className={styles.sub}>
-              Paste a link from any recipe site, or add a screenshot — we'll pull out
-              all the ingredients and steps automatically.
+              Paste a link from a recipe site, TikTok, YouTube or Facebook, or add a
+              screenshot — we'll pull out the ingredients and steps automatically.
             </p>
           </div>
 
@@ -214,12 +274,14 @@ export default function ImportPage() {
             <div className={styles.errorBox} role="alert">
               <p className={styles.errorTitle}>Couldn't import that recipe</p>
               <p className={styles.errorText}>{errorMsg}</p>
-              <div className={styles.errorActions}>
-                <button className={styles.retryBtn} onClick={() => setStage('upload')}>Try again</button>
-                <button className={styles.draftBtn} onClick={handleSaveAsDraft}>
-                  Save for later
-                </button>
-              </div>
+              {extractMode !== 'text' && errorCode !== 'caption_unreachable' && errorCode !== 'no_recipe_in_caption' && errorCode !== 'text_too_short' && (
+                <div className={styles.errorActions}>
+                  <button className={styles.retryBtn} onClick={() => setStage('upload')}>Try again</button>
+                  <button className={styles.draftBtn} onClick={handleSaveAsDraft}>
+                    Save for later
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -230,7 +292,7 @@ export default function ImportPage() {
               <input
                 className={styles.urlInput}
                 type="url"
-                placeholder="Paste a link, e.g. bbcgoodfood.com/recipes/…"
+                placeholder="Paste a link — recipe site, TikTok, YouTube…"
                 value={urlInput}
                 onChange={e => { setUrlInput(e.target.value); setDuplicate(null) }}
                 onKeyDown={e => { if (e.key === 'Enter') handleExtractUrl() }}
@@ -254,6 +316,35 @@ export default function ImportPage() {
                   <button className={styles.duplicateAgain} onClick={() => handleExtractUrl(true)}>
                     Import a new copy
                   </button>
+                </div>
+              </div>
+            )}
+
+            {!textOpen ? (
+              <button type="button" className={styles.pasteToggle} onClick={() => { setTextOpen(true); setTimeout(() => textRef.current?.focus(), 50) }}>
+                Have the recipe as text? Paste it instead
+              </button>
+            ) : (
+              <div className={styles.pastePanel}>
+                <label htmlFor="paste-text" className={styles.urlLabel}>Paste the recipe text</label>
+                <p className={styles.pasteHint}>
+                  A caption copied from Instagram or TikTok, a recipe from a message — anything with the ingredients or steps.
+                </p>
+                <textarea
+                  id="paste-text"
+                  ref={textRef}
+                  className={styles.pasteArea}
+                  rows={7}
+                  value={pasteText}
+                  onChange={e => setPasteText(e.target.value)}
+                  placeholder={'e.g. 2 pints cherry tomatoes, 1 shallot, 3 garlic cloves…\nBake at 400°F for 40 minutes…'}
+                  maxLength={15000}
+                />
+                <div className={styles.pasteActions}>
+                  <button className={styles.urlBtn} onClick={handleExtractText} disabled={pasteText.trim().length < 30}>
+                    Import from text →
+                  </button>
+                  <button type="button" className={styles.pasteCancel} onClick={() => setTextOpen(false)}>Cancel</button>
                 </div>
               </div>
             )}
@@ -382,13 +473,24 @@ export default function ImportPage() {
 
 // ─── Review screen ───────────────────────────────────────────────────────────
 
+/** Did the user change anything the import produced? (Photo choice doesn't count.) */
+function wasEdited(a: ExtractedRecipe, b: ExtractedRecipe): boolean {
+  const pick = (r: ExtractedRecipe) => JSON.stringify([
+    r.title.trim(), (r.description ?? '').trim(), r.servings, r.prep_time, r.cook_time,
+    r.ingredients.map(i => [i.amount, i.unit, i.name]), r.steps, r.tags,
+  ])
+  return pick(a) !== pick(b)
+}
+
 function ReviewScreen({
   extracted: initial,
   files,
+  importSource,
   onBack,
 }: {
   extracted: ExtractedRecipe
   files: File[]
+  importSource: string
   onBack: () => void
 }) {
   const navigate = useNavigate()
@@ -489,6 +591,7 @@ function ReviewScreen({
         calories_per_serving: recipe.calories_per_serving ?? null,
         cost_per_serving: recipe.cost_per_serving ?? null,
         cost_currency: recipe.cost_currency ?? currency,
+        import_meta: { source: importSource, edited: wasEdited(initial, recipe) },
       } as Parameters<typeof createRecipe>[0])
 
       // Only upload files that are actual images; non-image uploads (PDFs, text, etc.) are skipped

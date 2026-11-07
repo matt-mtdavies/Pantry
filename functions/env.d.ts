@@ -8,6 +8,7 @@ export interface Env {
   APP_URL: string
   OPENAI_API_KEY?: string
   UNSPLASH_ACCESS_KEY?: string
+  YOUTUBE_API_KEY?: string   // optional: YouTube Data API v3 key — lets imports read video descriptions
   ADMIN_EMAILS?: string  // comma-separated list; if set, only these can use /api/admin/* endpoints
   CF_ZONE_ID?: string   // Cloudflare zone ID for analytics
   CF_API_TOKEN?: string // Cloudflare API token with Zone Analytics Read permission

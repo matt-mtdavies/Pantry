@@ -1,10 +1,15 @@
 import type { Recipe, ExtractedRecipe, LeaderboardRecipe, LeaderboardChef, FeedData, PublicProfile, Collection, Chef } from '../types'
 
+/** API error with the server's optional machine-readable `code` (e.g. 'no_recipe_in_caption'). */
+export class ApiError extends Error {
+  constructor(message: string, public code?: string, public status?: number) { super(message) }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: 'include', ...init })
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: 'Request failed' })) as { error?: string }
-    throw new Error(body.error ?? `HTTP ${res.status}`)
+    const body = await res.json().catch(() => ({ error: 'Request failed' })) as { error?: string; code?: string }
+    throw new ApiError(body.error ?? `HTTP ${res.status}`, body.code, res.status)
   }
   return res.json() as Promise<T>
 }
@@ -70,6 +75,15 @@ export async function extractFromUrl(url: string): Promise<ExtractedRecipe> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
+  })
+}
+
+/** Import from pasted text (a copied caption, a message…). `sourceUrl` is kept as the recipe's source. */
+export async function extractFromText(text: string, sourceUrl?: string | null): Promise<ExtractedRecipe> {
+  return request<ExtractedRecipe>('/api/extract-text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, source_url: sourceUrl || undefined }),
   })
 }
 

@@ -27,12 +27,13 @@ interface AdminStats {
     total: number; used: number; thisWeek: number; conversionPct: number
   } | null
   ai: {
-    thisMonth: { screenshot: number; url: number; dinner: number; tts: number }
+    thisMonth: { screenshot: number; url: number; text?: number; dinner: number; tts: number }
     anthropicCostUsd: number
     openaiCostUsd: number
     totalCostUsd: number
     daily: Array<{ date: string; screenshots: number; urls: number; dinner: number; tts: number }>
   }
+  imports?: Array<{ source: string; total: number; zeroEdit: number }>
   cloudflare: {
     totalVisits: number; totalBytes: number
     daily: Array<{ date: string; visits: number; bytes: number }>
@@ -77,6 +78,11 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string 
 const tooltipStyle = {
   contentStyle: { background: '#FFFFFF', border: '1px solid #E8E0D4', borderRadius: 8, fontFamily: 'var(--font-ui)', fontSize: 12 },
   labelStyle: { color: '#1F1B16', fontWeight: 600 },
+}
+
+const IMPORT_SOURCE_LABEL: Record<string, string> = {
+  web: 'Recipe sites', tiktok: 'TikTok', youtube: 'YouTube', facebook: 'Facebook', instagram: 'Instagram',
+  pinterest: 'Pinterest', text: 'Pasted text', screenshot: 'Screenshots',
 }
 
 export default function AdminPage() {
@@ -271,12 +277,32 @@ export default function AdminPage() {
               </section>
             )}
 
+            {/* ── Import quality ───────────────────────────────────────────── */}
+            <section className={styles.section}>
+              <div className={styles.sectionTitle}>Import quality · zero-edit rate (30 days)</div>
+              {stats.imports && stats.imports.length > 0 ? (
+                <div className={styles.cards}>
+                  {stats.imports.map(i => (
+                    <StatCard
+                      key={i.source}
+                      label={IMPORT_SOURCE_LABEL[i.source] ?? i.source}
+                      value={`${Math.round((i.zeroEdit / i.total) * 100)}%`}
+                      sub={`${i.zeroEdit} of ${i.total} saved without edits`}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="form-hint">No imports recorded yet. Each import saved from the review screen is counted here.</p>
+              )}
+            </section>
+
             {/* ── AI & Cost ────────────────────────────────────────────────── */}
             <section className={styles.section}>
               <div className={styles.sectionTitle}>AI Usage & Cost</div>
               <div className={styles.cards}>
                 <StatCard label="Screenshots (mo)" value={stats.ai.thisMonth.screenshot} sub="Anthropic Sonnet · ~$0.015/call" />
                 <StatCard label="URL imports (mo)" value={stats.ai.thisMonth.url} sub="Anthropic Haiku · ~$0.004/call" />
+                <StatCard label="Text imports (mo)" value={stats.ai.thisMonth.text ?? 0} sub="Anthropic Haiku · ~$0.003/call" />
                 <StatCard label="Dinner suggests (mo)" value={stats.ai.thisMonth.dinner} sub="Anthropic Haiku · ~$0.005/call" />
                 <StatCard label="TTS reads (mo)" value={stats.ai.thisMonth.tts} sub="OpenAI tts-1 · ~$0.003/call" />
               </div>

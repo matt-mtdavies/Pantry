@@ -170,7 +170,7 @@
 
 .cookSide ul { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
 .cookSide li { display: flex; gap: var(--sp-2); align-items: flex-start; color: rgba(var(--ivory-rgb), 0.85); transition: color 200ms; }
-.cookChecked { color: rgba(var(--ivory-rgb), 0.4) !important; text-decoration: line-through; }
+.cookChecked { color: rgba(var(--ivory-rgb), 0.62) !important; text-decoration: line-through; }
 
 .cookBox {
   flex-shrink: 0;

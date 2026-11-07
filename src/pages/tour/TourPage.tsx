@@ -104,7 +104,7 @@ export default function TourPage() {
   return (
     <div className={styles.page}>
       <header className={styles.top}>
-        <Link to="/" className={styles.brand}>
+        <Link to="/" className={styles.brand} aria-label="Pantry home">
           <img src="/pantry-mark.png" alt="" width={26} height={26} />
           <span>Pantry tour</span>
         </Link>

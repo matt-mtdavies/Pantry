@@ -105,6 +105,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   if (tables.has('user_follows')) {
     stmts.push(db.prepare('DELETE FROM user_follows WHERE follower_id = ? OR following_id = ?').bind(DEMO_USER_ID, DEMO_USER_ID))
   }
+  if (tables.has('import_outcomes')) {
+    stmts.push(db.prepare('DELETE FROM import_outcomes WHERE user_id = ?').bind(DEMO_USER_ID))
+  }
   if (tables.has('invite_tokens')) {
     stmts.push(db.prepare('DELETE FROM invite_tokens WHERE user_id = ?').bind(DEMO_USER_ID))
   }

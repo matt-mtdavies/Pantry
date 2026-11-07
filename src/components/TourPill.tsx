@@ -16,16 +16,20 @@ export default function TourPill() {
     : progress?.finished ? 'Watch the tour again' : 'Take the 2-minute tour'
   const to = resumable ? `/tour?scene=${progress.scene + 1}` : '/tour'
 
+  const short = resumable ? `Resume · ${progress.scene + 1}/${TOUR_SCENE_COUNT}` : 'Tour'
   return (
     <>
     {/* In-flow spacer so the fixed pill never covers the end of the page. */}
     <div className={styles.spacer} aria-hidden="true" />
-    <Link to={to} className={`${styles.pill} no-print`} state={{ from: pathname }}>
+    <aside aria-label="Demo tour" className="no-print">
+    <Link to={to} className={styles.pill} state={{ from: pathname }} aria-label={label}>
       <span className={styles.play} aria-hidden="true">
         <svg width="10" height="12" viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z" fill="currentColor" /></svg>
       </span>
-      {label}
+      <span className={styles.long} aria-hidden="true">{label}</span>
+      <span className={styles.short} aria-hidden="true">{short}</span>
     </Link>
+    </aside>
     </>
   )
 }

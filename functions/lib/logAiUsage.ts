@@ -1,4 +1,4 @@
-export type AiCallType = 'screenshot' | 'url' | 'dinner' | 'tts'
+export type AiCallType = 'screenshot' | 'url' | 'text' | 'dinner' | 'tts'
 
 export async function logAiUsage(db: D1Database, type: AiCallType): Promise<void> {
   const date = new Date().toISOString().split('T')[0]

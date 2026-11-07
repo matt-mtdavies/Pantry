@@ -1062,3 +1062,64 @@
 }
 
 .duplicateAgain:hover { background: var(--surface); color: var(--ink); }
+
+/* Paste-text import */
+.pasteToggle {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pasteToggle:hover { color: var(--accent); }
+
+.pastePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.pasteHint {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.pasteArea {
+  width: 100%;
+  min-height: 160px;
+  padding: var(--sp-3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--ivory);
+  resize: vertical;
+}
+
+.pasteArea:focus { border-color: var(--accent); }
+
+.pasteActions { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
+
+.pasteCancel {
+  min-height: 44px;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.pasteCancel:hover { color: var(--ink); }

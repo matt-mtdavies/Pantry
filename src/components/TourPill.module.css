@@ -33,10 +33,16 @@
   color: #FFFFFF;
 }
 
+.short { display: none; }
+
+/* Phones: a compact pill in the corner so it never sits over content. */
 @media (max-width: 640px) {
-  .pill { right: 50%; transform: translateX(50%); }
-  .pill:hover { transform: translateX(50%); }
+  .pill { right: var(--sp-4); bottom: calc(var(--sp-4) + env(safe-area-inset-bottom)); min-height: 44px; padding-right: var(--sp-4); gap: var(--sp-2); }
+  .play { width: 30px; height: 30px; }
+  .long { display: none; }
+  .short { display: inline; }
 }
 
 .spacer { height: 88px; }
+@media (max-width: 640px) { .spacer { height: 72px; } }
 @media print { .spacer { display: none; } }

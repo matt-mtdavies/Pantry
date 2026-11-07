@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { createContext, useContext, useEffect, useState, lazy, Suspense } from 'react'
 
 const AdminPage = lazy(() => import('./pages/AdminPage'))
@@ -36,8 +36,10 @@ export function useOnboarding() { return useContext(OnboardingContext) }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
   if (loading) return <div className="page-shell"><div className="page-main" /></div>
-  if (!user) return <Navigate to="/auth" replace />
+  // Come back here after signing in (e.g. a link shared into /import from another app).
+  if (!user) return <Navigate to={`/auth?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
   return <>{children}</>
 }
 

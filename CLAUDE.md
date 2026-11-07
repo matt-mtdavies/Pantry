@@ -49,6 +49,7 @@ Shared UI: `.form-error` / `.form-hint` (index.css), `<LoadError onRetry>` for f
 fetches (never show the empty state on error), `<RecipeCard>` is the only recipe card
 (`compact` for 2-up grids), `<ServingsStepper>` for serving scalers.
 Don't add `outline: none` to focus styles — the global `:focus-visible` ring must show.
+New surfaces target 44px touch targets and WCAG 2.1 AA contrast. On the dark `--ink` bars use `--ivory` (or ivory ≥ .72 alpha) for text, never `--accent`/`--ink-soft`. `.sr-only` is in index.css.
 
 ### Design tokens (defined in `src/index.css`)
 ```css
@@ -109,8 +110,8 @@ functions/
 
 ### Demo account
 Fixed demo login for reviews: **demo@myopenpantry.com / TryPantry-Demo-2026** (throwaway; holds no real data).
-Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favourites, 4 CC0 photos in
-`public/demo/`, 1 share link); credentials stay server-side in `functions/lib/demo.ts`.
+Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favourites, a CC0/public-domain photo
+for every recipe in `public/demo/` with credits in the file, 1 share link); credentials stay server-side in `functions/lib/demo.ts`.
 - **(Re)seed:** sign in as an admin and open `/api/admin/seed-demo` → "Reseed now" (POST). Run `/api/admin/migrate` first on a fresh DB.
   Resets the demo account to the exact seed state in one D1 batch (all-or-nothing) and signs out its sessions.
   Every delete is scoped to the demo user ID / demo recipe + collection IDs; refuses if the demo email belongs to another account.
@@ -134,6 +135,23 @@ Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favo
   seed content. Import and dinner picker are **recorded replays** (labelled), so the tour never calls AI endpoints.
 - `<TourPill>` is the always-visible entry on landing and demo pages. Progress lives in sessionStorage
   (`lib/tourState.ts`), so the pill offers "Resume tour" after a mid-tour exit.
+
+### Recipe import (web, social, text)
+- `POST /api/extract-url` routes by host (`functions/lib/social.ts`):
+  - **Web pages:** schema.org Recipe JSON-LD plus the visible text go to Haiku.
+  - **TikTok:** caption from the public video page's data block.
+  - **Facebook:** caption from `og:title`.
+  - **YouTube:** oEmbed title, plus the description when `YOUTUBE_API_KEY` is set.
+  - **Pinterest:** og tags plus the outbound link.
+  - **Instagram:** can't be read without Meta app review, so the user is asked to paste the caption.
+- `recipeSignal()` decides before any AI spend.
+  - A strong caption is extracted.
+  - A caption link ("get the recipe: …") is followed.
+  - Otherwise return 422 with `code: no_recipe_in_caption | caption_unreachable` and **no AI call**. The import page then opens the paste-text panel.
+- `POST /api/extract-text` imports pasted text. The prompt and model call are shared in `functions/lib/extractRecipe.ts`.
+- Never add logins, private platform APIs, anti-bot workarounds or video downloads here. See `docs/briefs/2026-11-07-social-import-spike.md`.
+- `import_outcomes` (recipe_id, user_id, source, edited) records whether each import was saved without edits. Admin shows the zero-edit rate by source. Reseeding the demo clears its rows.
+- Android share sheet: `share_target` in `public/manifest.json` → `/import?url=&text=&title=` auto-imports the first link.
 
 ### After every schema change
 Hit `https://myopenpantry.com/api/admin/migrate` after deploying to run any new `CREATE TABLE IF NOT EXISTS` statements.
@@ -216,6 +234,7 @@ APP_URL             https://myopenpantry.com
 ADMIN_EMAILS        matt.t.davies@gmail.com (comma-separated)
 CF_ZONE_ID          Cloudflare zone ID (32-char hex, no trailing chars)
 CF_API_TOKEN        Cloudflare token with Zone Analytics Read permission
+YOUTUBE_API_KEY     Optional — YouTube Data API v3 key; lets imports read video descriptions
 ```
 
 ---
@@ -264,7 +283,8 @@ Mobile FAB:   Floating + button (terracotta circle) above tab bar → /import
 ## AI Cost Reference
 ```
 screenshot (Claude Sonnet): ~$0.015/call
-url import (Claude Haiku):  ~$0.004/call
+url import (Claude Haiku):  ~$0.004/call (web pages + social captions)
+text import (Claude Haiku): ~$0.003/call
 dinner suggestion (Haiku):  ~$0.005/call
 tts step (OpenAI tts-1):    ~$0.003/call
 tts celebration (tts-1-hd): ~$0.003/call

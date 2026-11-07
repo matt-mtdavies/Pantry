@@ -10,6 +10,7 @@
 }
 
 .brand {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
