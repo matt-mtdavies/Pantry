@@ -30,10 +30,12 @@ interface Props {
   collectionNames?: string[]
   /** Denser layout for 2-up mobile grids: no description or author. */
   compact?: boolean
+  /** Where the card links to (defaults to the recipe page). */
+  href?: string
 }
 
 export default function RecipeCard({
-  recipe, onToggleFavourite, showAuthor, currentUserId, inCollection, onToggleCollection, collectionNames, compact,
+  recipe, onToggleFavourite, showAuthor, currentUserId, inCollection, onToggleCollection, collectionNames, compact, href,
 }: Props) {
   const { formatCost } = useCurrency()
   const heroSrc = imageUrl(recipe.hero_image_key)
@@ -46,7 +48,7 @@ export default function RecipeCard({
   return (
     <article className={`${styles.card} ${compact ? styles.compact : ''}`}>
       {/* Whole-card link; interactive children sit above it via z-index. */}
-      <Link to={`/recipe/${recipe.id}`} className={styles.overlay} aria-label={recipe.title} />
+      <Link to={href ?? `/recipe/${recipe.id}`} className={styles.overlay} aria-label={recipe.title} />
 
       <div className={styles.imageWrap}>
         {heroSrc ? (

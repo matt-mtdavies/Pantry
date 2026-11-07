@@ -56,7 +56,9 @@ function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
   )
 }
 
-export default function CookModePage() {
+/** `demo`: cook a recipe from the public read-only demo (no account, no API). */
+export default function CookModePage({ demo = false }: { demo?: boolean }) {
+  const recipeBase = demo ? '/demo/recipe' : '/recipe'
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -103,14 +105,17 @@ export default function CookModePage() {
 
   useEffect(() => {
     if (!id) return
-    getRecipe(id)
+    const load = demo
+      ? import('../lib/demo').then(m => m.getDemoRecipe(id) ?? Promise.reject(new Error('not found')))
+      : getRecipe(id)
+    load
       .then(r => {
         setRecipe(r)
         // Carry over servings scaled on the recipe page (?serves=N).
         const requested = parseInt(searchParams.get('serves') ?? '', 10)
         setServings(requested > 0 ? requested : r.servings ?? 2)
       })
-      .catch(() => navigate('/'))
+      .catch(() => navigate(demo ? '/demo' : '/'))
       .finally(() => setLoading(false))
   }, [id, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -340,7 +345,7 @@ export default function CookModePage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link to={`/recipe/${recipe.id}`} className={styles.exit} aria-label="Exit cook mode">
+        <Link to={`${recipeBase}/${recipe.id}`} className={styles.exit} aria-label="Exit cook mode">
           ← Exit
         </Link>
         <div className={styles.headerTitle}>
@@ -715,7 +720,7 @@ export default function CookModePage() {
           </div>
           <h2 className={styles.celebHeading}>Nicely done!</h2>
           <p className={styles.celebSub}>{recipe.title}</p>
-          <Link ref={celebBtnRef} to={`/recipe/${recipe.id}`} className={styles.celebBtn}>
+          <Link ref={celebBtnRef} to={`${recipeBase}/${recipe.id}`} className={styles.celebBtn}>
             Back to recipe →
           </Link>
         </div>
