@@ -116,7 +116,7 @@ export async function ensureDefaultDemoPhotos(env: Env, demoUserId: string): Pro
   try {
     await db.prepare(CREATE_DEMO_PHOTOS_META).run()
     const done = await db.prepare("SELECT value FROM demo_photos_meta WHERE key = 'defaults'").first<{ value: string }>()
-    if (done?.value === 'applied') return
+    if (done?.value === 'applied') { await syncDemoAccountOnce(env, demoUserId); return }
     // Claim the job so concurrent requests don't all call Unsplash (stale claims expire after 2 min).
     const now = Math.floor(Date.now() / 1000)
     if (done && Number(done.value.split(':')[1]) > now - 120) return
@@ -144,8 +144,28 @@ export async function ensureDefaultDemoPhotos(env: Env, demoUserId: string): Pro
     }
     stmts.push(db.prepare("INSERT OR REPLACE INTO demo_photos_meta (key, value) VALUES ('defaults', 'applied')"))
     await db.batch(stmts)
+    await syncDemoAccountOnce(env, demoUserId)
   } catch (e) {
     console.error('[demo photos] defaults not applied:', e instanceof Error ? e.message : e)
     try { await db.prepare("DELETE FROM demo_photos_meta WHERE key = 'defaults' AND value LIKE 'pending:%'").run() } catch { /* ignore */ }
   }
+}
+
+/**
+ * One-off: point the demo account's recipes at the current picks, replacing
+ * any photo that isn't already a hotlinked pick (e.g. stale copies made by
+ * "Add missing photos" during reviews). Same effect as an admin reseed, for
+ * photos only. Runs once (demo_photos_meta 'account-sync-1'), so a reviewer's
+ * later photo changes are left alone.
+ */
+async function syncDemoAccountOnce(env: Env, demoUserId: string): Promise<void> {
+  const db = env.DB
+  const done = await db.prepare("SELECT 1 AS x FROM demo_photos_meta WHERE key = 'account-sync-1'").first()
+  if (done) return
+  const picks = await getDemoPhotoPicks(env)
+  const stmts: D1PreparedStatement[] = Object.values(picks).map(p =>
+    db.prepare("UPDATE recipes SET hero_image_key = ? WHERE id = ? AND user_id = ? AND (hero_image_key IS NULL OR hero_image_key NOT LIKE 'https://images.unsplash.com/%')")
+      .bind(p.url, p.recipe_id, demoUserId))
+  stmts.push(db.prepare("INSERT OR REPLACE INTO demo_photos_meta (key, value) VALUES ('account-sync-1', 'done')"))
+  await db.batch(stmts)
 }
