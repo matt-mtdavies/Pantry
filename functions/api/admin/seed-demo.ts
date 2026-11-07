@@ -4,7 +4,7 @@ import {
   DEMO_PHOTOS, demoPhotoKey, demoPhotoAsset, DEMO_SHARE_TOKEN,
   DEMO_RECIPES, DEMO_COLLECTIONS,
 } from '../../lib/demo'
-import { getDemoPhotoPicks } from '../../lib/demoPhotos'
+import { getDemoPhotoPicks, ensureDefaultDemoPhotos } from '../../lib/demoPhotos'
 
 // Create or reset the demo account to its exact seed state.
 //
@@ -88,6 +88,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
   const passwordHash = await hashPassword(DEMO_PASSWORD)
   // Hand-picked Unsplash photos (if any) win over the bundled CC0 photos.
+  await ensureDefaultDemoPhotos(ctx.env, DEMO_USER_ID)
   const photoPicks = await getDemoPhotoPicks(ctx.env)
 
   // ── One transaction: wipe demo-owned rows, then insert the seed ──────────

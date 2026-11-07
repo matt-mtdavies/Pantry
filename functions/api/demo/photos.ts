@@ -1,5 +1,6 @@
 import type { Env } from '../../env'
-import { getDemoPhotoPicks, DEMO_PHOTOS_CACHE_KEY } from '../../lib/demoPhotos'
+import { getDemoPhotoPicks, ensureDefaultDemoPhotos, DEMO_PHOTOS_CACHE_KEY } from '../../lib/demoPhotos'
+import { DEMO_USER_ID } from '../../lib/demo'
 
 // GET /api/demo/photos — public, read-only: the hand-picked Unsplash photo and
 // credit for each demo recipe ({} until an admin picks some). Used by the
@@ -13,6 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   try { cache = (caches as unknown as { default: Cache }).default } catch { /* no Cache API (tests) */ }
   try { const hit = await cache?.match(cacheKey); if (hit) return hit } catch { /* no cache locally */ }
 
+  await ensureDefaultDemoPhotos(ctx.env, DEMO_USER_ID)
   const picks = await getDemoPhotoPicks(ctx.env)
   const body = Object.fromEntries(Object.entries(picks).map(([id, p]) => [id, {
     url: p.url, alt: p.alt, photographer: p.photographer, photographer_url: p.photographer_url, photo_url: p.photo_url,
