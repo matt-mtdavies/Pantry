@@ -80,3 +80,6 @@ export async function trackUnsplashDownload(env: Env, downloadLocation: string):
   if (!env.UNSPLASH_ACCESS_KEY || !downloadLocation.startsWith('https://api.unsplash.com/')) return
   await fetch(downloadLocation, { headers: { Authorization: `Client-ID ${env.UNSPLASH_ACCESS_KEY}` }, signal: AbortSignal.timeout(10_000) }).catch(() => {})
 }
+
+/** Cache key for GET /api/demo/photos; cleared when an admin saves picks. */
+export const DEMO_PHOTOS_CACHE_KEY = 'https://cache.internal/demo-photos'

@@ -215,14 +215,12 @@
 }
 
 .pickerMock {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-8);
+  padding: var(--sp-6);
   background: var(--ink);
   border-radius: var(--radius-lg);
 }
+
+.pickerTop { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-4); }
 
 .chip {
   padding: var(--sp-2) var(--sp-4);
@@ -234,17 +232,33 @@
   font-weight: 500;
 }
 
-.pickerArrow { color: rgba(var(--ivory-rgb), 0.6); font-size: var(--text-xl); padding: 0 var(--sp-2); }
+.pickerExample {
+  margin-left: auto;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: rgba(var(--ivory-rgb), 0.72);
+}
+
+.pickerIdeas { list-style: none; display: flex; flex-direction: column; gap: var(--sp-2); }
 
 .pickerIdea {
-  flex-basis: 100%;
-  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-2);
   border-radius: var(--radius-md);
   background: rgba(var(--ivory-rgb), 0.08);
   color: var(--ivory);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
+  text-decoration: none;
+  transition: background-color 150ms ease;
 }
+
+.pickerIdea:hover { background: rgba(var(--ivory-rgb), 0.14); color: var(--ivory); }
+
+.pickerImg { width: 64px; height: 64px; flex-shrink: 0; object-fit: cover; border-radius: var(--radius-sm); background: rgba(var(--ivory-rgb), 0.08); }
+.pickerText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pickerTitle { font-family: var(--font-display); font-size: var(--text-lg); }
+.pickerMeta { font-family: var(--font-ui); font-size: var(--text-sm); color: rgba(var(--ivory-rgb), 0.72); }
 
 .demoHead {
   display: flex;

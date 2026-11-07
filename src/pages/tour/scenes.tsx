@@ -10,6 +10,7 @@ import { scaleIngredient, imageUrl, formatTime } from '../../lib/utils'
 import { convertIngredient } from '../../lib/units'
 import type { UnitSystem } from '../../lib/units'
 import { DEMO_SHARE_TOKEN } from '../../../shared/demoContent'
+import { PICKER_INPUT, PICKER_IDEAS, shoppingLabel } from '../../lib/demoPicker'
 import styles from './scenes.module.css'
 
 // Tour scenes. Each renders real Pantry components with the demo content.
@@ -188,13 +189,6 @@ export function CookScene() {
 }
 
 // ── 5. Dinner picker (recorded) ─────────────────────────────────────────────
-const PICKER_INPUT = ['eggs', 'spinach', 'feta']
-const PICKER_IDEAS = [
-  { title: 'Spinach & feta omelette', time: '10 min', shopping: [] as string[] },
-  { title: 'Green shakshuka', time: '25 min', shopping: ['1 leek', '1 lemon'] },
-  { title: 'Spinach & feta filo pie', time: '50 min', shopping: ['270g filo pastry', '1 bunch dill'] },
-]
-
 export function PickerScene() {
   const [shown, setShown] = useState(0)
   const [thinking, setThinking] = useState(false)
@@ -213,14 +207,18 @@ export function PickerScene() {
       </div>
       {thinking && <div className={styles.extracting} role="status"><SaltGrinder size={40} /><span>Finding ideas…</span></div>}
       <ol className={styles.ideas}>
-        {PICKER_IDEAS.slice(0, shown).map(idea => (
-          <li key={idea.title} className={`${styles.idea} ${styles.rise}`}>
-            <span className={styles.ideaTitle}>{idea.title}</span>
-            <span className={styles.ideaMeta}>
-              {idea.time} · {idea.shopping.length ? `Shopping list: ${idea.shopping.join(', ')}` : 'Nothing to buy'}
-            </span>
-          </li>
-        ))}
+        {PICKER_IDEAS.slice(0, shown).map(idea => {
+          const r = getDemoRecipe(idea.recipeId)!
+          return (
+            <li key={idea.recipeId} className={`${styles.idea} ${styles.rise}`}>
+              {r.hero_image_key && <img src={imageUrl(r.hero_image_key)!} alt="" className={styles.ideaImg} />}
+              <span className={styles.ideaText}>
+                <span className={styles.ideaTitle}>{r.title}</span>
+                <span className={styles.ideaMeta}>{idea.time} · {shoppingLabel(idea.shopping)}</span>
+              </span>
+            </li>
+          )
+        })}
       </ol>
       <Replay>Example result</Replay>
     </div>

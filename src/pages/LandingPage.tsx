@@ -7,6 +7,8 @@ import { ShareIcon, CollectionIcon, ClockIcon, IngredientIcon } from '../compone
 import { getDemoRecipes } from '../lib/demo'
 import { useDemoPhotos } from '../lib/demoPhotos'
 import PhotoCredit from '../components/PhotoCredit'
+import { PICKER_INPUT, PICKER_IDEAS, shoppingLabel } from '../lib/demoPicker'
+import { imageUrl } from '../lib/utils'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import styles from './LandingPage.module.css'
 
@@ -124,14 +126,27 @@ export default function LandingPage() {
               for anything you're missing. Save the one you like in a tap.
             </p>
           </div>
-          <div className={styles.pickerMock} aria-hidden="true">
-            <span className={styles.chip}>eggs</span>
-            <span className={styles.chip}>spinach</span>
-            <span className={styles.chip}>feta</span>
-            <span className={styles.pickerArrow}>→</span>
-            <span className={styles.pickerIdea}>Spinach &amp; feta omelette</span>
-            <span className={styles.pickerIdea}>Shakshuka with greens</span>
-            <span className={styles.pickerIdea}>Spanakopita-style bake</span>
+          <div className={styles.pickerMock}>
+            <div className={styles.pickerTop}>
+              {PICKER_INPUT.map(c => <span key={c} className={styles.chip}>{c}</span>)}
+              <span className={styles.pickerExample}>Example result</span>
+            </div>
+            <ul className={styles.pickerIdeas}>
+              {PICKER_IDEAS.map(idea => {
+                const r = demoRecipes.find(x => x.id === idea.recipeId)
+                return (
+                  <li key={idea.recipeId}>
+                    <Link to={`/demo/recipe/${idea.recipeId}`} className={styles.pickerIdea}>
+                      {r?.hero_image_key ? <img src={imageUrl(r.hero_image_key)!} alt="" className={styles.pickerImg} /> : <span className={styles.pickerImg} />}
+                      <span className={styles.pickerText}>
+                        <span className={styles.pickerTitle}>{r?.title ?? '…'}</span>
+                        <span className={styles.pickerMeta}>{idea.time} · {shoppingLabel(idea.shopping)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </section>
 

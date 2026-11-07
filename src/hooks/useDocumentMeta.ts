@@ -12,6 +12,8 @@ interface Meta {
   description?: string
   path?: string | null
   jsonLd?: Record<string, unknown> | null
+  /** Absolute image URL for link previews. */
+  image?: string | null
 }
 
 function setMeta(selector: string, attr: string, value: string | null) {
@@ -37,6 +39,8 @@ export function useDocumentMeta(meta: Meta | null) {
       ['meta[property="og:description"]', 'content', meta.description],
       ['meta[name="twitter:title"]', 'content', meta.title],
       ['meta[name="twitter:description"]', 'content', meta.description],
+      ['meta[property="og:image"]', 'content', meta.image ?? undefined],
+      ['meta[name="twitter:image"]', 'content', meta.image ?? undefined],
     ] as const) {
       const r = val != null ? setMeta(sel, attr, val) : null
       if (r) restore.push(r)
@@ -68,7 +72,11 @@ function isoMinutes(m: number | null | undefined): string | undefined {
 
 /** Title, description and schema.org Recipe structured data for a public recipe page. */
 export function useRecipeMeta(recipe: Recipe | null, path: string | null) {
+  const image = recipe?.hero_image_key
+    ? (/^https?:\/\//.test(recipe.hero_image_key) ? recipe.hero_image_key : `${SITE}/api/images/${encodeURIComponent(recipe.hero_image_key)}`)
+    : null
   useDocumentMeta(recipe ? {
+    image,
     title: `${recipe.title} · Pantry`,
     description: recipe.description || `${recipe.title} — a recipe on Pantry.`,
     path,

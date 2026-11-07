@@ -1,5 +1,5 @@
 import type { Env } from '../../env'
-import { getDemoPhotoPicks } from '../../lib/demoPhotos'
+import { getDemoPhotoPicks, DEMO_PHOTOS_CACHE_KEY } from '../../lib/demoPhotos'
 
 // GET /api/demo/photos — public, read-only: the hand-picked Unsplash photo and
 // credit for each demo recipe ({} until an admin picks some). Used by the
@@ -8,7 +8,7 @@ import { getDemoPhotoPicks } from '../../lib/demoPhotos'
 const CACHE_TTL = 300
 
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
-  const cacheKey = new Request('https://cache.internal/demo-photos')
+  const cacheKey = new Request(DEMO_PHOTOS_CACHE_KEY)
   let cache: Cache | null = null
   try { cache = (caches as unknown as { default: Cache }).default } catch { /* no Cache API (tests) */ }
   try { const hit = await cache?.match(cacheKey); if (hit) return hit } catch { /* no cache locally */ }

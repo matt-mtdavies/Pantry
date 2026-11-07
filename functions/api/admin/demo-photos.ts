@@ -1,7 +1,7 @@
 import type { Env } from '../../env'
 import { DEMO_RECIPES, DEMO_USER_ID, demoPhotoKey } from '../../lib/demo'
 import {
-  CREATE_DEMO_PHOTOS, DEMO_PHOTO_QUERIES, UNSPLASH_UTM, displayUrl, getDemoPhotoPicks,
+  CREATE_DEMO_PHOTOS, DEMO_PHOTOS_CACHE_KEY, DEMO_PHOTO_QUERIES, UNSPLASH_UTM, displayUrl, getDemoPhotoPicks,
   searchUnsplash, trackUnsplashDownload, type UnsplashResult,
 } from '../../lib/demoPhotos'
 
@@ -116,9 +116,11 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     done.push(`${seed.title}: ${p.name}`)
   }
   if (stmts.length) await db.batch(stmts)
+  // Show the new picks straight away (this data centre's edge cache; others expire within 5 minutes).
+  try { await (caches as unknown as { default: Cache }).default.delete(new Request(DEMO_PHOTOS_CACHE_KEY)) } catch { /* no cache */ }
 
   return page(`<h1>Demo photos saved</h1>
 <p>${done.length ? done.map(esc).join('<br>') : 'No changes.'}</p>
-<p class="hint">The public demo picks these up within about 5 minutes (edge cache).</p>
+<p class="hint">Live now on the demo account. The public demo shows them straight away here, and everywhere within 5 minutes.</p>
 <p><a href="/api/admin/demo-photos">Back to the picker</a> · <a href="/demo">View the demo</a></p>`)
 }
