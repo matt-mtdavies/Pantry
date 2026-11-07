@@ -72,7 +72,18 @@ Acceptance:
 - The demo can't be modified from `/demo`.
 - No copy claims a feature that doesn't exist.
 
-## Step 3 — Demo tour (on top of `/demo`)
+## Step 3 — Demo tour (done on `claude/determined-ritchie-wrwelh`, awaiting merge)
+
+**As built:** `/tour`.
+- 7 scenes in 5 chapters (Save · Cook · Plan · Share · Start), about 1:40 of autoplay, plus the end card.
+- Controls: Back / Pause / Next, chapter jumps, "Skip to the end" and Exit. Keyboard: ← → Space Esc. Touching a scene pauses autoplay.
+- Uses real components and demo content. Import and dinner picker are recorded replays, labelled "Replay of a real import" / "Example result". No API calls besides images.
+- Entry pill ("Take the 2-minute tour") is fixed on the landing and every demo page.
+  - After a mid-tour exit it reads "Resume tour · N of 7". After finishing, "Watch the tour again".
+  - The landing hero links to the tour too.
+- Verified at 1280px and 390px: autoplay, all scenes, exit and resume, keyboard, skip, replay, no overflow.
+
+**Original spec:**
 
 - 6–8 scenes, about 2–3 minutes, with chapters, skippable throughout. Build the **end card with CTA first**.
 - Scenes:

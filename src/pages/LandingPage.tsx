@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import AuthCard from '../components/AuthCard'
 import RecipeCard from '../components/RecipeCard'
+import TourPill from '../components/TourPill'
 import { ShareIcon, CollectionIcon, ClockIcon, IngredientIcon } from '../components/icons'
 import { demoRecipes } from '../lib/demo'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
@@ -80,7 +81,9 @@ export default function LandingPage() {
               <Link to="/demo" className={styles.primaryBtn}>Explore the demo</Link>
               <a href="#get-started" className={styles.secondaryBtn}>Create free account</a>
             </div>
-            <p className={styles.heroNote}>The demo is a real recipe box. No sign-up, nothing to install.</p>
+            <p className={styles.heroNote}>
+              The demo is a real recipe box — no sign-up. Or <Link to="/tour" state={{ from: '/' }}>take the 2-minute tour</Link>.
+            </p>
           </div>
           <Link to="/demo/recipe/de300000000000000000000000000001" className={styles.heroVisual} aria-label="Open the Shakshuka demo recipe">
             <img src="/demo/shakshuka.jpg" alt="Shakshuka in a cast-iron pan" className={styles.heroImg} />
@@ -156,6 +159,7 @@ export default function LandingPage() {
         <Link to="/terms">Terms</Link>
         <Link to="/privacy">Privacy</Link>
       </footer>
+      <TourPill />
     </div>
   )
 }

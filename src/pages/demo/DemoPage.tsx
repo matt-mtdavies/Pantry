@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DemoBar from '../../components/DemoBar'
 import RecipeCard from '../../components/RecipeCard'
+import TourPill from '../../components/TourPill'
 import { HeartIcon, CollectionIcon } from '../../components/icons'
 import { demoRecipes, demoCollections, DEMO_OWNER_NAME } from '../../lib/demo'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta'
@@ -76,6 +77,7 @@ export default function DemoPage() {
           <Link to="/?signup=1#get-started" className={styles.ctaBtn}>Create free account</Link>
         </section>
       </main>
+      <TourPill />
     </div>
   )
 }
