@@ -41,7 +41,15 @@ Acceptance:
 - `tsc` and the build pass.
 - No change to recipe, cook-mode, collection or sharing behaviour beyond the items above.
 
-## Step 2 — Front door: landing page + read-only demo
+## Step 2 — Front door: landing page + read-only demo (done on `claude/determined-ritchie-wrwelh`, awaiting merge)
+
+**As built:**
+- The public demo renders the demo account's **seed content** (`shared/demoContent.ts`), not the live account. The demo login is shared, so reading the live account would let anyone deface the public front door. The seed is the same content the account resets to.
+- With no public demo API, there are no reads from the database and nothing to rate-limit.
+- Profile gained a "Download my recipes" button. `/api/me/export` existed, but nothing in the UI called it, so the trust line wasn't true yet.
+- Three more CC0 demo photos: chilli, omelette, risotto.
+
+**Original spec:**
 
 - `/` for logged-out visitors renders a landing page, not a redirect to `/auth`. Logged-in users still get their recipes.
 - Landing page content:

@@ -1,237 +1,26 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { login, register, forgotPassword } from '../lib/api'
+import AuthCard from '../components/AuthCard'
 import styles from './AuthPage.module.css'
 
-type Mode = 'signin' | 'register' | 'forgot' | 'forgot-sent'
-
 export default function AuthPage() {
-  const { user, loading, refetch } = useAuth()
+  const { user, loading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const nextPath = searchParams.get('next') || '/'
-
-  const [mode, setMode] = useState<Mode>(
-    searchParams.get('mode') === 'register' ? 'register' : 'signin'
-  )
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle')
-  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!loading && user) navigate(nextPath, { replace: true })
   }, [user, loading, navigate, nextPath])
 
-  const switchMode = (next: Mode) => {
-    setMode(next)
-    setError('')
-    setStatus('idle')
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    // Say what's missing instead of leaving a dead, disabled button.
-    const missing =
-      !email.trim() ? 'Enter your email address.'
-      : mode !== 'forgot' && !password ? 'Enter your password.'
-      : mode === 'register' && password.length < 8 ? 'Choose a password of at least 8 characters.'
-      : ''
-    if (missing) {
-      setStatus('error')
-      setError(missing)
-      return
-    }
-    setStatus('submitting')
-    setError('')
-
-    try {
-      if (mode === 'forgot') {
-        await forgotPassword(email.trim())
-        setMode('forgot-sent')
-        setStatus('idle')
-        return
-      }
-
-      const isRegister = mode === 'register'
-      const { sessionId } = isRegister
-        ? await register(email.trim(), password, displayName.trim() || undefined)
-        : await login(email.trim(), password)
-
-      localStorage.setItem('pantry_session', sessionId)
-      await refetch()
-      navigate(isRegister ? '/profile' : nextPath, { replace: true })
-    } catch (err) {
-      setStatus('error')
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-    }
-  }
-
-  if (mode === 'forgot-sent') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.card}>
-          <div className={styles.brand}>
-            <img src="/pantry-mark.png" alt="" className={styles.brandMark} width="44" height="44" />
-            <span className={styles.brandWord}>Pantry</span>
-          </div>
-          <div className={styles.sentBox}>
-            <div className={styles.sentIcon}>✉️</div>
-            <h2 className={styles.sentTitle}>Check your inbox</h2>
-            <p className={styles.sentText}>
-              If an account exists for <strong>{email}</strong>, we've sent a link to reset
-              your password. Check your spam folder if it doesn't arrive within a minute.
-            </p>
-            <p className={styles.sentHint}>
-              <button className={styles.resend} onClick={() => switchMode('signin')}>
-                Back to sign in
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
-        <div className={styles.brand}>Pantry</div>
-
-        {mode !== 'forgot' && (
-          <div className={styles.toggle}>
-            <button
-              type="button"
-              className={`${styles.toggleBtn} ${mode === 'signin' ? styles.toggleBtnActive : ''}`}
-              onClick={() => switchMode('signin')}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              className={`${styles.toggleBtn} ${mode === 'register' ? styles.toggleBtnActive : ''}`}
-              onClick={() => switchMode('register')}
-            >
-              Create account
-            </button>
-          </div>
-        )}
-
-        {mode === 'forgot' && (
-          <>
-            <h1 className={styles.heading}>Forgot your password?</h1>
-            <p className={styles.sub}>
-              Enter your email and we'll send you a link to reset it.
-            </p>
-          </>
-        )}
-
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          {mode === 'register' && (
-            <>
-              <label htmlFor="displayName" className={styles.label}>
-                Your name <span className={styles.optional}>(optional)</span>
-              </label>
-              <input
-                id="displayName"
-                type="text"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                className={styles.input}
-                placeholder="e.g. Matt"
-                autoComplete="name"
-                disabled={status === 'submitting'}
-              />
-            </>
-          )}
-
-          <label htmlFor="email" className={styles.label}>Email address</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className={styles.input}
-            placeholder="you@example.com"
-            autoComplete="email"
-            autoFocus
-            required
-            disabled={status === 'submitting'}
-          />
-
-          {mode !== 'forgot' && (
-            <>
-              <label htmlFor="password" className={styles.label}>
-                Password{' '}
-                {mode === 'register' && (
-                  <span className={styles.optional}>(min 8 characters)</span>
-                )}
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className={styles.input}
-                placeholder={mode === 'register' ? 'Choose a password' : 'Your password'}
-                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                required
-                disabled={status === 'submitting'}
-              />
-            </>
-          )}
-
-          {status === 'error' && (
-            <p className={styles.error} role="alert">{error}</p>
-          )}
-
-          {mode === 'register' && (
-            <p className={styles.legalNote}>
-              By creating an account you agree to our{' '}
-              <Link to="/terms" className={styles.legalLink} target="_blank">Terms of Service</Link>
-              {' '}and{' '}
-              <Link to="/privacy" className={styles.legalLink} target="_blank">Privacy Policy</Link>.
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className={styles.submit}
-            disabled={status === 'submitting'}
-          >
-            {status === 'submitting'
-              ? mode === 'signin' ? 'Signing in…'
-                : mode === 'register' ? 'Creating account…'
-                : 'Sending…'
-              : mode === 'signin' ? 'Sign in'
-                : mode === 'register' ? 'Create account'
-                : 'Send reset link'
-            }
-          </button>
-
-          {mode === 'signin' && (
-            <button
-              type="button"
-              className={styles.forgotLink}
-              onClick={() => switchMode('forgot')}
-            >
-              Forgot your password?
-            </button>
-          )}
-
-          {mode === 'forgot' && (
-            <button
-              type="button"
-              className={styles.forgotLink}
-              onClick={() => switchMode('signin')}
-            >
-              Back to sign in
-            </button>
-          )}
-        </form>
-      </div>
+      <AuthCard
+        nextPath={nextPath}
+        initialMode={searchParams.get('mode') === 'register' ? 'register' : 'signin'}
+        autoFocus
+      />
     </div>
   )
 }

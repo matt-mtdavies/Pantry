@@ -1,7 +1,7 @@
 import type { Env } from '../../env'
 import {
   DEMO_USER_ID, DEMO_EMAIL, DEMO_PASSWORD, DEMO_DISPLAY_NAME,
-  DEMO_PHOTO_ASSET, DEMO_PHOTO_KEY, DEMO_SHARE_TOKEN,
+  DEMO_PHOTOS, demoPhotoKey, demoPhotoAsset, DEMO_SHARE_TOKEN,
   DEMO_RECIPES, DEMO_COLLECTIONS,
 } from '../../lib/demo'
 
@@ -74,14 +74,16 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     return json({ ok: false, error: 'A demo recipe/collection ID or share token is used by another account. Refusing to continue.' }, 409)
   }
 
-  // Photo: copy the bundled static asset into R2 (idempotent overwrite).
+  // Photos: copy the bundled static assets into R2 (idempotent overwrite).
   if (!ctx.env.R2) return json({ ok: false, error: 'R2 binding missing' }, 500)
-  const assetUrl = new URL(DEMO_PHOTO_ASSET, ctx.request.url)
-  const photoRes = ctx.env.ASSETS ? await ctx.env.ASSETS.fetch(assetUrl) : await fetch(assetUrl)
-  if (!photoRes.ok || !(photoRes.headers.get('Content-Type') ?? '').startsWith('image/')) {
-    return json({ ok: false, error: `Could not load demo photo ${DEMO_PHOTO_ASSET} (HTTP ${photoRes.status})` }, 500)
+  for (const name of DEMO_PHOTOS) {
+    const assetUrl = new URL(demoPhotoAsset(name), ctx.request.url)
+    const photoRes = ctx.env.ASSETS ? await ctx.env.ASSETS.fetch(assetUrl) : await fetch(assetUrl)
+    if (!photoRes.ok || !(photoRes.headers.get('Content-Type') ?? '').startsWith('image/')) {
+      return json({ ok: false, error: `Could not load demo photo ${demoPhotoAsset(name)} (HTTP ${photoRes.status})` }, 500)
+    }
+    await ctx.env.R2.put(demoPhotoKey(name), await photoRes.arrayBuffer(), { httpMetadata: { contentType: 'image/jpeg' } })
   }
-  await ctx.env.R2.put(DEMO_PHOTO_KEY, await photoRes.arrayBuffer(), { httpMetadata: { contentType: 'image/jpeg' } })
 
   const passwordHash = await hashPassword(DEMO_PASSWORD)
 
@@ -143,7 +145,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     `).bind(
       r.id, DEMO_USER_ID, r.title, r.description, r.servings, r.prep_time, r.cook_time,
       JSON.stringify(r.ingredients), JSON.stringify(r.steps), JSON.stringify(r.tags),
-      r.source_guess ?? null, r.source_url ?? null, r.photo ? DEMO_PHOTO_KEY : null,
+      r.source_guess ?? null, r.source_url ?? null, r.photo ? demoPhotoKey(r.photo) : null,
       r.favourite ? 1 : 0,
       r.share ? DEMO_SHARE_TOKEN : null, r.share ? now + 30 * 24 * 60 * 60 : null,
       r.calories_per_serving, r.cost_per_serving, ts, ts,

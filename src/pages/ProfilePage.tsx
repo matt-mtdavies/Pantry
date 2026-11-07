@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
 import { useOnboarding } from '../App'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
-import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, createInvite } from '../lib/api'
+import { downloadExport, backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, createInvite } from '../lib/api'
 import { clearUnitOverride } from '../hooks/useUnitSystem'
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
@@ -437,6 +437,9 @@ export default function ProfilePage() {
             </button>
             <button className={styles.inviteLinkBtn} onClick={() => setFeedbackOpen(true)}>
               Share feedback
+            </button>
+            <button className={styles.inviteLinkBtn} onClick={downloadExport}>
+              Download my recipes
             </button>
             {!isInstalled && (canPrompt || isIos) && (
               <>

@@ -2,6 +2,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { createContext, useContext, useEffect, useState, lazy, Suspense } from 'react'
 
 const AdminPage = lazy(() => import('./pages/AdminPage'))
+// Logged-out front door + read-only demo: split out of the main bundle.
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const DemoPage = lazy(() => import('./pages/demo/DemoPage'))
+const DemoRecipePage = lazy(() => import('./pages/demo/DemoRecipePage'))
+const DemoCookPage = lazy(() => import('./pages/demo/DemoCookPage'))
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { CurrencyProvider } from './hooks/useCurrency'
 import HomePage from './pages/HomePage'
@@ -35,6 +40,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+const blank = <div className="page-shell"><div className="page-main" /></div>
+
+/** "/" is the recipe box when signed in, the landing page otherwise. */
+function HomeOrLanding() {
+  const { user, loading } = useAuth()
+  if (loading) return blank
+  if (user) return <HomePage />
+  return <Suspense fallback={blank}><LandingPage /></Suspense>
+}
+
 function AppRoutes() {
   const { user } = useAuth()
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -64,7 +79,10 @@ function AppRoutes() {
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          <Route path="/" element={<HomeOrLanding />} />
+          <Route path="/demo" element={<Suspense fallback={blank}><DemoPage /></Suspense>} />
+          <Route path="/demo/recipe/:id" element={<Suspense fallback={blank}><DemoRecipePage /></Suspense>} />
+          <Route path="/demo/recipe/:id/cook" element={<Suspense fallback={blank}><DemoCookPage /></Suspense>} />
           <Route path="/recipe/new" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id" element={<ProtectedRoute><RecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id/edit" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />

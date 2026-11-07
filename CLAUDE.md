@@ -109,13 +109,25 @@ functions/
 
 ### Demo account
 Fixed demo login for reviews: **demo@myopenpantry.com / TryPantry-Demo-2026** (throwaway; holds no real data).
-Seed content lives in `functions/lib/demo.ts` (10 recipes, 2 collections, 3 favourites, 1 photo, 1 share link).
+Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favourites, 4 CC0 photos in
+`public/demo/`, 1 share link); credentials stay server-side in `functions/lib/demo.ts`.
 - **(Re)seed:** sign in as an admin and open `/api/admin/seed-demo` → "Reseed now" (POST). Run `/api/admin/migrate` first on a fresh DB.
   Resets the demo account to the exact seed state in one D1 batch (all-or-nothing) and signs out its sessions.
   Every delete is scoped to the demo user ID / demo recipe + collection IDs; refuses if the demo email belongs to another account.
 - The demo user is `is_public = 0`, so it is excluded from Explore, Leaderboard, Chefs, Community and public profiles.
   `PUT /api/me` can't flip it public. Keep any new public query filtering on `u.is_public = 1`.
+- **Public read-only demo** (`/demo`, `/demo/recipe/:id`, `/demo/recipe/:id/cook`) renders the *seed content*
+  bundled from `shared/demoContent.ts`, not the live account — nothing is fetched, so no one can deface it
+  (the demo login is shared). It makes no API calls besides images; `/api/images/demo/*.jpg` falls back to the
+  static file if R2 hasn't been seeded. Keep it that way: no writes or AI calls from `/demo`.
 - Locally, test with `wrangler pages dev dist --binding ADMIN_EMAILS=…` (don't pass `--d1 DB`; it ignores the migrated local DB).
+
+### Front door
+- `/` renders `LandingPage` for logged-out visitors and `HomePage` when signed in (`HomeOrLanding` in `App.tsx`).
+  Landing + demo pages are lazy-loaded. The sign-in card is `<AuthCard>` (shared with `/auth`).
+- Landing copy must only sell what exists (import, cook mode, collections, sharing, units, dinner picker, export).
+- `useDocumentMeta` / `useRecipeMeta` set per-page title, description, canonical and Recipe JSON-LD.
+  `public/robots.txt` + `public/sitemap.xml` (regenerate the sitemap if demo recipe IDs change).
 
 ### After every schema change
 Hit `https://myopenpantry.com/api/admin/migrate` after deploying to run any new `CREATE TABLE IF NOT EXISTS` statements.
