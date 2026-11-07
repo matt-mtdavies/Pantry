@@ -107,6 +107,7 @@
 .main { flex: 1; padding-bottom: var(--sp-16); }
 
 .hero {
+  position: relative;
   width: 100%;
   /* Scale with the viewport instead of a fixed 480px crop. */
   aspect-ratio: 16 / 9;

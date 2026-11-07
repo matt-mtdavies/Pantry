@@ -5,7 +5,7 @@ import ServingsStepper from '../../components/ServingsStepper'
 import UnitToggle from '../../components/UnitToggle'
 import SaltGrinder from '../../components/SaltGrinder'
 import { CollectionIcon, HeartIcon, CopyIcon, CheckIcon } from '../../components/icons'
-import { demoRecipes, demoCollections, getDemoRecipe } from '../../lib/demo'
+import { getDemoRecipes, demoCollections, getDemoRecipe } from '../../lib/demo'
 import { scaleIngredient, imageUrl, formatTime } from '../../lib/utils'
 import { convertIngredient } from '../../lib/units'
 import type { UnitSystem } from '../../lib/units'
@@ -32,7 +32,7 @@ function Replay({ children }: { children: React.ReactNode }) {
 export function RecipeBoxScene() {
   return (
     <div className={styles.boxGrid}>
-      {[...demoRecipes].sort((a, b) => Number(!!b.hero_image_key) - Number(!!a.hero_image_key)).slice(0, 6).map((r, i) => (
+      {getDemoRecipes().sort((a, b) => Number(!!b.hero_image_key) - Number(!!a.hero_image_key)).slice(0, 6).map((r, i) => (
         <div key={r.id} className={styles.rise} style={{ animationDelay: `${i * 120}ms` }}>
           <RecipeCard recipe={r} href={`/demo/recipe/${r.id}`} compact />
         </div>

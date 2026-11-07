@@ -77,7 +77,9 @@ export function useRecipeMeta(recipe: Recipe | null, path: string | null) {
       '@type': 'Recipe',
       name: recipe.title,
       description: recipe.description || undefined,
-      image: recipe.hero_image_key ? `${SITE}/api/images/${encodeURIComponent(recipe.hero_image_key)}` : undefined,
+      image: recipe.hero_image_key
+        ? (/^https?:\/\//.test(recipe.hero_image_key) ? recipe.hero_image_key : `${SITE}/api/images/${encodeURIComponent(recipe.hero_image_key)}`)
+        : undefined,
       author: recipe.author_name ? { '@type': 'Person', name: recipe.author_name } : undefined,
       prepTime: isoMinutes(recipe.prep_time),
       cookTime: isoMinutes(recipe.cook_time),

@@ -109,3 +109,19 @@
   .sub { font-size: var(--text-base); }
   .grid { grid-template-columns: 1fr; }
 }
+
+.skeleton {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.credits {
+  margin-top: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+}
+
+.credits a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.credits a:hover { color: var(--accent); }

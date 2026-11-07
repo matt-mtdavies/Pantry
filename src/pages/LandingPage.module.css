@@ -118,6 +118,9 @@
 }
 
 .heroImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.heroVisual { background: var(--surface); }
+.heroCredit { grid-column: 2; margin-top: calc(-1 * var(--sp-10)); text-align: right; }
+@media (max-width: 960px) { .heroCredit { grid-column: 1; margin-top: calc(-1 * var(--sp-6)); } }
 
 .heroCard {
   position: absolute;

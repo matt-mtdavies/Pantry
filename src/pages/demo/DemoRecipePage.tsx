@@ -3,19 +3,23 @@ import PublicRecipeView from '../../components/PublicRecipeView'
 import TourPill from '../../components/TourPill'
 import NotFoundPage from '../NotFoundPage'
 import { getDemoRecipe } from '../../lib/demo'
+import { useDemoPhotos } from '../../lib/demoPhotos'
 import { useRecipeMeta } from '../../hooks/useDocumentMeta'
 import styles from '../../components/PublicRecipeView.module.css'
 
 export default function DemoRecipePage() {
   const { id } = useParams<{ id: string }>()
-  const recipe = getDemoRecipe(id)
+  const { ready, picks } = useDemoPhotos()
+  const recipe = ready ? getDemoRecipe(id) : null
   useRecipeMeta(recipe, recipe ? `/demo/recipe/${recipe.id}` : null)
+  if (!ready) return <div className={styles.page} />
   if (!recipe) return <NotFoundPage />
 
   return (
     <>
     <PublicRecipeView
       recipe={recipe}
+      photoCredit={picks[recipe.id] ?? null}
       bannerText={<Link to="/demo" className={styles.bannerLink}>← All demo recipes</Link>}
       bannerAction={<Link to="/?signup=1#get-started" className={styles.saveBtn}>Create free account</Link>}
       actions={servings => (

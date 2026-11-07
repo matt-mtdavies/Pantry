@@ -1,0 +1,21 @@
+.credit {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+}
+
+.credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.credit a:hover { color: var(--accent); }
+
+/* On top of a photo: readable on any image. */
+.overlay {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  padding: 2px var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: rgba(var(--ink-rgb), 0.62);
+  color: var(--ivory);
+}
+
+.overlay a:hover { color: var(--ivory); }

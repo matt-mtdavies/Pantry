@@ -4,7 +4,9 @@ import AuthCard from '../components/AuthCard'
 import RecipeCard from '../components/RecipeCard'
 import TourPill from '../components/TourPill'
 import { ShareIcon, CollectionIcon, ClockIcon, IngredientIcon } from '../components/icons'
-import { demoRecipes } from '../lib/demo'
+import { getDemoRecipes } from '../lib/demo'
+import { useDemoPhotos } from '../lib/demoPhotos'
+import PhotoCredit from '../components/PhotoCredit'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import styles from './LandingPage.module.css'
 
@@ -52,7 +54,10 @@ export default function LandingPage() {
     if (hash === '#get-started') document.getElementById('get-started')?.scrollIntoView({ block: 'start' })
   }, [hash])
 
-  const picks = DEMO_PICKS.map(id => demoRecipes.find(r => r.id === id)!).filter(Boolean)
+  const { ready, picks: photoPicks } = useDemoPhotos()
+  const demoRecipes = ready ? getDemoRecipes() : []
+  const picks = DEMO_PICKS.map(id => demoRecipes.find(r => r.id === id)).filter((r): r is NonNullable<typeof r> => !!r)
+  const heroCredit = photoPicks[DEMO_PICKS[0]] ?? null
 
   return (
     <div className={styles.page}>
@@ -86,13 +91,14 @@ export default function LandingPage() {
             </p>
           </div>
           <Link to="/demo/recipe/de300000000000000000000000000001" className={styles.heroVisual} aria-label="Open the Shakshuka demo recipe">
-            <img src="/demo/shakshuka.jpg" alt="Shakshuka in a cast-iron pan" className={styles.heroImg} />
+            {ready && <img src={heroCredit?.url ?? '/demo/shakshuka.jpg'} alt="Shakshuka in a cast-iron pan" className={styles.heroImg} />}
             <div className={styles.heroCard}>
               <span className={styles.heroCardEyebrow}>From the demo</span>
               <span className={styles.heroCardTitle}>Shakshuka</span>
               <span className={styles.heroCardMeta}>30 min · serves 2 · 10 ingredients</span>
             </div>
           </Link>
+          {heroCredit && <div className={styles.heroCredit}><PhotoCredit credit={heroCredit} /></div>}
         </section>
 
         <section className={styles.steps} aria-labelledby="how-heading">

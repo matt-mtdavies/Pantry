@@ -115,11 +115,17 @@ for every recipe in `public/demo/` with credits in the file, 1 share link); cred
 - **(Re)seed:** sign in as an admin and open `/api/admin/seed-demo` → "Reseed now" (POST). Run `/api/admin/migrate` first on a fresh DB.
   Resets the demo account to the exact seed state in one D1 batch (all-or-nothing) and signs out its sessions.
   Every delete is scoped to the demo user ID / demo recipe + collection IDs; refuses if the demo email belongs to another account.
+- **Premium demo photos (Unsplash):** an admin opens `/api/admin/demo-photos`, which searches Unsplash (`UNSPLASH_ACCESS_KEY`)
+  with tuned queries and lets them pick a photo per demo recipe. Picks live in `demo_photos`. They are
+  **hotlinked** from images.unsplash.com (never copied), trigger Unsplash's download endpoint on selection, and are
+  **credited** ("Photo by X on Unsplash", `<PhotoCredit>`) on the demo recipe page, landing hero, demo grid and the signed-in
+  demo account's recipe page. Reseeding uses the picks; recipes without a pick fall back to the bundled CC0 photo.
+  The public demo reads picks from `GET /api/demo/photos` (public, edge-cached 5 min).
 - The demo user is `is_public = 0`, so it is excluded from Explore, Leaderboard, Chefs, Community and public profiles.
   `PUT /api/me` can't flip it public. Keep any new public query filtering on `u.is_public = 1`.
 - **Public read-only demo** (`/demo`, `/demo/recipe/:id`, `/demo/recipe/:id/cook`) renders the *seed content*
-  bundled from `shared/demoContent.ts`, not the live account — nothing is fetched, so no one can deface it
-  (the demo login is shared). It makes no API calls besides images; `/api/images/demo/*.jpg` falls back to the
+  bundled from `shared/demoContent.ts`, not the live account, so no one can deface it (the demo login is shared).
+  It makes no API calls besides images and the read-only `GET /api/demo/photos`; `/api/images/demo/*.jpg` falls back to the
   static file if R2 hasn't been seeded. Keep it that way: no writes or AI calls from `/demo`.
 - Locally, test with `wrangler pages dev dist --binding ADMIN_EMAILS=…` (don't pass `--d1 DB`; it ignores the migrated local DB).
 

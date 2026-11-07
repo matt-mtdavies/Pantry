@@ -1,0 +1,3 @@
+// The demo account's fixed user ID — kept alone so app code can check it
+// without bundling the demo content.
+export const DEMO_USER_ID = '00000000-de30-4000-8000-000000000001'

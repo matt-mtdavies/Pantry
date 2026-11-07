@@ -106,7 +106,8 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
   useEffect(() => {
     if (!id) return
     const load = demo
-      ? import('../lib/demo').then(m => m.getDemoRecipe(id) ?? Promise.reject(new Error('not found')))
+      ? Promise.all([import('../lib/demo'), import('../lib/demoPhotos').then(m => m.loadDemoPhotos())])
+          .then(([m]) => m.getDemoRecipe(id) ?? Promise.reject(new Error('not found')))
       : getRecipe(id)
     load
       .then(r => {

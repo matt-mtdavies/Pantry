@@ -85,5 +85,6 @@ export function timeAgo(timestamp: number): string {
 
 export function imageUrl(key: string | null): string | null {
   if (!key) return null
+  if (/^https?:\/\//.test(key)) return key // hotlinked (e.g. hand-picked Unsplash demo photos)
   return `/api/images/${encodeURIComponent(key)}`
 }
