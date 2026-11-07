@@ -26,7 +26,8 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       JOIN recipe_ratings rr ON r.id = rr.recipe_id
       WHERE u.is_public = 1 AND r.is_deleted = 0
       GROUP BY r.id
-      ORDER BY avg_rating DESC, rating_count DESC
+      -- Bayesian-weighted (same as /api/search): a lone 5★ doesn't top the board.
+      ORDER BY (2 * 3.5 + SUM(rr.rating)) / (2 + COUNT(rr.recipe_id)) DESC, rating_count DESC
       LIMIT 20
     `).all<Record<string, unknown>>(),
 

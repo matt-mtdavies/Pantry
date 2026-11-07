@@ -181,6 +181,13 @@
   border-top: 1px solid var(--surface);
 }
 
+.designationName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .designationCol {
   display: inline-flex;
   align-items: center;
@@ -193,9 +200,10 @@
   border: 1px solid #C8D4C2;
   padding: 2px var(--sp-2);
   border-radius: var(--radius-full);
-  max-width: 130px;
+  /* Use the card's width; only truncate names that genuinely don't fit. */
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

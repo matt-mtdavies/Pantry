@@ -2,6 +2,10 @@ import type { Env } from '../env'
 import { getRates } from '../lib/fx'
 import { CURRENCY_SYMBOL } from '../lib/currency'
 
+// Ranking: rating averaged with RATING_PRIOR_WEIGHT phantom ratings of RATING_PRIOR_MEAN.
+const RATING_PRIOR_MEAN = 3.5
+const RATING_PRIOR_WEIGHT = 2
+
 /** SQL expression for r.cost_per_serving converted into `target`. Codes come
  *  from our own currency table and factors are numbers, so inlining is safe
  *  (and keeps us well under D1's bound-parameter limit). */
@@ -99,7 +103,10 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
       WHERE ${wheres.join(' AND ')}
       GROUP BY r.id
-      ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC
+      -- Bayesian-weighted rating: a lone 5★ doesn't outrank several 5★s. Unrated last.
+      ORDER BY (COUNT(rr.recipe_id) > 0) DESC,
+               (${RATING_PRIOR_WEIGHT} * ${RATING_PRIOR_MEAN} + COALESCE(SUM(rr.rating), 0)) / (${RATING_PRIOR_WEIGHT} + COUNT(rr.recipe_id)) DESC,
+               rating_count DESC, r.created_at DESC
       LIMIT ? OFFSET ?
     `).bind(...binds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
     allRows = rows.results ?? []
@@ -122,7 +129,10 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
       WHERE ${wheres.join(' AND ')}
       GROUP BY r.id
-      ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC
+      -- Bayesian-weighted rating: a lone 5★ doesn't outrank several 5★s. Unrated last.
+      ORDER BY (COUNT(rr.recipe_id) > 0) DESC,
+               (${RATING_PRIOR_WEIGHT} * ${RATING_PRIOR_MEAN} + COALESCE(SUM(rr.rating), 0)) / (${RATING_PRIOR_WEIGHT} + COUNT(rr.recipe_id)) DESC,
+               rating_count DESC, r.created_at DESC
       LIMIT ? OFFSET ?
     `).bind(...fallbackBinds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
     allRows = rows.results ?? []
