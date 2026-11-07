@@ -1065,3 +1065,86 @@
 
 /* 28px visual, 44px hit area */
 .searchClear::after { content: ''; position: absolute; inset: -8px; }
+
+/* Recent searches (shown when the empty search box has focus) */
+.recents {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(var(--ink-rgb), 0.08);
+  padding: var(--sp-2);
+}
+
+.recentsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-1) var(--sp-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.recentsClear {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: var(--sp-1) var(--sp-2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.recentsClear:hover { color: var(--accent); }
+
+.recentsList { list-style: none; }
+
+.recentItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: var(--ink);
+  text-align: left;
+}
+
+.recentItem svg { color: var(--ink-muted); flex-shrink: 0; }
+.recentItem:hover { background: var(--surface); }
+
+/* Sort control (right end of the filter bar) */
+.sortLabel {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.sortSelect {
+  min-height: 38px;
+  padding: 0 var(--sp-3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--white);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  cursor: pointer;
+}

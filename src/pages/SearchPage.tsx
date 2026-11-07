@@ -21,6 +21,27 @@ const CUISINE_OPTIONS = [
   'Korean', 'Moroccan', 'Lebanese', 'Persian', 'Mediterranean',
 ]
 
+type SortKey = 'top' | 'new' | 'quick'
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'top', label: 'Top rated' },
+  { value: 'new', label: 'Newest' },
+  { value: 'quick', label: 'Quickest' },
+]
+
+const RECENTS_KEY = 'pantry-recent-searches'
+const MAX_RECENTS = 6
+
+function loadRecents(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(RECENTS_KEY) ?? '[]')
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, MAX_RECENTS) : []
+  } catch { return [] }
+}
+
+function saveRecents(list: string[]) {
+  try { localStorage.setItem(RECENTS_KEY, JSON.stringify(list)) } catch { /* storage unavailable */ }
+}
+
 interface Filters {
   author: string
   country: string
@@ -55,6 +76,23 @@ export default function SearchPage() {
   const [wizardOpen, setWizardOpen] = useState(false)
   const [wizardQuery, setWizardQuery] = useState('')
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [sort, setSort] = useState<SortKey>('top')
+  const sortRef = useRef<SortKey>('top')
+  sortRef.current = sort
+  const [recents, setRecents] = useState<string[]>(loadRecents)
+  const [searchFocused, setSearchFocused] = useState(false)
+
+  const rememberSearch = (q: string) => {
+    const term = q.trim()
+    if (term.length < 2) return
+    setRecents(prev => {
+      const next = [term, ...prev.filter(r => r.toLowerCase() !== term.toLowerCase())].slice(0, MAX_RECENTS)
+      saveRecents(next)
+      return next
+    })
+  }
+
+  const clearRecents = () => { setRecents([]); saveRecents([]) }
 
   const buildParams = (q: string, f: Filters, pg: number) => {
     const params = new URLSearchParams({ q })
@@ -67,6 +105,7 @@ export default function SearchPage() {
     }
     if (f.max_prep)     params.set('max_prep', f.max_prep)
     if (f.cuisine)      params.set('cuisine', f.cuisine)
+    if (sortRef.current !== 'top') params.set('sort', sortRef.current)
     if (pg > 0)        params.set('page', String(pg))
     return params.toString()
   }
@@ -113,6 +152,20 @@ export default function SearchPage() {
     debounce.current = setTimeout(() => doSearch(query, next), 350)
   }
 
+  const handleSortChange = (next: SortKey) => {
+    setSort(next)
+    sortRef.current = next
+    doSearch(query, filters)
+  }
+
+  const runRecent = (term: string) => {
+    if (debounce.current) clearTimeout(debounce.current)
+    setQuery(term)
+    rememberSearch(term)
+    setSearchFocused(false)
+    doSearch(term, filters)
+  }
+
   const clearFilters = () => {
     setFilters(EMPTY_FILTERS)
     doSearch(query, EMPTY_FILTERS)
@@ -136,13 +189,21 @@ export default function SearchPage() {
         <div className={styles.hero}>
           <div className="wide-col">
             <h1 className={styles.heroTitle}>Explore recipes</h1>
-            <p className={styles.heroSub}>Browse dishes shared by the community, ranked by rating.</p>
-            <div className={styles.searchWrap}>
+            <p className={styles.heroSub}>Browse dishes shared by the community.</p>
+            <div
+              className={styles.searchWrap}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setSearchFocused(false) }}
+            >
               <SearchIcon size={15} className={styles.searchIcon} />
               <input
                 type="search"
                 value={query}
                 onChange={e => handleQueryChange(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { rememberSearch(query); (e.target as HTMLInputElement).blur() }
+                  if (e.key === 'Escape') setSearchFocused(false)
+                }}
                 placeholder="Search by name, ingredient, tag…"
                 className={`${styles.search} ${query ? styles.searchHasValue : ''}`}
                 aria-label="Search all recipes"
@@ -158,6 +219,23 @@ export default function SearchPage() {
                     <line x1="12" y1="2" x2="2" y2="12" />
                   </svg>
                 </button>
+              )}
+              {searchFocused && !query && recents.length > 0 && (
+                <div className={styles.recents}>
+                  <div className={styles.recentsHead}>
+                    <span id="recent-searches-label">Recent searches</span>
+                    <button type="button" className={styles.recentsClear} onClick={clearRecents}>Clear</button>
+                  </div>
+                  <ul aria-labelledby="recent-searches-label" className={styles.recentsList}>
+                    {recents.map(term => (
+                      <li key={term}>
+                        <button type="button" className={styles.recentItem} onClick={() => runRecent(term)}>
+                          <SearchIcon size={13} /> {term}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
             <button className={styles.dinnerBtn} onClick={() => setWizardOpen(true)}>
@@ -190,6 +268,16 @@ export default function SearchPage() {
             {activeCount > 0 && (
               <button className={styles.clearFilters} onClick={clearFilters}>Clear all</button>
             )}
+            <label className={styles.sortLabel}>
+              <span>Sort</span>
+              <select
+                className={styles.sortSelect}
+                value={sort}
+                onChange={e => handleSortChange(e.target.value as SortKey)}
+              >
+                {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </label>
           </div>
 
           {/* Filter panel */}
@@ -311,7 +399,7 @@ export default function SearchPage() {
           ) : (
             <>
               <p className={styles.count}>{results.length}{hasMore ? '+' : ''} recipe{results.length !== 1 ? 's' : ''}</p>
-              <div className={styles.grid}>
+              <div className={styles.grid} onClickCapture={() => rememberSearch(query)}>
                 {results.map(r => (
                   <RecipeCard
                     key={r.id}

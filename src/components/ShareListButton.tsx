@@ -26,7 +26,7 @@ export function ShareListButton({ items, recipeName }: Props) {
   const hasNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
   return (
-    <div className={styles.row}>
+    <div className={`${styles.row} no-print`}>
       <button
         className={`${styles.btn} ${state === 'copied' ? styles.success : ''}`}
         onClick={handleShare}

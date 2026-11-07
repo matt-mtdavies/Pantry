@@ -4,7 +4,7 @@ import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
 import { scaleIngredient, detectTimerMinutes } from '../lib/utils'
 import { useWakeLock } from '../hooks/useWakeLock'
-import { useAuth } from '../hooks/useAuth'
+import { useUnitSystem } from '../hooks/useUnitSystem'
 import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe, Ingredient } from '../types'
 import styles from './CookModePage.module.css'
@@ -71,12 +71,23 @@ export default function CookModePage() {
   const [ttsSpeaking, setTtsSpeaking] = useState(false)
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
+  const celebBtnRef = useRef<HTMLAnchorElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null)
   const audioCacheRef = useRef<Map<string, AudioBuffer>>(new Map())
   const { acquire, release } = useWakeLock()
-  const { user } = useAuth()
+  const [unitPref] = useUnitSystem()
+
+  // Celebration overlay: focus its main action, and let Escape dismiss it
+  // (back to the last step) so it is never a single-exit takeover.
+  useEffect(() => {
+    if (!showCelebration) return
+    celebBtnRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowCelebration(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showCelebration])
 
   // Global persistent timer
   const [timerSecs, setTimerSecs] = useState(0)
@@ -210,13 +221,12 @@ export default function CookModePage() {
   const scaledIngredients = useMemo<Ingredient[]>(() => {
     if (!recipe) return []
     const base = recipe.servings ?? servings
-    const unitPref = user?.unit_system ?? 'metric'
     return recipe.ingredients.map(ing => {
       const scaled = scaleIngredient(ing, base, servings)
       const c = convertIngredient(scaled.amount, scaled.unit, unitPref)
       return { ...scaled, amount: c.amount, unit: c.unit }
     })
-  }, [recipe, servings, user?.unit_system])
+  }, [recipe, servings, unitPref])
 
   // ── TTS ─────────────────────────────────────────────────────────────────────
 
@@ -272,7 +282,7 @@ export default function CookModePage() {
 
   const speakStep = async (stepIndex: number) => {
     if (!recipe) return
-    const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
+    const text = convertStepText(recipe.steps[stepIndex], unitPref)
     await speakText(text)
   }
 
@@ -316,7 +326,7 @@ export default function CookModePage() {
 
   if (!recipe) return null
 
-  const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
+  const step = convertStepText(recipe.steps[currentStep], unitPref)
   const stepTimers = detectTimerMinutes(recipe.steps[currentStep] ?? '')
   const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
   const timerM = Math.floor(timerSecs / 60)
@@ -657,6 +667,16 @@ export default function CookModePage() {
 
       {showCelebration && (
         <div className={styles.celebration} role="dialog" aria-modal="true" aria-label="Recipe complete">
+          <button
+            type="button"
+            className={styles.celebClose}
+            onClick={() => setShowCelebration(false)}
+            aria-label="Close and stay in cook mode"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <line x1="4" y1="4" x2="14" y2="14" /><line x1="14" y1="4" x2="4" y2="14" />
+            </svg>
+          </button>
           <div className={styles.clocheScene}>
             <svg viewBox="0 0 200 200" className={styles.clocheSvg} aria-hidden="true">
               <ellipse cx="100" cy="179" rx="82" ry="11" fill="#3A3530" />
@@ -695,7 +715,7 @@ export default function CookModePage() {
           </div>
           <h2 className={styles.celebHeading}>Nicely done!</h2>
           <p className={styles.celebSub}>{recipe.title}</p>
-          <Link to={`/recipe/${recipe.id}`} className={styles.celebBtn}>
+          <Link ref={celebBtnRef} to={`/recipe/${recipe.id}`} className={styles.celebBtn}>
             Back to recipe →
           </Link>
         </div>

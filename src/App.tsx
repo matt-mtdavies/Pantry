@@ -22,6 +22,7 @@ import PublicProfilePage from './pages/PublicProfilePage'
 import ChefsPage from './pages/ChefsPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
+import NotFoundPage from './pages/NotFoundPage'
 import Onboarding from './components/Onboarding'
 
 export const OnboardingContext = createContext<{ open: () => void } | null>(null)
@@ -82,6 +83,7 @@ function AppRoutes() {
               </Suspense>
             </ProtectedRoute>
           } />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
       {showOnboarding && <Onboarding onClose={closeOnboarding} />}

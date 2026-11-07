@@ -73,6 +73,14 @@ export async function extractFromUrl(url: string): Promise<ExtractedRecipe> {
   })
 }
 
+/** The caller's own recipe already imported from this URL, if any. */
+export async function findRecipeBySource(url: string): Promise<{ id: string; title: string } | null> {
+  const res = await request<{ recipe: { id: string; title: string } | null }>(
+    `/api/recipes/by-source?url=${encodeURIComponent(url)}`,
+  )
+  return res.recipe
+}
+
 // Image search (Unsplash proxy — returns empty array if UNSPLASH_ACCESS_KEY not set)
 
 export async function searchImages(query: string): Promise<{ url: string; thumb: string }[]> {

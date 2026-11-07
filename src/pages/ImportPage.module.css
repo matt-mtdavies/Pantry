@@ -192,6 +192,7 @@
 
 .urlInput {
   flex: 1;
+  min-width: 0; /* let the field shrink so the Import button stays on screen at 390px */
   padding: var(--sp-3) var(--sp-4);
   border: 1.5px solid #E8E0D4;
   border-radius: var(--radius-md);
@@ -1012,3 +1013,52 @@
   flex: 1;
   min-width: 0;
 }
+
+.duplicate {
+  margin-top: var(--sp-1);
+  padding: var(--sp-4);
+  background: var(--terra-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.duplicateText {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  margin-bottom: var(--sp-3);
+}
+
+.duplicateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.duplicateOpen {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--accent);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.duplicateOpen:hover { background: var(--accent-strong); }
+
+.duplicateAgain {
+  padding: var(--sp-2) var(--sp-4);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.duplicateAgain:hover { background: var(--surface); color: var(--ink); }

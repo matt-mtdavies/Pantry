@@ -12,6 +12,8 @@ import { ShareListButton } from '../components/ShareListButton'
 import { Avatar } from '../components/Avatar'
 import { BackButton } from '../components/BackButton'
 import ServingsStepper from '../components/ServingsStepper'
+import UnitToggle from '../components/UnitToggle'
+import { useUnitSystem } from '../hooks/useUnitSystem'
 import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
 
@@ -52,19 +54,19 @@ export default function RecipePage() {
   const [newColName, setNewColName] = useState('')
   const [creatingCol, setCreatingCol] = useState(false)
   const [servings, setServings] = useState<number | null>(null)
+  const [unitPref, setUnitPref] = useUnitSystem()
 
   // Reset the scaler whenever a different recipe loads.
   useEffect(() => { setServings(recipe?.servings ?? null) }, [recipe?.id, recipe?.servings])
 
   const displayIngredients = useMemo(() => {
     if (!recipe) return []
-    const unitPref = user?.unit_system ?? 'metric'
     return recipe.ingredients.map(ing => {
       const scaled = recipe.servings && servings ? scaleIngredient(ing, recipe.servings, servings) : ing
       const c = convertIngredient(scaled.amount, scaled.unit, unitPref)
       return { name: ing.name, amount: c.amount, unit: c.unit }
     })
-  }, [recipe, servings, user?.unit_system])
+  }, [recipe, servings, unitPref])
 
   useEffect(() => {
     if (!id) return
@@ -251,7 +253,7 @@ export default function RecipePage() {
             </button>
           </div>
         ) : (
-          <div className={styles.noHeroBack}>
+          <div className={`${styles.noHeroBack} no-print`}>
             <BackButton variant="subtle" fallback="/" />
           </div>
         )}
@@ -371,6 +373,13 @@ export default function RecipePage() {
                   </svg>
                 </button>
               )}
+              <button className={styles.iconBtn} onClick={() => window.print()} aria-label="Print recipe" title="Print recipe">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4.5 6.5V1.5h9v5"/>
+                  <rect x="1.5" y="6.5" width="15" height="7" rx="1.5"/>
+                  <rect x="4.5" y="10.5" width="9" height="6" rx="0.5" fill="var(--white)"/>
+                </svg>
+              </button>
               {isOwner && (
                 <Link to={`/recipe/${recipe.id}/edit`} className={styles.iconBtn} aria-label="Edit recipe"><EditIcon size={18} /></Link>
               )}
@@ -456,9 +465,12 @@ export default function RecipePage() {
           <section className={styles.section} aria-labelledby="ingredients-heading">
             <div className={styles.sectionHeader}>
               <h2 id="ingredients-heading" className={styles.sectionTitle}>Ingredients</h2>
-              {recipe.servings != null && servings != null && (
-                <ServingsStepper value={servings} onChange={setServings} base={recipe.servings} />
-              )}
+              <div className={styles.ingControls}>
+                {recipe.servings != null && servings != null && (
+                  <ServingsStepper value={servings} onChange={setServings} base={recipe.servings} />
+                )}
+                <UnitToggle value={unitPref} onChange={setUnitPref} />
+              </div>
             </div>
             <ul className={styles.ingredients}>
               {displayIngredients.map((ing, i) => (
@@ -482,7 +494,6 @@ export default function RecipePage() {
             <h2 id="method-heading" className={styles.sectionTitle}>Method</h2>
             <ol className={styles.steps}>
               {recipe.steps.map((step, i) => {
-                const unitPref = user?.unit_system ?? 'metric'
                 const text = convertStepText(step, unitPref)
                 return (
                   <li key={i} className={styles.step}>
@@ -496,7 +507,7 @@ export default function RecipePage() {
 
           {/* Star rating widget for non-owners */}
           {!isOwner && (
-            <div className={styles.ratingWidget}>
+            <div className={`${styles.ratingWidget} no-print`}>
               <p className={styles.ratingWidgetLabel}>
                 {recipe.my_rating ? 'Your rating' : 'Rate this recipe'}
               </p>
@@ -522,7 +533,7 @@ export default function RecipePage() {
           )}
 
           {isOwner && (
-            <div className={styles.dangerZone}>
+            <div className={`${styles.dangerZone} no-print`}>
               {confirmDelete ? (
                 <div className={styles.confirmBox}>
                   <p className={styles.confirmText}>Are you sure you want to delete this recipe? This can't be undone.</p>

@@ -277,3 +277,12 @@ body.has-verify-banner { --banner-height: 40px; }
 /* === SAFE AREA INSETS === */
 .pb-safe { padding-bottom: max(var(--sp-6), env(safe-area-inset-bottom)); }
 .pt-safe { padding-top: max(var(--sp-6), env(safe-area-inset-top)); }
+
+/* Print: recipes print as clean ink-on-paper pages. Controls and chrome are
+   hidden; anything else that shouldn't print takes the .no-print class. */
+@media print {
+  .no-print, button, [role="dialog"] { display: none !important; }
+  html, body { background: #FFFFFF !important; }
+  .page-main { padding-top: 0 !important; padding-bottom: 0 !important; }
+  a { color: inherit; text-decoration: none; }
+}

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import SaltGrinder from '../components/SaltGrinder'
-import { extractFromScreenshots, extractFromUrl, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
+import { extractFromScreenshots, extractFromUrl, findRecipeBySource, createRecipe, uploadImage, searchImages, fetchRecipeImage } from '../lib/api'
 import { formatTime } from '../lib/utils'
 import type { ExtractedRecipe, Ingredient } from '../types'
 import { ArrowUpIcon, ArrowDownIcon } from '../components/icons'
@@ -55,6 +55,8 @@ export default function ImportPage() {
   const [dragOver, setDragOver] = useState(false)
   const [urlInput, setUrlInput] = useState('')
   const [capNotice, setCapNotice] = useState(false)
+  const [duplicate, setDuplicate] = useState<{ id: string; title: string; url: string } | null>(null)
+  const [checkingUrl, setCheckingUrl] = useState(false)
 
   useEffect(() => {
     if (stage !== 'extracting') return
@@ -116,9 +118,20 @@ export default function ImportPage() {
     }
   }
 
-  const handleExtractUrl = async () => {
+  const handleExtractUrl = async (force = false) => {
     const url = urlInput.trim()
-    if (!url) return
+    if (!url || checkingUrl) return
+    setDuplicate(null)
+    if (!force) {
+      // Offer the existing copy rather than importing the same link twice.
+      setCheckingUrl(true)
+      const existing = await findRecipeBySource(url).catch(() => null)
+      setCheckingUrl(false)
+      if (existing) {
+        setDuplicate({ ...existing, url })
+        return
+      }
+    }
     setExtractMode('url')
     setStage('extracting')
     try {
@@ -162,8 +175,8 @@ export default function ImportPage() {
             <SaltGrinder size={64} />
             <h2 className={styles.extractingTitle}>{msgs[progressIdx]}</h2>
             <p className={styles.extractingText}>
-              Claude is pulling out all the ingredients and steps.
-              This takes about 10–15 seconds.
+              Pulling out all the ingredients and steps.
+              This takes about 10–20 seconds.
             </p>
             <div className={styles.progressDots}>
               {msgs.map((_, i) => (
@@ -192,8 +205,8 @@ export default function ImportPage() {
           <div className={styles.header}>
             <h1 className={styles.title}>Import recipe</h1>
             <p className={styles.sub}>
-              Paste a link from any recipe site, or drop in a screenshot — Claude will
-              pull out all the ingredients and steps automatically.
+              Paste a link from any recipe site, or add a screenshot — we'll pull out
+              all the ingredients and steps automatically.
             </p>
           </div>
 
@@ -209,6 +222,46 @@ export default function ImportPage() {
               </div>
             </div>
           )}
+
+          {/* URL import */}
+          <div className={styles.urlSection}>
+            <p className={styles.urlLabel}>Paste a recipe link</p>
+            <div className={styles.urlRow}>
+              <input
+                className={styles.urlInput}
+                type="url"
+                placeholder="Paste a link, e.g. bbcgoodfood.com/recipes/…"
+                value={urlInput}
+                onChange={e => { setUrlInput(e.target.value); setDuplicate(null) }}
+                onKeyDown={e => { if (e.key === 'Enter') handleExtractUrl() }}
+                aria-label="Recipe URL"
+              />
+              <button
+                className={styles.urlBtn}
+                onClick={() => handleExtractUrl()}
+                disabled={!urlInput.trim() || checkingUrl}
+              >
+                {checkingUrl ? 'Checking…' : 'Import →'}
+              </button>
+            </div>
+            {duplicate && duplicate.url === urlInput.trim() && (
+              <div className={styles.duplicate} role="status">
+                <p className={styles.duplicateText}>
+                  You've already saved this one as <strong>{duplicate.title}</strong>.
+                </p>
+                <div className={styles.duplicateActions}>
+                  <Link to={`/recipe/${duplicate.id}`} className={styles.duplicateOpen}>Open it</Link>
+                  <button className={styles.duplicateAgain} onClick={() => handleExtractUrl(true)}>
+                    Import a new copy
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={styles.divider}>
+            <span className={styles.dividerText}>or</span>
+          </div>
 
           {/* Drop zone */}
           <div
@@ -307,32 +360,6 @@ export default function ImportPage() {
             </div>
           )}
 
-          <div className={styles.divider}>
-            <span className={styles.dividerText}>or</span>
-          </div>
-
-          {/* URL import */}
-          <div className={styles.urlSection}>
-            <p className={styles.urlLabel}>Paste a recipe link</p>
-            <div className={styles.urlRow}>
-              <input
-                className={styles.urlInput}
-                type="url"
-                placeholder="Paste a link, e.g. bbcgoodfood.com/recipes/…"
-                value={urlInput}
-                onChange={e => setUrlInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleExtractUrl() }}
-                aria-label="Recipe URL"
-              />
-              <button
-                className={styles.urlBtn}
-                onClick={handleExtractUrl}
-                disabled={!urlInput.trim()}
-              >
-                Import →
-              </button>
-            </div>
-          </div>
 
           <div className={styles.divider}>
             <span className={styles.dividerText}>or</span>

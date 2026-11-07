@@ -126,8 +126,8 @@ export default function RecipeCard({
         {collectionNames && collectionNames.length > 0 && (
           <div className={styles.designations}>
             {collectionNames.map(name => (
-              <span key={name} className={styles.designationCol}>
-                <CollectionIcon size={10} /> In: {name}
+              <span key={name} className={styles.designationCol} title={`In: ${name}`}>
+                <CollectionIcon size={10} /> <span className={styles.designationName}>In: {name}</span>
               </span>
             ))}
           </div>

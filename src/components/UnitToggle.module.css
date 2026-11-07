@@ -1,0 +1,27 @@
+.wrap {
+  display: inline-flex;
+  padding: 3px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--white);
+}
+
+.opt {
+  min-height: 34px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: transparent;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.opt:hover:not(.active) { color: var(--ink); }
+
+.active {
+  background: var(--terra-light);
+  color: var(--accent-strong);
+  font-weight: 600;
+}

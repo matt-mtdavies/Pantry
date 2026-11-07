@@ -275,3 +275,7 @@
     background: var(--accent-strong);
   }
 }
+
+@media print {
+  .nav, .mobileNav, .fab, .verifyBanner { display: none !important; }
+}
