@@ -6,6 +6,8 @@ import PublicRecipeView from '../components/PublicRecipeView'
 import { getSharedRecipe } from '../lib/api'
 import { useAuth } from '../hooks/useAuth'
 import { useRecipeMeta } from '../hooks/useDocumentMeta'
+import { useDemoPhotos } from '../lib/demoPhotos'
+import { DEMO_USER_ID } from '../../shared/demoIdentity'
 import type { Recipe } from '../types'
 import styles from '../components/PublicRecipeView.module.css'
 
@@ -26,6 +28,8 @@ export default function SharePage() {
   }, [token])
 
   useRecipeMeta(recipe, token ? `/share/${token}` : null)
+  const { picks: demoPhotos } = useDemoPhotos(recipe?.user_id === DEMO_USER_ID)
+  const demoCredit = recipe && demoPhotos[recipe.id]?.url === recipe.hero_image_key ? demoPhotos[recipe.id] : null
 
   if (loading) {
     return (
@@ -53,6 +57,7 @@ export default function SharePage() {
   return (
     <PublicRecipeView
       recipe={recipe}
+      photoCredit={demoCredit}
       bannerText={recipe.author_name ? `${recipe.author_name} shared this recipe with you` : 'A recipe shared with you'}
       bannerAction={user ? (
         <button className={styles.saveBtn} onClick={() => navigate(`/recipe/${recipe.id}`)}>

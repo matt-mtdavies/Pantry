@@ -3,7 +3,7 @@
 // public read-only demo (/demo) renders. One source, so they can't drift.
 // No credentials here — this file is bundled into the web app.
 
-export const DEMO_USER_ID = '00000000-de30-4000-8000-000000000001'
+export { DEMO_USER_ID } from './demoIdentity'
 export const DEMO_DISPLAY_NAME = 'Demo Cook'
 
 /** Demo photos: static assets in public/demo/<name>.jpg, copied into R2 as

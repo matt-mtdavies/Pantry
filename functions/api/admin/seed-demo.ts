@@ -4,6 +4,7 @@ import {
   DEMO_PHOTOS, demoPhotoKey, demoPhotoAsset, DEMO_SHARE_TOKEN,
   DEMO_RECIPES, DEMO_COLLECTIONS,
 } from '../../lib/demo'
+import { getDemoPhotoPicks } from '../../lib/demoPhotos'
 
 // Create or reset the demo account to its exact seed state.
 //
@@ -86,6 +87,8 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   }
 
   const passwordHash = await hashPassword(DEMO_PASSWORD)
+  // Hand-picked Unsplash photos (if any) win over the bundled CC0 photos.
+  const photoPicks = await getDemoPhotoPicks(ctx.env)
 
   // ── One transaction: wipe demo-owned rows, then insert the seed ──────────
   const now = Math.floor(Date.now() / 1000)
@@ -148,7 +151,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
     `).bind(
       r.id, DEMO_USER_ID, r.title, r.description, r.servings, r.prep_time, r.cook_time,
       JSON.stringify(r.ingredients), JSON.stringify(r.steps), JSON.stringify(r.tags),
-      r.source_guess ?? null, r.source_url ?? null, r.photo ? demoPhotoKey(r.photo) : null,
+      r.source_guess ?? null, r.source_url ?? null, photoPicks[r.id]?.url ?? (r.photo ? demoPhotoKey(r.photo) : null),
       r.favourite ? 1 : 0,
       r.share ? DEMO_SHARE_TOKEN : null, r.share ? now + 30 * 24 * 60 * 60 : null,
       r.calories_per_serving, r.cost_per_serving, ts, ts,

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta'
 import { saveTourProgress, TOUR_SCENE_COUNT } from '../../lib/tourState'
+import { useDemoPhotos } from '../../lib/demoPhotos'
 import {
   RecipeBoxScene, ImportScene, ScaleScene, CookScene, PickerScene, OrganiseScene, EndScene,
 } from './scenes'
@@ -50,6 +51,7 @@ export default function TourPage() {
   const scene = SCENES[index]
   const isEnd = scene.seconds == null
   const stageRef = useRef<HTMLDivElement>(null)
+  const { ready: photosReady } = useDemoPhotos()
 
   useDocumentMeta({
     title: 'Pantry tour · 2 minutes',
@@ -71,10 +73,10 @@ export default function TourPage() {
 
   // Autoplay clock.
   useEffect(() => {
-    if (!playing || isEnd) return
+    if (!playing || isEnd || !photosReady) return
     const t = setInterval(() => setElapsed(e => e + 100), 100)
     return () => clearInterval(t)
-  }, [playing, isEnd, index])
+  }, [playing, isEnd, index, photosReady])
 
   useEffect(() => {
     if (scene.seconds != null && elapsed >= scene.seconds * 1000) go(index + 1)
@@ -144,12 +146,12 @@ export default function TourPage() {
           // Interacting with a scene pauses autoplay so it doesn't move on mid-click.
           onPointerDown={() => !isEnd && setPlaying(false)}
         >
-          {index === 0 && <RecipeBoxScene />}
-          {index === 1 && <ImportScene />}
-          {index === 2 && <ScaleScene />}
-          {index === 3 && <CookScene />}
-          {index === 4 && <PickerScene />}
-          {index === 5 && <OrganiseScene />}
+          {photosReady && index === 0 && <RecipeBoxScene />}
+          {photosReady && index === 1 && <ImportScene />}
+          {photosReady && index === 2 && <ScaleScene />}
+          {photosReady && index === 3 && <CookScene />}
+          {photosReady && index === 4 && <PickerScene />}
+          {photosReady && index === 5 && <OrganiseScene />}
           {index === 6 && <EndScene onReplay={() => { setPlaying(true); go(0) }} />}
         </div>
       </main>

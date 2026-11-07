@@ -10,7 +10,8 @@ export const onRequestDelete: PagesFunction<Env> = async (ctx) => {
 
   if (!existing) return json({ error: 'Not found' }, 404)
 
-  if (existing.hero_image_key && ctx.env.R2) {
+  // Shared demo photos (demo/…) and hotlinked URLs aren't this recipe's to delete.
+  if (existing.hero_image_key && ctx.env.R2 && !/^(demo\/|https?:)/.test(existing.hero_image_key)) {
     await ctx.env.R2.delete(existing.hero_image_key).catch(() => {})
   }
 

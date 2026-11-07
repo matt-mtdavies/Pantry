@@ -13,6 +13,9 @@ import { Avatar } from '../components/Avatar'
 import { BackButton } from '../components/BackButton'
 import ServingsStepper from '../components/ServingsStepper'
 import UnitToggle from '../components/UnitToggle'
+import PhotoCredit from '../components/PhotoCredit'
+import { useDemoPhotos } from '../lib/demoPhotos'
+import { DEMO_USER_ID } from '../../shared/demoIdentity'
 import { useUnitSystem } from '../hooks/useUnitSystem'
 import type { Recipe, Collection } from '../types'
 import styles from './RecipePage.module.css'
@@ -55,6 +58,9 @@ export default function RecipePage() {
   const [creatingCol, setCreatingCol] = useState(false)
   const [servings, setServings] = useState<number | null>(null)
   const [unitPref, setUnitPref] = useUnitSystem()
+  // Demo account recipes may use a hand-picked Unsplash photo, which must be credited.
+  const { picks: demoPhotos } = useDemoPhotos(recipe?.user_id === DEMO_USER_ID)
+  const demoCredit = recipe && demoPhotos[recipe.id]?.url === recipe.hero_image_key ? demoPhotos[recipe.id] : null
 
   // Reset the scaler whenever a different recipe loads.
   useEffect(() => { setServings(recipe?.servings ?? null) }, [recipe?.id, recipe?.servings])
@@ -199,6 +205,7 @@ export default function RecipePage() {
         {recipe.hero_image_key ? (
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
+            {demoCredit && <PhotoCredit credit={demoCredit} overlay />}
             <BackButton className={styles.heroBackBtn} fallback="/" />
             <button
               className={styles.heroShareBtn}

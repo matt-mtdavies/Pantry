@@ -4,7 +4,11 @@ import AuthCard from '../components/AuthCard'
 import RecipeCard from '../components/RecipeCard'
 import TourPill from '../components/TourPill'
 import { ShareIcon, CollectionIcon, ClockIcon, IngredientIcon } from '../components/icons'
-import { demoRecipes } from '../lib/demo'
+import { getDemoRecipes } from '../lib/demo'
+import { useDemoPhotos } from '../lib/demoPhotos'
+import PhotoCredit from '../components/PhotoCredit'
+import { PICKER_INPUT, PICKER_IDEAS, shoppingLabel } from '../lib/demoPicker'
+import { imageUrl } from '../lib/utils'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import styles from './LandingPage.module.css'
 
@@ -52,7 +56,10 @@ export default function LandingPage() {
     if (hash === '#get-started') document.getElementById('get-started')?.scrollIntoView({ block: 'start' })
   }, [hash])
 
-  const picks = DEMO_PICKS.map(id => demoRecipes.find(r => r.id === id)!).filter(Boolean)
+  const { ready, picks: photoPicks } = useDemoPhotos()
+  const demoRecipes = ready ? getDemoRecipes() : []
+  const picks = DEMO_PICKS.map(id => demoRecipes.find(r => r.id === id)).filter((r): r is NonNullable<typeof r> => !!r)
+  const heroCredit = photoPicks[DEMO_PICKS[0]] ?? null
 
   return (
     <div className={styles.page}>
@@ -86,13 +93,14 @@ export default function LandingPage() {
             </p>
           </div>
           <Link to="/demo/recipe/de300000000000000000000000000001" className={styles.heroVisual} aria-label="Open the Shakshuka demo recipe">
-            <img src="/demo/shakshuka.jpg" alt="Shakshuka in a cast-iron pan" className={styles.heroImg} />
+            {ready && <img src={heroCredit?.url ?? '/demo/shakshuka.jpg'} alt="Shakshuka in a cast-iron pan" className={styles.heroImg} />}
             <div className={styles.heroCard}>
               <span className={styles.heroCardEyebrow}>From the demo</span>
               <span className={styles.heroCardTitle}>Shakshuka</span>
               <span className={styles.heroCardMeta}>30 min · serves 2 · 10 ingredients</span>
             </div>
           </Link>
+          {heroCredit && <div className={styles.heroCredit}><PhotoCredit credit={heroCredit} /></div>}
         </section>
 
         <section className={styles.steps} aria-labelledby="how-heading">
@@ -118,14 +126,27 @@ export default function LandingPage() {
               for anything you're missing. Save the one you like in a tap.
             </p>
           </div>
-          <div className={styles.pickerMock} aria-hidden="true">
-            <span className={styles.chip}>eggs</span>
-            <span className={styles.chip}>spinach</span>
-            <span className={styles.chip}>feta</span>
-            <span className={styles.pickerArrow}>→</span>
-            <span className={styles.pickerIdea}>Spinach &amp; feta omelette</span>
-            <span className={styles.pickerIdea}>Shakshuka with greens</span>
-            <span className={styles.pickerIdea}>Spanakopita-style bake</span>
+          <div className={styles.pickerMock}>
+            <div className={styles.pickerTop}>
+              {PICKER_INPUT.map(c => <span key={c} className={styles.chip}>{c}</span>)}
+              <span className={styles.pickerExample}>Example result</span>
+            </div>
+            <ul className={styles.pickerIdeas}>
+              {PICKER_IDEAS.map(idea => {
+                const r = demoRecipes.find(x => x.id === idea.recipeId)
+                return (
+                  <li key={idea.recipeId}>
+                    <Link to={`/demo/recipe/${idea.recipeId}`} className={styles.pickerIdea}>
+                      {r?.hero_image_key ? <img src={imageUrl(r.hero_image_key)!} alt="" className={styles.pickerImg} /> : <span className={styles.pickerImg} />}
+                      <span className={styles.pickerText}>
+                        <span className={styles.pickerTitle}>{r?.title ?? '…'}</span>
+                        <span className={styles.pickerMeta}>{idea.time} · {shoppingLabel(idea.shopping)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </section>
 

@@ -209,14 +209,16 @@
 
 .idea {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--sp-4) var(--sp-5);
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--ivory);
 }
 
+.ideaImg { width: 72px; height: 72px; flex-shrink: 0; object-fit: cover; border-radius: var(--radius-md); background: var(--surface); }
+.ideaText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .ideaTitle { font-family: var(--font-display); font-size: var(--text-lg); }
 .ideaMeta { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink-soft); }
 
@@ -314,12 +316,15 @@
   .importResult { grid-template-columns: 1fr; }
   .importImg { aspect-ratio: 16 / 9; }
   .scaleHead { padding-right: 0; padding-top: var(--sp-6); margin-bottom: var(--sp-3); }
-  .scaleImg { display: none; }
+  .scaleImg { width: 56px; height: 56px; }
   .scaleTitle { font-size: var(--text-xl); }
   .scaleList li { grid-template-columns: 6rem 1fr; font-size: var(--text-sm); }
   .cookStage { margin: calc(-1 * var(--sp-4)); grid-template-columns: 1fr; min-height: 340px; }
-  .cookSide { display: none; }
-  .cookMain { padding: var(--sp-6) var(--sp-5); }
+  .cookSide { display: block; padding: var(--sp-4) var(--sp-5) 0; border-right: 0; }
+  .cookSide ul { flex-direction: row; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); }
+  .cookSide li:nth-child(n+5) { display: none; }
+  .cookSideTitle { margin-bottom: var(--sp-2); }
+  .cookMain { padding: var(--sp-4) var(--sp-5) var(--sp-6); }
   .cookStep { font-size: var(--text-2xl); }
   .colGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .endCtas > * { flex: 1 1 100%; }

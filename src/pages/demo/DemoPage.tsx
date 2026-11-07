@@ -4,7 +4,8 @@ import DemoBar from '../../components/DemoBar'
 import RecipeCard from '../../components/RecipeCard'
 import TourPill from '../../components/TourPill'
 import { HeartIcon, CollectionIcon } from '../../components/icons'
-import { demoRecipes, demoCollections, DEMO_OWNER_NAME } from '../../lib/demo'
+import { getDemoRecipes, demoCollections, DEMO_OWNER_NAME } from '../../lib/demo'
+import { useDemoPhotos } from '../../lib/demoPhotos'
 import { useDocumentMeta } from '../../hooks/useDocumentMeta'
 import styles from './DemoPage.module.css'
 
@@ -12,6 +13,9 @@ type Filter = 'all' | 'favourites' | string // or a collection id
 
 export default function DemoPage() {
   const [filter, setFilter] = useState<Filter>('all')
+  const { ready, picks } = useDemoPhotos()
+  const demoRecipes = ready ? getDemoRecipes() : []
+  const credits = [...new Map(Object.values(picks).map(p => [p.photographer_url, p])).values()]
 
   useDocumentMeta({
     title: 'Demo pantry · Pantry',
@@ -39,7 +43,7 @@ export default function DemoPage() {
           <p className={styles.eyebrow}>Demo pantry</p>
           <h1 className={styles.title}>{DEMO_OWNER_NAME}'s recipes</h1>
           <p className={styles.sub}>
-            {demoRecipes.length} recipes, saved the way you'd save yours: one imported from a recipe site,
+            10 recipes, saved the way you'd save yours: one imported from a recipe site,
             the rest typed in. Open one, scale it, switch units, or start cook mode.
           </p>
         </div>
@@ -60,7 +64,8 @@ export default function DemoPage() {
           ))}
         </div>
 
-        <div className={styles.grid}>
+        <div className={styles.grid} aria-busy={!ready}>
+          {!ready && Array.from({ length: 6 }, (_, i) => <div key={i} className={styles.skeleton} aria-hidden="true" />)}
           {visible.map(r => (
             <RecipeCard
               key={r.id}
@@ -70,6 +75,18 @@ export default function DemoPage() {
             />
           ))}
         </div>
+
+        {credits.length > 0 && (
+          <p className={styles.credits}>
+            Photos on <a href="https://unsplash.com/?utm_source=pantry&utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a> by{' '}
+            {credits.map((c, i) => (
+              <span key={c.photographer_url}>
+                {i > 0 && (i === credits.length - 1 ? ' and ' : ', ')}
+                <a href={c.photographer_url} target="_blank" rel="noopener noreferrer">{c.photographer}</a>
+              </span>
+            ))}.
+          </p>
+        )}
 
         <section className={styles.cta}>
           <h2 className={styles.ctaTitle}>Start your own recipe box</h2>

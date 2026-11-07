@@ -5,6 +5,8 @@ import type { Recipe } from '../types'
 import ServingsStepper from './ServingsStepper'
 import UnitToggle from './UnitToggle'
 import { useUnitSystem } from '../hooks/useUnitSystem'
+import PhotoCredit from './PhotoCredit'
+import type { DemoPhotoCredit } from '../lib/demoPhotos'
 import styles from './PublicRecipeView.module.css'
 
 interface Props {
@@ -15,10 +17,12 @@ interface Props {
   /** Rendered under the meta row, e.g. a "Cook this recipe" button. Gets the scaled servings. */
   actions?: (servings: number | null) => ReactNode
   footer?: ReactNode
+  /** Attribution shown on the hero photo (hotlinked Unsplash photos). */
+  photoCredit?: DemoPhotoCredit | null
 }
 
 /** Read-only recipe page for visitors: shared links and the public demo. */
-export default function PublicRecipeView({ recipe, bannerText, bannerAction, actions, footer }: Props) {
+export default function PublicRecipeView({ recipe, bannerText, bannerAction, actions, footer, photoCredit }: Props) {
   const [servings, setServings] = useState<number | null>(recipe.servings ?? null)
   const [unitPref, setUnitPref] = useUnitSystem()
   useEffect(() => { setServings(recipe.servings ?? null) }, [recipe.id, recipe.servings])
@@ -45,6 +49,7 @@ export default function PublicRecipeView({ recipe, bannerText, bannerAction, act
         {recipe.hero_image_key && (
           <div className={styles.hero}>
             <img src={imageUrl(recipe.hero_image_key)!} alt={recipe.title} className={styles.heroImg} />
+            {photoCredit && <PhotoCredit credit={photoCredit} overlay />}
           </div>
         )}
 
