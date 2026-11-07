@@ -129,6 +129,12 @@ Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favo
 - `useDocumentMeta` / `useRecipeMeta` set per-page title, description, canonical and Recipe JSON-LD.
   `public/robots.txt` + `public/sitemap.xml` (regenerate the sitemap if demo recipe IDs change).
 
+### Demo tour
+- `/tour` (`src/pages/tour/`): 7 scenes / 5 chapters, autoplay, skippable. Scenes use real components plus the demo
+  seed content. Import and dinner picker are **recorded replays** (labelled), so the tour never calls AI endpoints.
+- `<TourPill>` is the always-visible entry on landing and demo pages. Progress lives in sessionStorage
+  (`lib/tourState.ts`), so the pill offers "Resume tour" after a mid-tour exit.
+
 ### After every schema change
 Hit `https://myopenpantry.com/api/admin/migrate` after deploying to run any new `CREATE TABLE IF NOT EXISTS` statements.
 

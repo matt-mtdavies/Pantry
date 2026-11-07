@@ -7,6 +7,7 @@ const LandingPage = lazy(() => import('./pages/LandingPage'))
 const DemoPage = lazy(() => import('./pages/demo/DemoPage'))
 const DemoRecipePage = lazy(() => import('./pages/demo/DemoRecipePage'))
 const DemoCookPage = lazy(() => import('./pages/demo/DemoCookPage'))
+const TourPage = lazy(() => import('./pages/tour/TourPage'))
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { CurrencyProvider } from './hooks/useCurrency'
 import HomePage from './pages/HomePage'
@@ -83,6 +84,7 @@ function AppRoutes() {
           <Route path="/demo" element={<Suspense fallback={blank}><DemoPage /></Suspense>} />
           <Route path="/demo/recipe/:id" element={<Suspense fallback={blank}><DemoRecipePage /></Suspense>} />
           <Route path="/demo/recipe/:id/cook" element={<Suspense fallback={blank}><DemoCookPage /></Suspense>} />
+          <Route path="/tour" element={<Suspense fallback={blank}><TourPage /></Suspense>} />
           <Route path="/recipe/new" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id" element={<ProtectedRoute><RecipePage /></ProtectedRoute>} />
           <Route path="/recipe/:id/edit" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />

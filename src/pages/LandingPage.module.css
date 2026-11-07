@@ -308,3 +308,5 @@
   .sectionTitle { font-size: var(--text-2xl); }
   .getStarted { padding: var(--sp-10) var(--sp-4); }
 }
+
+.heroNote a { color: var(--accent-strong); font-weight: 600; }

@@ -1,0 +1,331 @@
+/* Shared */
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes flash { 0% { background: var(--terra-light); } 100% { background: transparent; } }
+@keyframes blink { 50% { opacity: 0; } }
+
+.rise { animation: rise 420ms var(--ease-out, ease-out) both; }
+.fadeIn { animation: fade 400ms ease-out both; }
+
+.replayTag {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  padding: 2px var(--sp-3);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.extracting {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.chip {
+  display: inline-flex;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  background: var(--sage-light);
+  color: var(--sage-text);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* 1. Recipe box */
+.boxGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+/* 2. Import */
+.importStage { padding-top: var(--sp-6); }
+
+.fakeField {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  min-height: 52px;
+}
+
+.fakeFieldText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
+  font-family: var(--font-ui);
+  color: var(--ink);
+}
+
+.caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--ink);
+  animation: blink 1s step-end infinite;
+}
+
+.fakeBtn {
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.importResult {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: var(--sp-5);
+  margin-top: var(--sp-6);
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--ivory);
+}
+
+.importImg { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-md); }
+.importTitle { font-family: var(--font-display); font-size: var(--text-2xl); margin-bottom: var(--sp-1); }
+.importMeta { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink-soft); }
+
+.importIngs {
+  list-style: none;
+  margin-top: var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+.more { color: var(--ink-soft); }
+
+/* 3. Scale */
+.scaleHead { display: flex; gap: var(--sp-4); align-items: center; margin-bottom: var(--sp-5); padding-right: var(--sp-16); }
+.scaleImg { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-md); flex-shrink: 0; }
+.scaleTitle { font-family: var(--font-display); font-size: var(--text-2xl); margin-bottom: var(--sp-2); }
+.scaleControls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); }
+
+.scaleList { list-style: none; }
+
+.scaleList li {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--surface);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}
+
+.scaleList li span:first-child { font-weight: 600; }
+.flash { animation: flash 1.2s ease-out; border-radius: var(--radius-sm); }
+
+/* 4. Cook mode */
+.cookStage {
+  margin: calc(-1 * var(--sp-6));
+  min-height: 460px;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: #1F1B16;
+  color: var(--ivory);
+}
+
+.cookSide {
+  padding: var(--sp-6) var(--sp-5);
+  border-right: 1px solid rgba(var(--ivory-rgb), 0.1);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+.cookSideTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(var(--ivory-rgb), 0.55);
+  margin-bottom: var(--sp-3);
+}
+
+.cookSide ul { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); }
+.cookSide li { display: flex; gap: var(--sp-2); align-items: flex-start; color: rgba(var(--ivory-rgb), 0.85); transition: color 200ms; }
+.cookChecked { color: rgba(var(--ivory-rgb), 0.4) !important; text-decoration: line-through; }
+
+.cookBox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(var(--ivory-rgb), 0.4);
+  border-radius: 5px;
+  color: var(--ivory);
+}
+
+.cookChecked .cookBox { background: var(--sage); border-color: var(--sage); }
+
+.cookMain { padding: var(--sp-8); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-5); }
+.cookStepNo { font-family: var(--font-ui); font-size: var(--text-sm); color: rgba(var(--ivory-rgb), 0.6); }
+.cookStep { font-family: var(--font-display); font-size: var(--text-3xl); line-height: 1.3; }
+
+.cookTimer {
+  align-self: flex-start;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 5. Picker */
+.pickerStage { padding-top: var(--sp-4); }
+.pickerQ { font-family: var(--font-display); font-size: var(--text-2xl); margin-bottom: var(--sp-4); }
+.pickerChips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.ideas { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); margin-top: var(--sp-6); }
+
+.idea {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--ivory);
+}
+
+.ideaTitle { font-family: var(--font-display); font-size: var(--text-lg); }
+.ideaMeta { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink-soft); }
+
+/* 6. Organise */
+.colChips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+
+.colChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 36px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--white);
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.colChipActive { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
+.colGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); }
+
+.sharePanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  margin-top: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--terra-light);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+.shareLabel { font-weight: 600; color: var(--ink); }
+.shareUrl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-soft); }
+
+.shareCopy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.shareOpen { color: var(--accent-strong); font-weight: 600; }
+
+/* 7. End card */
+.endStage { text-align: center; padding: var(--sp-12) var(--sp-4); max-width: 40rem; margin: 0 auto; }
+.endTitle { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.05; margin-bottom: var(--sp-4); animation: rise 500ms ease-out both; }
+.endText { font-family: var(--font-body); font-size: var(--text-xl); color: var(--ink-soft); margin-bottom: var(--sp-8); }
+.endCtas { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); }
+
+.endPrimary, .endSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 var(--sp-8);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.endPrimary { background: var(--accent); color: #FFFFFF; }
+.endPrimary:hover { background: var(--accent-strong); color: #FFFFFF; }
+.endSecondary { background: var(--white); border: 1.5px solid var(--border); color: var(--ink); }
+.endSecondary:hover { border-color: var(--accent); color: var(--accent-strong); }
+
+.endReplay {
+  margin-top: var(--sp-6);
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  background: none;
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Phone */
+@media (max-width: 640px) {
+  .boxGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }
+  .boxGrid > :nth-child(n+5) { display: none; }
+  .importResult { grid-template-columns: 1fr; }
+  .importImg { aspect-ratio: 16 / 9; }
+  .scaleHead { padding-right: 0; padding-top: var(--sp-6); margin-bottom: var(--sp-3); }
+  .scaleImg { display: none; }
+  .scaleTitle { font-size: var(--text-xl); }
+  .scaleList li { grid-template-columns: 6rem 1fr; font-size: var(--text-sm); }
+  .cookStage { margin: calc(-1 * var(--sp-4)); grid-template-columns: 1fr; min-height: 340px; }
+  .cookSide { display: none; }
+  .cookMain { padding: var(--sp-6) var(--sp-5); }
+  .cookStep { font-size: var(--text-2xl); }
+  .colGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .endCtas > * { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .fadeIn, .flash, .endTitle { animation: none; }
+  .caret { animation: none; }
+}
