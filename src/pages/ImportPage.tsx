@@ -274,7 +274,7 @@ export default function ImportPage() {
             <div className={styles.errorBox} role="alert">
               <p className={styles.errorTitle}>Couldn't import that recipe</p>
               <p className={styles.errorText}>{errorMsg}</p>
-              {errorCode !== 'caption_unreachable' && errorCode !== 'no_recipe_in_caption' && errorCode !== 'text_too_short' && (
+              {extractMode !== 'text' && errorCode !== 'caption_unreachable' && errorCode !== 'no_recipe_in_caption' && errorCode !== 'text_too_short' && (
                 <div className={styles.errorActions}>
                   <button className={styles.retryBtn} onClick={() => setStage('upload')}>Try again</button>
                   <button className={styles.draftBtn} onClick={handleSaveAsDraft}>
