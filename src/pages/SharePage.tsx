@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import SaltGrinder from '../components/SaltGrinder'
 import { DishIcon } from '../components/icons'
 import { getSharedRecipe } from '../lib/api'
-import { formatTime, imageUrl } from '../lib/utils'
+import { formatTime, imageUrl, scaleIngredient } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
 import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe } from '../types'
+import ServingsStepper from '../components/ServingsStepper'
+import UnitToggle from '../components/UnitToggle'
+import { useUnitSystem } from '../hooks/useUnitSystem'
 import styles from './SharePage.module.css'
 
 export default function SharePage() {
@@ -14,6 +17,17 @@ export default function SharePage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
+  const [servings, setServings] = useState<number | null>(null)
+  const [unitPref, setUnitPref] = useUnitSystem()
+  useEffect(() => { setServings(recipe?.servings ?? null) }, [recipe?.id, recipe?.servings])
+  const displayIngredients = useMemo(() => {
+    if (!recipe) return []
+    return recipe.ingredients.map(ing => {
+      const scaled = recipe.servings && servings ? scaleIngredient(ing, recipe.servings, servings) : ing
+      const c = convertIngredient(scaled.amount, scaled.unit, unitPref)
+      return { name: ing.name, amount: c.amount, unit: c.unit }
+    })
+  }, [recipe, servings, unitPref])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -129,18 +143,22 @@ export default function SharePage() {
           <hr className={styles.divider} />
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Ingredients</h2>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Ingredients</h2>
+              <div className={styles.ingControls}>
+                {recipe.servings != null && servings != null && (
+                  <ServingsStepper value={servings} onChange={setServings} base={recipe.servings} />
+                )}
+                <UnitToggle value={unitPref} onChange={setUnitPref} />
+              </div>
+            </div>
             <ul className={styles.ingredients}>
-              {recipe.ingredients.map((ing, i) => {
-                const unitPref = user?.unit_system ?? 'metric'
-                const c = convertIngredient(ing.amount, ing.unit, unitPref)
-                return (
-                  <li key={i} className={styles.ingredient}>
-                    <span className={styles.ingAmount}>{c.amount} {c.unit}</span>
-                    <span className={styles.ingName}>{ing.name}</span>
-                  </li>
-                )
-              })}
+              {displayIngredients.map((ing, i) => (
+                <li key={i} className={styles.ingredient}>
+                  <span className={styles.ingAmount}>{ing.amount} {ing.unit}</span>
+                  <span className={styles.ingName}>{ing.name}</span>
+                </li>
+              ))}
             </ul>
           </section>
 
@@ -150,7 +168,6 @@ export default function SharePage() {
             <h2 className={styles.sectionTitle}>Method</h2>
             <ol className={styles.steps}>
               {recipe.steps.map((step, i) => {
-                const unitPref = user?.unit_system ?? 'metric'
                 const text = convertStepText(step, unitPref)
                 return (
                   <li key={i} className={styles.step}>

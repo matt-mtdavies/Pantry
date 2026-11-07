@@ -92,13 +92,26 @@ Acceptance:
 - Mobile capture: Android PWA share target is possible. iOS needs a native app or a Shortcut. Decide after the spike.
 - Instrument a **zero-edit rate**: share of imports saved without edits.
 
+## Step 1b — Remaining review fixes (done on `claude/determined-ritchie-wrwelh`, awaiting merge)
+
+- **Units.**
+  - A Metric / Imperial toggle sits next to the serving scaler on the recipe page and the guest share page. The share page also gets the serving scaler.
+  - The choice is remembered per device and also applies to cook mode.
+  - Order of precedence: device choice, then Profile → Unit system, then browser region (US → imperial).
+  - Saving the profile setting clears the device choice.
+- **Print.**
+  - A print button on the recipe page, plus print styles for the recipe and share pages.
+  - Printing hides nav, buttons, controls and dialogs, keeps the hero small and avoids splitting a step across pages.
+- **Explore.**
+  - Sort control: Top rated (Bayesian), Newest, Quickest.
+  - Recent searches (last 6, per device) appear when the empty search box is focused. They are saved on Enter or when a result is opened.
+  - The hero copy no longer says "ranked by rating", since the order now depends on the sort.
+- **Hero image.** Now scales with the viewport: 16:9 up to min(70vh, 640px) on desktop, 4:3 on phones. It was a fixed 480px crop.
+
 ## Later (not scheduled)
 
-- Unit toggle + serving scaler on the recipe page and guest share view.
-- Print stylesheet + print button.
-- Explore recent searches + sort control.
-- Hero image height review (currently capped at 480px).
 - Mobile (390px) pass of the whole app.
+- Real HTTP 404 status for unknown URLs (the branded 404 is currently rendered client-side with a 200).
 
 ## Rules
 

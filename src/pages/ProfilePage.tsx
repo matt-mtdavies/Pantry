@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useOnboarding } from '../App'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
 import { backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, createInvite } from '../lib/api'
+import { clearUnitOverride } from '../hooks/useUnitSystem'
 import { avatarEmoji } from '../lib/avatars'
 import { StarIcon, CameraIcon } from '../components/icons'
 import { imageUrl } from '../lib/utils'
@@ -186,6 +187,7 @@ export default function ProfilePage() {
         }),
       })
       if (!res.ok) throw new Error(`Save failed (${res.status})`)
+      clearUnitOverride() // the profile setting is the default again on this device
       await refetch()
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)

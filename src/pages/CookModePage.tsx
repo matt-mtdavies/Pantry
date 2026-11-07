@@ -4,7 +4,7 @@ import SaltGrinder from '../components/SaltGrinder'
 import { getRecipe } from '../lib/api'
 import { scaleIngredient, detectTimerMinutes } from '../lib/utils'
 import { useWakeLock } from '../hooks/useWakeLock'
-import { useAuth } from '../hooks/useAuth'
+import { useUnitSystem } from '../hooks/useUnitSystem'
 import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe, Ingredient } from '../types'
 import styles from './CookModePage.module.css'
@@ -77,7 +77,7 @@ export default function CookModePage() {
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null)
   const audioCacheRef = useRef<Map<string, AudioBuffer>>(new Map())
   const { acquire, release } = useWakeLock()
-  const { user } = useAuth()
+  const [unitPref] = useUnitSystem()
 
   // Celebration overlay: focus its main action, and let Escape dismiss it
   // (back to the last step) so it is never a single-exit takeover.
@@ -221,13 +221,12 @@ export default function CookModePage() {
   const scaledIngredients = useMemo<Ingredient[]>(() => {
     if (!recipe) return []
     const base = recipe.servings ?? servings
-    const unitPref = user?.unit_system ?? 'metric'
     return recipe.ingredients.map(ing => {
       const scaled = scaleIngredient(ing, base, servings)
       const c = convertIngredient(scaled.amount, scaled.unit, unitPref)
       return { ...scaled, amount: c.amount, unit: c.unit }
     })
-  }, [recipe, servings, user?.unit_system])
+  }, [recipe, servings, unitPref])
 
   // ── TTS ─────────────────────────────────────────────────────────────────────
 
@@ -283,7 +282,7 @@ export default function CookModePage() {
 
   const speakStep = async (stepIndex: number) => {
     if (!recipe) return
-    const text = convertStepText(recipe.steps[stepIndex], user?.unit_system ?? 'metric')
+    const text = convertStepText(recipe.steps[stepIndex], unitPref)
     await speakText(text)
   }
 
@@ -327,7 +326,7 @@ export default function CookModePage() {
 
   if (!recipe) return null
 
-  const step = convertStepText(recipe.steps[currentStep], user?.unit_system ?? 'metric')
+  const step = convertStepText(recipe.steps[currentStep], unitPref)
   const stepTimers = detectTimerMinutes(recipe.steps[currentStep] ?? '')
   const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
   const timerM = Math.floor(timerSecs / 60)

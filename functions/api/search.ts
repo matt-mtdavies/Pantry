@@ -37,6 +37,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   const costCurrency  = currencyParam in CURRENCY_SYMBOL ? currencyParam : 'USD'
   const cuisine    = url.searchParams.get('cuisine')?.trim().toLowerCase() ?? ''
   const page       = Math.max(0, toInt(url.searchParams.get('page')) ?? 0)
+  const sort       = url.searchParams.get('sort') ?? 'top'
 
   // Build dynamic WHERE clause
   const wheres: string[] = ['u.is_public = 1', 'r.is_deleted = 0']
@@ -84,6 +85,18 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     binds.push(`%"${cuisine}"%`)
   }
 
+  // Sort orders. "top" = Bayesian-weighted rating, so a lone 5★ doesn't
+  // outrank several 5★s; unrated recipes go last.
+  const ORDER_BY: Record<string, string> = {
+    top: `(COUNT(rr.recipe_id) > 0) DESC,
+          (${RATING_PRIOR_WEIGHT} * ${RATING_PRIOR_MEAN} + COALESCE(SUM(rr.rating), 0)) / (${RATING_PRIOR_WEIGHT} + COUNT(rr.recipe_id)) DESC,
+          rating_count DESC, r.created_at DESC`,
+    new: 'r.created_at DESC',
+    quick: `(COALESCE(r.prep_time, 0) + COALESCE(r.cook_time, 0) = 0) ASC,
+            COALESCE(r.prep_time, 0) + COALESCE(r.cook_time, 0) ASC, r.created_at DESC`,
+  }
+  const orderBy = ORDER_BY[sort] ?? ORDER_BY.top
+
   let allRows: Record<string, unknown>[]
   try {
     const rows = await ctx.env.DB.prepare(`
@@ -103,10 +116,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
       WHERE ${wheres.join(' AND ')}
       GROUP BY r.id
-      -- Bayesian-weighted rating: a lone 5★ doesn't outrank several 5★s. Unrated last.
-      ORDER BY (COUNT(rr.recipe_id) > 0) DESC,
-               (${RATING_PRIOR_WEIGHT} * ${RATING_PRIOR_MEAN} + COALESCE(SUM(rr.rating), 0)) / (${RATING_PRIOR_WEIGHT} + COUNT(rr.recipe_id)) DESC,
-               rating_count DESC, r.created_at DESC
+      ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
     `).bind(...binds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
     allRows = rows.results ?? []
@@ -129,10 +139,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
       LEFT JOIN recipe_ratings rr ON r.id = rr.recipe_id
       WHERE ${wheres.join(' AND ')}
       GROUP BY r.id
-      -- Bayesian-weighted rating: a lone 5★ doesn't outrank several 5★s. Unrated last.
-      ORDER BY (COUNT(rr.recipe_id) > 0) DESC,
-               (${RATING_PRIOR_WEIGHT} * ${RATING_PRIOR_MEAN} + COALESCE(SUM(rr.rating), 0)) / (${RATING_PRIOR_WEIGHT} + COUNT(rr.recipe_id)) DESC,
-               rating_count DESC, r.created_at DESC
+      ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
     `).bind(...fallbackBinds, PAGE_SIZE + 1, page * PAGE_SIZE).all<Record<string, unknown>>()
     allRows = rows.results ?? []
