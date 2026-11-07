@@ -120,6 +120,9 @@ for every recipe in `public/demo/` with credits in the file, 1 share link); cred
   **hotlinked** from images.unsplash.com (never copied), trigger Unsplash's download endpoint on selection, and are
   **credited** ("Photo by X on Unsplash", `<PhotoCredit>`) on the demo recipe page, landing hero, demo grid and the signed-in
   demo account's recipe page. Reseeding uses the picks; recipes without a pick fall back to the bundled CC0 photo.
+  **Defaults:** `DEFAULT_DEMO_PHOTOS` (hand-vetted Unsplash IDs, `functions/lib/demoPhotos.ts`) are applied automatically,
+  once, the first time demo photos are read on a deploy with `UNSPLASH_ACCESS_KEY` (official API lookup + download ping),
+  tracked in `demo_photos_meta`. They never overwrite later admin choices. No migrate step is needed (tables are created lazily).
   The public demo reads picks from `GET /api/demo/photos` (public, edge-cached 5 min; saving in the picker clears it).
 - **Every demo surface must show a photo**: landing hero, "Stuck on dinner?" panel and demo strip; `/demo` grid and recipe pages;
   every tour scene (incl. the recorded dinner-picker ideas in `src/lib/demoPicker.ts`, which are demo recipes); the

@@ -1,7 +1,7 @@
 import type { Env } from '../../env'
 import { DEMO_RECIPES, DEMO_USER_ID, demoPhotoKey } from '../../lib/demo'
 import {
-  CREATE_DEMO_PHOTOS, DEMO_PHOTOS_CACHE_KEY, DEMO_PHOTO_QUERIES, UNSPLASH_UTM, displayUrl, getDemoPhotoPicks,
+  CREATE_DEMO_PHOTOS, DEMO_PHOTOS_CACHE_KEY, DEMO_PHOTO_QUERIES, ensureDefaultDemoPhotos, UNSPLASH_UTM, displayUrl, getDemoPhotoPicks,
   searchUnsplash, trackUnsplashDownload, type UnsplashResult,
 } from '../../lib/demoPhotos'
 
@@ -46,6 +46,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
   if (!ctx.env.UNSPLASH_ACCESS_KEY) {
     return page(`<h1>Demo photos</h1><p class="err">UNSPLASH_ACCESS_KEY isn't set in Cloudflare Pages, so Unsplash can't be searched.</p>`)
   }
+  await ensureDefaultDemoPhotos(ctx.env, DEMO_USER_ID)
   const picks = await getDemoPhotoPicks(ctx.env)
   const sections: string[] = []
   for (const r of DEMO_RECIPES) {

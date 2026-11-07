@@ -83,3 +83,69 @@ export async function trackUnsplashDownload(env: Env, downloadLocation: string):
 
 /** Cache key for GET /api/demo/photos; cleared when an admin saves picks. */
 export const DEMO_PHOTOS_CACHE_KEY = 'https://cache.internal/demo-photos'
+
+// ── Default picks ────────────────────────────────────────────────────────────
+// Hand-vetted Unsplash photos (free Unsplash License), applied automatically
+// the first time the demo photos are read on a deployment with
+// UNSPLASH_ACCESS_KEY set: each is resolved through the official API
+// (GET /photos/:id), its download endpoint is pinged, and it's saved as a
+// pick. Runs once ever (demo_photos_meta), so an admin's later changes in
+// the picker — including "use the bundled photo" — are never overwritten.
+export const DEFAULT_DEMO_PHOTOS: Record<string, string> = {
+  de300000000000000000000000000001: 'gWkvURhoMlA', // Shakshuka — Toa Heftiba
+  de300000000000000000000000000002: 'VvK110DOOac', // Chilli con carne — American Heritage Chocolate
+  de300000000000000000000000000003: 'wDtErSkmevs', // Chicken traybake — Tadahiro Higuchi
+  de300000000000000000000000000004: 'jL3X9oeQ3Ps', // Spaghetti aglio e olio — Youjeen Cho
+  de300000000000000000000000000005: '7m0b7YwvnvI', // Chickpea curry — Green And Great
+  de300000000000000000000000000006: 'UBvMCte4IIo', // Pancakes — Stavros Papadimitriou
+  de300000000000000000000000000007: 'mmnKI8kMxpc', // Salmon — Ella Olsson
+  de300000000000000000000000000008: 'D9fAmtjC284', // Mushroom risotto — Max Griss
+  de300000000000000000000000000009: 'N0u8bLrB_-g', // Spinach omelette — Igor Miske
+  de30000000000000000000000000000a: 'vaNnGDFyOz8', // Banana muffins — Donjah Haberman
+}
+
+const CREATE_DEMO_PHOTOS_META = `CREATE TABLE IF NOT EXISTS demo_photos_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`
+
+/**
+ * Apply DEFAULT_DEMO_PHOTOS once. Cheap no-op after the first success
+ * (one indexed read). Never throws: on any failure the bundled photos stay.
+ */
+export async function ensureDefaultDemoPhotos(env: Env, demoUserId: string): Promise<void> {
+  if (!env.UNSPLASH_ACCESS_KEY) return
+  const db = env.DB
+  try {
+    await db.prepare(CREATE_DEMO_PHOTOS_META).run()
+    const done = await db.prepare("SELECT value FROM demo_photos_meta WHERE key = 'defaults'").first<{ value: string }>()
+    if (done?.value === 'applied') return
+    // Claim the job so concurrent requests don't all call Unsplash (stale claims expire after 2 min).
+    const now = Math.floor(Date.now() / 1000)
+    if (done && Number(done.value.split(':')[1]) > now - 120) return
+    await db.prepare("INSERT OR REPLACE INTO demo_photos_meta (key, value) VALUES ('defaults', ?)").bind(`pending:${now}`).run()
+
+    await db.prepare(CREATE_DEMO_PHOTOS).run()
+    const existing = await getDemoPhotoPicks(env)
+    const stmts: D1PreparedStatement[] = []
+    for (const [recipeId, photoId] of Object.entries(DEFAULT_DEMO_PHOTOS)) {
+      if (existing[recipeId]) continue // an admin already chose
+      const res = await fetch(`https://api.unsplash.com/photos/${encodeURIComponent(photoId)}`, {
+        headers: { Authorization: `Client-ID ${env.UNSPLASH_ACCESS_KEY}`, 'Accept-Version': 'v1' },
+        signal: AbortSignal.timeout(10_000),
+      })
+      if (!res.ok) throw new Error(`Unsplash /photos/${photoId}: ${res.status}`)
+      const p = await res.json() as UnsplashResult
+      await trackUnsplashDownload(env, p.links.download_location)
+      const url = displayUrl(p.urls.raw)
+      stmts.push(db.prepare(`INSERT OR IGNORE INTO demo_photos
+          (recipe_id, unsplash_id, url, thumb, alt, photographer, photographer_url, photo_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+        .bind(recipeId, p.id, url, p.urls.small, p.alt_description, p.user.name, `${p.user.links.html}?${UNSPLASH_UTM}`, `${p.links.html}?${UNSPLASH_UTM}`))
+      // Point the demo account's copy at it (only rows still on the bundled photo).
+      stmts.push(db.prepare("UPDATE recipes SET hero_image_key = ? WHERE id = ? AND user_id = ? AND (hero_image_key IS NULL OR hero_image_key LIKE 'demo/%')")
+        .bind(url, recipeId, demoUserId))
+    }
+    stmts.push(db.prepare("INSERT OR REPLACE INTO demo_photos_meta (key, value) VALUES ('defaults', 'applied')"))
+    await db.batch(stmts)
+  } catch (e) {
+    console.error('[demo photos] defaults not applied:', e instanceof Error ? e.message : e)
+    try { await db.prepare("DELETE FROM demo_photos_meta WHERE key = 'defaults' AND value LIKE 'pending:%'").run() } catch { /* ignore */ }
+  }
+}
