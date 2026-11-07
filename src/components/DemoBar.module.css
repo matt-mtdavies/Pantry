@@ -17,6 +17,7 @@
 }
 
 .brand {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
@@ -36,14 +37,15 @@
   color: rgba(var(--ivory-rgb), 0.75);
 }
 
-.back { color: var(--ivory); text-decoration: none; font-weight: 500; }
+.back { display: inline-flex; align-items: center; min-height: 44px; color: var(--ivory); text-decoration: none; font-weight: 500; }
+.short { display: none; }
 .back:hover { text-decoration: underline; }
 
 .cta {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 var(--sp-4);
   background: var(--accent);
   color: #FFFFFF;
@@ -59,6 +61,8 @@
 
 @media (max-width: 640px) {
   .inner { padding: var(--sp-2) var(--sp-4); gap: var(--sp-3); }
-  .text { font-size: var(--text-xs); }
+  .text { font-size: var(--text-sm); }
   .brand span { display: none; }
+  .long { display: none; }
+  .short { display: inline; }
 }

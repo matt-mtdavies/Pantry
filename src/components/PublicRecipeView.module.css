@@ -66,18 +66,19 @@
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 600;
-  color: var(--accent);
+  color: var(--ivory);
   flex-shrink: 0;
 }
 
 .bannerText {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: var(--ink-soft);
+  color: rgba(var(--ivory-rgb), 0.78);
   flex: 1;
 }
 
 .saveBtn {
+  min-height: 44px;
   padding: var(--sp-2) var(--sp-5);
   background: var(--accent);
   color: #FFFFFF;
@@ -87,7 +88,6 @@
   border-radius: var(--radius-full);
   text-decoration: none;
   white-space: nowrap;
-  min-height: 40px;
   display: flex;
   align-items: center;
   transition: background-color 150ms ease;
@@ -140,7 +140,7 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--sage);
+  color: var(--sage-text);
   background: var(--sage-light);
   padding: 3px var(--sp-3);
   border-radius: var(--radius-full);
@@ -272,6 +272,9 @@
 }
 
 .footerLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -340,5 +343,11 @@
 
 .source a { color: var(--accent); }
 
-.bannerLink { color: inherit; text-decoration: none; font-weight: 500; }
+.bannerLink { display: inline-flex; align-items: center; min-height: 44px; color: inherit; text-decoration: none; font-weight: 500; }
 .bannerLink:hover { color: var(--ivory); text-decoration: underline; }
+
+/* Phones: one line of context in the dark bar, not four. */
+@media (max-width: 640px) {
+  .bannerBrand { display: none; }
+  .bannerText { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+}

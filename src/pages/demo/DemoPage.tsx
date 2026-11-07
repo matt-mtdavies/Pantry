@@ -34,7 +34,7 @@ export default function DemoPage() {
   return (
     <div className={styles.page}>
       <DemoBar />
-      <header className={styles.hero}>
+      <section className={styles.hero} aria-label="Demo pantry">
         <div className="wide-col">
           <p className={styles.eyebrow}>Demo pantry</p>
           <h1 className={styles.title}>{DEMO_OWNER_NAME}'s recipes</h1>
@@ -43,7 +43,7 @@ export default function DemoPage() {
             the rest typed in. Open one, scale it, switch units, or start cook mode.
           </p>
         </div>
-      </header>
+      </section>
 
       <main className="wide-col">
         <div className={styles.filters} role="group" aria-label="Filter recipes">

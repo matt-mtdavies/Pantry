@@ -7,7 +7,7 @@
 }
 
 .opt {
-  min-height: 34px;
+  min-height: 38px;
   padding: 0 var(--sp-3);
   border-radius: var(--radius-full);
   font-family: var(--font-ui);

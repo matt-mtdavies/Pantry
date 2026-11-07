@@ -8,12 +8,18 @@ export const DEMO_DISPLAY_NAME = 'Demo Cook'
 
 /** Demo photos: static assets in public/demo/<name>.jpg, copied into R2 as
  *  demo/<name>.jpg at seed time (/api/images also falls back to the static
- *  file). All CC0, via Wikimedia Commons, resized to 1200px:
- *   shakshuka — "Shakshuka (Unsplash).jpg", Jarosław Ceborski
- *   chilli    — "Chili con carne cuisson.jpg"
- *   omelette  — "Egg and spinach breakfast omelet.jpg" (square crop)
- *   risotto   — "RISOTTO POLLO E FUNGHI - Marrocco's 2025-05-09.jpg" */
-export const DEMO_PHOTOS = ['shakshuka', 'chilli', 'omelette', 'risotto'] as const
+ *  file). All CC0 / public domain, resized to ≤1200px (some cropped):
+ *   shakshuka — "Shakshuka (Unsplash).jpg", Jarosław Ceborski · Wikimedia Commons
+ *   chilli    — "Chili con carne cuisson.jpg" · Wikimedia Commons
+ *   omelette  — "Egg and spinach breakfast omelet.jpg" · Wikimedia Commons
+ *   risotto   — "RISOTTO POLLO E FUNGHI - Marrocco's 2025-05-09.jpg" · Wikimedia Commons
+ *   traybake  — "Free roast chicken rosemary image" · rawpixel (CC0)
+ *   aglio     — "Close-up photograph of white spaghetti with sprinkled cheese, herbs and garlic bread", Astha Jain · WordPress Photo Directory
+ *   curry     — "Free vegan chickpea curry image" · rawpixel (CC0)
+ *   pancakes  — "A plate of three fluffy pancakes…", diegolopez97 · WordPress Photo Directory
+ *   salmon    — "Grilled salmon fillet served with sautéed vegetables", Muhammad Yeasin · WordPress Photo Directory
+ *   muffins   — "Banana muffins", Myamin39 · Wikimedia Commons */
+export const DEMO_PHOTOS = ['shakshuka', 'chilli', 'omelette', 'risotto', 'traybake', 'aglio', 'curry', 'pancakes', 'salmon', 'muffins'] as const
 export type DemoPhoto = typeof DEMO_PHOTOS[number]
 export const demoPhotoKey = (name: DemoPhoto) => `demo/${name}.jpg`
 export const demoPhotoAsset = (name: DemoPhoto) => `/demo/${name}.jpg`
@@ -135,6 +141,7 @@ export const DEMO_RECIPES: DemoRecipe[] = [
     ],
     tags: ['dinner', 'chicken', 'traybake', 'weeknight'],
     calories_per_serving: 610, cost_per_serving: 3.6,
+    photo: 'traybake',
     favourite: true,
   },
   {
@@ -158,6 +165,7 @@ export const DEMO_RECIPES: DemoRecipe[] = [
     ],
     tags: ['dinner', 'pasta', 'quick', 'vegetarian', 'italian'],
     calories_per_serving: 640, cost_per_serving: 1.3,
+    photo: 'aglio',
   },
   {
     id: 'de300000000000000000000000000005',
@@ -185,6 +193,7 @@ export const DEMO_RECIPES: DemoRecipe[] = [
     ],
     tags: ['dinner', 'vegan', 'curry', 'indian', 'batch cook'],
     calories_per_serving: 430, cost_per_serving: 1.9,
+    photo: 'curry',
   },
   {
     id: 'de300000000000000000000000000006',
@@ -209,6 +218,7 @@ export const DEMO_RECIPES: DemoRecipe[] = [
     ],
     tags: ['breakfast', 'brunch', 'vegetarian', 'american'],
     calories_per_serving: 360, cost_per_serving: 0.9,
+    photo: 'pancakes',
     favourite: true,
   },
   {
@@ -233,6 +243,7 @@ export const DEMO_RECIPES: DemoRecipe[] = [
     ],
     tags: ['dinner', 'fish', 'quick', 'weeknight'],
     calories_per_serving: 540, cost_per_serving: 5.2,
+    photo: 'salmon',
   },
   {
     id: 'de300000000000000000000000000008',
@@ -306,6 +317,7 @@ export const DEMO_RECIPES: DemoRecipe[] = [
     ],
     tags: ['breakfast', 'baking', 'make ahead'],
     calories_per_serving: 190, cost_per_serving: 0.4,
+    photo: 'muffins',
   },
 ]
 

@@ -568,12 +568,13 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
           )}
         </section>
 
-        <section className={styles.main}>
+        <main className={styles.main}>
+          <h1 className="sr-only">{recipe.title}</h1>
           <div className={styles.stepCounter}>
             Step {currentStep + 1} of {recipe.steps.length}
           </div>
 
-          <div className={styles.progressBar} role="progressbar"
+          <div className={styles.progressBar} role="progressbar" aria-label="Recipe progress"
             aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={recipe.steps.length}>
             <div
               className={styles.progressFill}
@@ -667,7 +668,7 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
               />
             ))}
           </div>
-        </section>
+        </main>
       </div>
 
       {showCelebration && (

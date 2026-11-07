@@ -21,6 +21,7 @@
 }
 
 .brand {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
@@ -36,7 +37,7 @@
 .topLink, .topSignIn {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 var(--sp-4);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -250,7 +251,7 @@
   gap: var(--sp-3);
 }
 
-.textLink { font-family: var(--font-ui); font-weight: 600; color: var(--accent); text-decoration: none; }
+.textLink { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-ui); font-weight: 600; color: var(--accent); text-decoration: none; }
 .textLink:hover { text-decoration: underline; }
 
 .demoGrid {
@@ -281,13 +282,14 @@
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-6) calc(var(--sp-8) + env(safe-area-inset-bottom));
   display: flex;
+  align-items: center;
   gap: var(--sp-6);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   color: var(--ink-soft);
 }
 
-.footer a { color: var(--ink-soft); }
+.footer a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-soft); }
 .footer a:hover { color: var(--accent); }
 
 /* ── Responsive ── */

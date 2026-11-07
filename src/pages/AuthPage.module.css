@@ -161,6 +161,7 @@
 
 .toggleBtn {
   flex: 1;
+  min-height: 44px;
   padding: var(--sp-2) var(--sp-4);
   border-radius: calc(var(--radius-md) - 2px);
   font-family: var(--font-ui);
@@ -182,6 +183,7 @@
 }
 
 .forgotLink {
+  min-height: 44px;
   text-align: center;
   font-family: var(--font-ui);
   font-size: var(--text-sm);

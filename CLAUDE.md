@@ -49,6 +49,7 @@ Shared UI: `.form-error` / `.form-hint` (index.css), `<LoadError onRetry>` for f
 fetches (never show the empty state on error), `<RecipeCard>` is the only recipe card
 (`compact` for 2-up grids), `<ServingsStepper>` for serving scalers.
 Don't add `outline: none` to focus styles — the global `:focus-visible` ring must show.
+New surfaces target 44px touch targets and WCAG 2.1 AA contrast. On the dark `--ink` bars use `--ivory` (or ivory ≥ .72 alpha) for text, never `--accent`/`--ink-soft`. `.sr-only` is in index.css.
 
 ### Design tokens (defined in `src/index.css`)
 ```css
@@ -109,8 +110,8 @@ functions/
 
 ### Demo account
 Fixed demo login for reviews: **demo@myopenpantry.com / TryPantry-Demo-2026** (throwaway; holds no real data).
-Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favourites, 4 CC0 photos in
-`public/demo/`, 1 share link); credentials stay server-side in `functions/lib/demo.ts`.
+Seed content lives in `shared/demoContent.ts` (10 recipes, 2 collections, 3 favourites, a CC0/public-domain photo
+for every recipe in `public/demo/` with credits in the file, 1 share link); credentials stay server-side in `functions/lib/demo.ts`.
 - **(Re)seed:** sign in as an admin and open `/api/admin/seed-demo` → "Reseed now" (POST). Run `/api/admin/migrate` first on a fresh DB.
   Resets the demo account to the exact seed state in one D1 batch (all-or-nothing) and signs out its sessions.
   Every delete is scoped to the demo user ID / demo recipe + collection IDs; refuses if the demo email belongs to another account.

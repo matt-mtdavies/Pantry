@@ -1066,8 +1066,8 @@
 /* Paste-text import */
 .pasteToggle {
   align-self: flex-start;
-  margin-top: var(--sp-1);
-  padding: var(--sp-1) 0;
+  min-height: 44px;
+  padding: 0;
   background: none;
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -1114,6 +1114,7 @@
 .pasteActions { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
 
 .pasteCancel {
+  min-height: 44px;
   background: none;
   font-family: var(--font-ui);
   font-size: var(--text-sm);

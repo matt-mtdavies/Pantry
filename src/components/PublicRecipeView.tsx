@@ -33,13 +33,13 @@ export default function PublicRecipeView({ recipe, bannerText, bannerAction, act
 
   return (
     <div className={styles.page}>
-      <div className={styles.banner}>
+      <header className={styles.banner}>
         <div className={styles.bannerInner}>
           <span className={styles.bannerBrand}>Pantry</span>
           <span className={styles.bannerText}>{bannerText}</span>
           {bannerAction}
         </div>
-      </div>
+      </header>
 
       <main className={styles.main}>
         {recipe.hero_image_key && (

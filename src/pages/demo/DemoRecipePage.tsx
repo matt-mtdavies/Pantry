@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import PublicRecipeView from '../../components/PublicRecipeView'
 import TourPill from '../../components/TourPill'
 import NotFoundPage from '../NotFoundPage'
-import { getDemoRecipe, DEMO_OWNER_NAME } from '../../lib/demo'
+import { getDemoRecipe } from '../../lib/demo'
 import { useRecipeMeta } from '../../hooks/useDocumentMeta'
 import styles from '../../components/PublicRecipeView.module.css'
 
@@ -16,7 +16,7 @@ export default function DemoRecipePage() {
     <>
     <PublicRecipeView
       recipe={recipe}
-      bannerText={<Link to="/demo" className={styles.bannerLink}>← {DEMO_OWNER_NAME}'s demo pantry</Link>}
+      bannerText={<Link to="/demo" className={styles.bannerLink}>← All demo recipes</Link>}
       bannerAction={<Link to="/?signup=1#get-started" className={styles.saveBtn}>Create free account</Link>}
       actions={servings => (
         <Link

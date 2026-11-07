@@ -274,7 +274,7 @@ export function OrganiseScene() {
 export function EndScene({ onReplay }: { onReplay: () => void }) {
   return (
     <div className={styles.endStage}>
-      <h2 className={styles.endTitle}>That's Pantry.</h2>
+      <h1 className={styles.endTitle}>That's Pantry.</h1>
       <p className={styles.endText}>
         Save recipes from anywhere, cook them step by step, and keep the good ones close.
         It's free.
