@@ -103,7 +103,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, waitUntil, request
     FROM recipes r
     JOIN recipe_ratings rr ON r.id = rr.recipe_id
     LEFT JOIN users u ON r.user_id = u.id
-    WHERE rr.created_at > unixepoch('now', '-7 days') AND r.is_deleted = 0
+    WHERE rr.created_at > unixepoch('now', '-7 days') AND r.is_deleted = 0 AND u.is_public = 1
     GROUP BY r.id
     ORDER BY avg_rating DESC, rating_count DESC
     LIMIT 4

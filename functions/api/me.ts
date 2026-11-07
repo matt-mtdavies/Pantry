@@ -1,3 +1,4 @@
+import { DEMO_USER_ID } from '../lib/demo'
 import type { Env } from '../env'
 
 function parseRow(row: Record<string, unknown>, adminEmails?: string) {
@@ -51,7 +52,8 @@ export const onRequestPut: PagesFunction<Env> = async (ctx) => {
     body.display_name ?? null,
     body.avatar_id ?? 'herb',
     body.default_servings ?? 2,
-    body.is_public !== false ? 1 : 0,
+    // The demo account always stays private so it can't leak into public surfaces.
+    userId === DEMO_USER_ID ? 0 : body.is_public !== false ? 1 : 0,
     body.country ?? null,
     body.gender ?? null,
     body.age_bracket ?? null,
