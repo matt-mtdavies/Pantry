@@ -107,6 +107,16 @@ functions/
 - `ctx.data.userId` and `ctx.data.email` available in all protected handlers
 - Admin endpoints check `ctx.data.email` against `ADMIN_EMAILS` env var (comma-separated)
 
+### Demo account
+Fixed demo login for reviews: **demo@myopenpantry.com / TryPantry-Demo-2026** (throwaway; holds no real data).
+Seed content lives in `functions/lib/demo.ts` (10 recipes, 2 collections, 3 favourites, 1 photo, 1 share link).
+- **(Re)seed:** sign in as an admin and open `/api/admin/seed-demo` → "Reseed now" (POST). Run `/api/admin/migrate` first on a fresh DB.
+  Resets the demo account to the exact seed state in one D1 batch (all-or-nothing) and signs out its sessions.
+  Every delete is scoped to the demo user ID / demo recipe + collection IDs; refuses if the demo email belongs to another account.
+- The demo user is `is_public = 0`, so it is excluded from Explore, Leaderboard, Chefs, Community and public profiles.
+  `PUT /api/me` can't flip it public. Keep any new public query filtering on `u.is_public = 1`.
+- Locally, test with `wrangler pages dev dist --binding ADMIN_EMAILS=…` (don't pass `--d1 DB`; it ignores the migrated local DB).
+
 ### After every schema change
 Hit `https://myopenpantry.com/api/admin/migrate` after deploying to run any new `CREATE TABLE IF NOT EXISTS` statements.
 
