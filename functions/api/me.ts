@@ -71,6 +71,8 @@ export const onRequestDelete: PagesFunction<Env> = async (ctx) => {
     'DELETE FROM magic_tokens WHERE email = (SELECT email FROM users WHERE id = ?)'
   ).bind(userId).run()
   await ctx.env.DB.prepare('DELETE FROM recipes WHERE user_id = ?').bind(userId).run()
+  // Passkeys can't sign in to a deleted account (table may not exist yet).
+  await ctx.env.DB.prepare('DELETE FROM passkeys WHERE user_id = ?').bind(userId).run().catch(() => {})
   await ctx.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
   return new Response(null, {
     status: 204,

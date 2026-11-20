@@ -1,6 +1,7 @@
 import type { Env } from '../../env'
 import { CREATE_IMPORT_OUTCOMES } from '../../lib/importOutcomes'
 import { CREATE_DEMO_PHOTOS } from '../../lib/demoPhotos'
+import { CREATE_PASSKEYS, CREATE_PASSKEYS_INDEX, CREATE_WEBAUTHN_CHALLENGES } from '../../lib/passkeys'
 
 async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>>): Promise<Response> {
   const userEmail = ctx.data.email as string
@@ -108,6 +109,9 @@ async function runMigrate(ctx: EventContext<Env, string, Record<string, unknown>
   // Import quality (zero-edit rate by source)
   await run('import_outcomes table', CREATE_IMPORT_OUTCOMES)
   await run('demo_photos table', CREATE_DEMO_PHOTOS)
+  await run('passkeys table', CREATE_PASSKEYS)
+  await run('idx_passkeys_user', CREATE_PASSKEYS_INDEX)
+  await run('webauthn_challenges table', CREATE_WEBAUTHN_CHALLENGES)
   await run('idx_import_outcomes_created', `CREATE INDEX IF NOT EXISTS idx_import_outcomes_created ON import_outcomes (created_at)`)
 
   return json({ steps, errors, ok: errors.length === 0 })

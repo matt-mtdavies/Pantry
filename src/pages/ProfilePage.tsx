@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../hooks/useAuth'
+import PasskeyManager from '../components/PasskeyManager'
 import { useOnboarding } from '../App'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
 import { downloadExport, backfillNutrition, backfillImages, getPublicProfile, uploadAvatar, removeAvatar, createInvite } from '../lib/api'
@@ -403,6 +404,8 @@ export default function ProfilePage() {
               {saveError && <p className={`form-error ${styles.saveError}`} role="alert">{saveError}</p>}
             </div>
           </div>
+
+          <PasskeyManager />
 
           <div className={styles.backfillSection}>
             <h2 className={styles.backfillTitle}>Recipe improvements</h2>

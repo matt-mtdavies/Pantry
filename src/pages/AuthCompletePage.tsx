@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { queuePasskeyNudge } from '../lib/passkeys'
 import styles from './AuthPage.module.css'
 
 export default function AuthCompletePage() {
@@ -12,6 +13,8 @@ export default function AuthCompletePage() {
       navigate('/auth?error=missing_token', { replace: true })
       return
     }
+    // Signed in by email link: offer a passkey once they land.
+    queuePasskeyNudge()
     try {
       localStorage.setItem('pantry_session', sessionId)
     } catch {
@@ -25,7 +28,10 @@ export default function AuthCompletePage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.brand}>Pantry</div>
+        <div className={styles.brand}>
+          <img src="/pantry-mark.png" alt="" className={styles.brandMark} width="44" height="44" />
+          <span className={styles.brandWord}>Pantry</span>
+        </div>
         <h1 className={styles.heading}>Signing you in…</h1>
         <p className={styles.sub}>Just a moment.</p>
       </div>

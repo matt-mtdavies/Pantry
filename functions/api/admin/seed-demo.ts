@@ -112,6 +112,9 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   if (tables.has('import_outcomes')) {
     stmts.push(db.prepare('DELETE FROM import_outcomes WHERE user_id = ?').bind(DEMO_USER_ID))
   }
+  if (tables.has('passkeys')) {
+    stmts.push(db.prepare('DELETE FROM passkeys WHERE user_id = ?').bind(DEMO_USER_ID))
+  }
   if (tables.has('invite_tokens')) {
     stmts.push(db.prepare('DELETE FROM invite_tokens WHERE user_id = ?').bind(DEMO_USER_ID))
   }
