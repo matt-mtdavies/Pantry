@@ -235,3 +235,16 @@ export function KitchenIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+/** Passkey glyph (person + key), after the FIDO Alliance's passkey icon. */
+export function PasskeyIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <circle cx="9" cy="7.5" r="3.75" />
+      <path d="M2.5 20.5v-1A5.5 5.5 0 0 1 8 14h3" />
+      <circle cx="17.5" cy="12" r="2.75" />
+      <path d="M17.5 14.75v6.25" />
+      <path d="M17.5 18.25h1.75M17.5 21h1.25" />
+    </svg>
+  )
+}

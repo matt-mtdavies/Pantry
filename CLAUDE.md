@@ -185,6 +185,17 @@ Dual-mode: magic link (passwordless) + email/password. No third-party auth servi
 - Register: allows adding a password to an existing magic-link account. New accounts start `email_verified = 0`.
 - Login: always returns "Incorrect email or password" — never reveal if the email exists.
 
+### Passkeys (WebAuthn)
+- Verification by `@simplewebauthn/server` (server) + `@simplewebauthn/browser` (client, `src/lib/passkeys.ts`). Helpers in `functions/lib/passkeys.ts`.
+- Tables `passkeys` + `webauthn_challenges` are created lazily (also in `/api/admin/migrate`). Challenges are single-use (`DELETE … RETURNING`), 5-min TTL.
+- Sign-in (public): `POST /api/auth/passkey/options` → `POST /api/auth/passkey/verify` → session cookie + `sessionId`, same as password login.
+  Discoverable credentials only (no `allowCredentials`), so it's email-free and also offered via autofill (`autocomplete="username webauthn"`, conditional UI).
+- Manage (signed in): `GET/POST /api/passkeys` (`step: 'options' | 'verify'`), `PATCH/DELETE /api/passkeys/:id`. Max 20; `excludeCredentials` stops duplicates per provider.
+- RP ID = the request hostname, so prod passkeys are bound to myopenpantry.com. Provider names come from the AAGUID map.
+- After a password sign-in we try a silent upgrade (`useAutoRegister`, conditional create); after password or email-link sign-in `<PasskeyNudge>` offers one once ("Not now" snoozes 30 days per device).
+- WebAuthn Signal API: unknown credential → `signalUnknownCredential`; after removal → `signalAllAcceptedCredentials`, so password managers drop dead passkeys.
+- Blocked (403) for the shared demo account; reseed and account deletion delete the user's passkeys.
+
 ### Session cookie
 ```
 pantry_session=<16-byte-hex>; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000

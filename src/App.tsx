@@ -30,6 +30,7 @@ import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import NotFoundPage from './pages/NotFoundPage'
 import Onboarding from './components/Onboarding'
+import PasskeyNudge from './components/PasskeyNudge'
 
 export const OnboardingContext = createContext<{ open: () => void } | null>(null)
 export function useOnboarding() { return useContext(OnboardingContext) }
@@ -109,6 +110,7 @@ function AppRoutes() {
         </Routes>
       </BrowserRouter>
       {showOnboarding && <Onboarding onClose={closeOnboarding} />}
+      <PasskeyNudge blocked={showOnboarding} />
     </OnboardingContext.Provider>
   )
 }
