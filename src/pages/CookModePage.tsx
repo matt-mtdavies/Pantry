@@ -7,6 +7,8 @@ import { useWakeLock } from '../hooks/useWakeLock'
 import { useUnitSystem } from '../hooks/useUnitSystem'
 import { convertIngredient, convertStepText } from '../lib/units'
 import type { Recipe, Ingredient } from '../types'
+import { useCookTimers, timerLabelFromStep, spokenLabel, timeLeftMs, formatClock, type CookTimer, type StartOpts } from '../hooks/useCookTimers'
+import TimerDock, { ReplaceTimerSheet, TimerRing, ClockGlyph } from './cook/TimerDock'
 import styles from './CookModePage.module.css'
 
 
@@ -23,8 +25,8 @@ function formatTimerLabel(mins: number): string {
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
-/** Three soft two-tone chimes through the shared AudioContext. */
-function playChime(ctx: AudioContext) {
+/** Three soft two-tone chimes through the shared AudioContext. `pitch` lowers the second lane's chime. */
+function playChime(ctx: AudioContext, pitch = 1) {
   const now = ctx.currentTime
   for (let i = 0; i < 3; i++) {
     for (const [offset, freq] of [[0, 880], [0.18, 1318.5]] as const) {
@@ -32,7 +34,7 @@ function playChime(ctx: AudioContext) {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
-      osc.frequency.value = freq
+      osc.frequency.value = freq * pitch
       gain.gain.setValueAtTime(0.0001, t)
       gain.gain.exponentialRampToValueAtTime(0.35, t + 0.02)
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7)
@@ -91,17 +93,20 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [showCelebration])
 
-  // Global persistent timer
-  const [timerSecs, setTimerSecs] = useState(0)
-  const [timerRunning, setTimerRunning] = useState(false)
-  const [timerInitialSecs, setTimerInitialSecs] = useState(0)
-  const [timerDone, setTimerDone] = useState(false)
-  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const timerAutoCollapseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [timerExpanded, setTimerExpanded] = useState(false)
-  const [customOpen, setCustomOpen] = useState(false)
-  const [customMins, setCustomMins] = useState('')
-  const [customSecs, setCustomSecs] = useState('')
+  // Cook timers: up to two named lanes (see useCookTimers / TimerDock).
+  const [replaceFor, setReplaceFor] = useState<StartOpts | null>(null)
+  const [openLane, setOpenLane] = useState<{ id: string; nonce: number } | null>(null)
+  const [timerAnnounce, setTimerAnnounce] = useState('')
+  const { timers, now, start, replace, toggle, addTime, clear } = useCookTimers(
+    `pantry_cook_timers:${demo ? 'demo:' : ''}${id}`,
+    (t: CookTimer) => {
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300])
+      const ctx = audioCtxRef.current
+      if (ctx) { try { playChime(ctx, t.lane === 'b' ? 0.75 : 1) } catch { /* ignore */ } }
+      setTimerAnnounce(`${spokenLabel(t.label)} timer is done`)
+      if (ttsEnabled) void speakText(`${spokenLabel(t.label)} is done`)
+    },
+  )
 
   useEffect(() => {
     if (!id) return
@@ -136,71 +141,22 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
     return audioCtxRef.current
   }
 
-  // Global timer
-  useEffect(() => {
-    if (!timerRunning) return
-    timerIntervalRef.current = setInterval(() => setTimerSecs(s => Math.max(0, s - 1)), 1000)
-    return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current) }
-  }, [timerRunning])
-
-  // Completion: stays in "done" until dismissed, with a chime for desktop cooks.
-  useEffect(() => {
-    if (!timerRunning || timerSecs > 0) return
-    setTimerRunning(false)
-    setTimerDone(true)
-    if (navigator.vibrate) navigator.vibrate([300, 150, 300])
-    const ctx = audioCtxRef.current
-    if (ctx) {
-      try { playChime(ctx) } catch { /* ignore */ }
-    }
-  }, [timerRunning, timerSecs])
-
-  const loadTimer = (mins: number) => {
+  const startQuickTimer = (mins: number) => {
     ensureAudioCtx()
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
-    const secs = mins * 60
-    setTimerDone(false)
-    setTimerSecs(secs)
-    setTimerInitialSecs(secs)
-    setTimerRunning(true)
-    setTimerExpanded(false)
-    setCustomOpen(false)
-    setCustomMins('')
-    setCustomSecs('')
+    const label = timers.some(t => t.label === 'Timer') ? 'Timer 2' : 'Timer'
+    start({ minutes: mins, label })
   }
 
-  const clearTimer = () => {
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-    if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
-    setTimerRunning(false)
-    setTimerSecs(0)
-    setTimerInitialSecs(0)
-    setTimerDone(false)
-    setTimerExpanded(false)
-    setCustomMins('')
-    setCustomSecs('')
-  }
-
-  const addToTimer = (mins: number) => {
-    const extra = mins * 60
-    setTimerSecs(s => s + extra)
-    setTimerInitialSecs(s => s + extra)
-  }
-
-  const setCustomTimer = () => {
-    const totalSecs = (parseInt(customMins || '0') * 60) + parseInt(customSecs || '0')
-    if (totalSecs < 1) return
-    loadTimer(totalSecs / 60)
-  }
-
-  const toggleExpanded = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setTimerExpanded(prev => {
-      if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
-      if (!prev) timerAutoCollapseRef.current = setTimeout(() => setTimerExpanded(false), 5000)
-      return !prev
-    })
+  const startStepTimer = (mins: number) => {
+    if (!recipe) return
+    ensureAudioCtx()
+    const opts: StartOpts = {
+      minutes: mins,
+      label: timerLabelFromStep(recipe.steps[currentStep] ?? '', currentStep),
+      step: currentStep,
+      sourceMins: mins,
+    }
+    if (!start(opts)) setReplaceFor(opts)
   }
 
   // Load system voices for Web Speech fallback
@@ -219,8 +175,6 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
       audioRef.current?.pause()
       audioCtxRef.current?.close()
       if (ttsSupported) window.speechSynthesis.cancel()
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
-      if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
     }
   }, [])
 
@@ -335,14 +289,6 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
   const step = convertStepText(recipe.steps[currentStep], unitPref)
   const stepTimers = detectTimerMinutes(recipe.steps[currentStep] ?? '')
   const ttsLabel = !ttsEnabled ? 'Read steps aloud' : ttsSpeaking ? 'Reading…' : 'Stop reading'
-  const timerM = Math.floor(timerSecs / 60)
-  const timerS = timerSecs % 60
-  const timerIsActive = timerSecs > 0 || timerDone
-  const timerProgressPct = timerDone ? 100 : timerInitialSecs > 0 ? (timerSecs / timerInitialSecs) * 100 : 0
-  const timerBannerMod = timerDone ? styles.timerBannerDone : timerRunning ? styles.timerBannerRunning : timerSecs > 0 ? styles.timerBannerPaused : ''
-  const timerDotMod = timerDone ? styles.timerDotDone : timerRunning ? styles.timerDotRunning : timerSecs > 0 ? styles.timerDotPaused : ''
-  const TIMER_PRESETS = [1, 5, 10, 15, 20]
-
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -354,173 +300,18 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
         </div>
       </header>
 
-      {/* Global timer banner — collapses to a thin strip once active */}
-      <div className={`${styles.timerBanner} ${timerBannerMod}`}>
-
-        {timerIsActive ? (
-          <>
-            {/* Active: single compact row */}
-            <div className={styles.timerActiveRow}>
-              <div className={styles.timerActiveLeft}>
-                <span className={`${styles.timerDot} ${timerDotMod}`} aria-hidden="true" />
-                <span className={styles.timerActiveDisplay} aria-label={`Timer: ${String(timerM).padStart(2,'0')}:${String(timerS).padStart(2,'0')}`}>
-                  {timerDone ? 'Timer done!' : (
-                    <>
-                      {String(timerM).padStart(2, '0')}
-                      <span className={styles.timerActiveColon}>:</span>
-                      {String(timerS).padStart(2, '0')}
-                    </>
-                  )}
-                </span>
-              </div>
-              <div className={styles.timerActiveControls}>
-                {!timerDone && (
-                  <button
-                    className={`${styles.timerCtrlBtn} ${styles.timerCtrlBtnPrimary}`}
-                    onClick={() => setTimerRunning(r => !r)}
-                    aria-label={timerRunning ? 'Pause' : 'Resume'}
-                  >
-                    {timerRunning ? (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <rect x="6" y="4" width="4" height="16" rx="1.5"/>
-                        <rect x="14" y="4" width="4" height="16" rx="1.5"/>
-                      </svg>
-                    ) : (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <polygon points="6 3 20 12 6 21"/>
-                      </svg>
-                    )}
-                  </button>
-                )}
-                <button
-                  className={`${styles.timerCtrlBtn} ${timerDone ? styles.timerCtrlBtnDone : ''}`}
-                  onClick={clearTimer}
-                  aria-label={timerDone ? 'Dismiss timer' : 'Clear timer'}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-                {!timerDone && (
-                  <button
-                    className={`${styles.timerExpandBtn} ${timerExpanded ? styles.timerExpandBtnOpen : ''}`}
-                    onClick={toggleExpanded}
-                    aria-label={timerExpanded ? 'Collapse' : 'Add time'}
-                    aria-expanded={timerExpanded}
-                  >
-                    {timerExpanded ? (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polyline points="18 15 12 9 6 15"/>
-                      </svg>
-                    ) : (
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" aria-hidden="true">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                      </svg>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Add-time chips — slides in when expanded */}
-            {timerExpanded && (
-              <div className={styles.timerAddRow}>
-                {TIMER_PRESETS.map(mins => (
-                  <button
-                    key={mins}
-                    className={styles.timerAddChip}
-                    onClick={() => {
-                      addToTimer(mins)
-                      if (timerAutoCollapseRef.current) clearTimeout(timerAutoCollapseRef.current)
-                      timerAutoCollapseRef.current = setTimeout(() => setTimerExpanded(false), 3000)
-                    }}
-                    aria-label={`Add ${mins} minutes`}
-                  >
-                    +{mins}m
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* Idle: clock icon + quick-set chips + custom toggle — all one row */}
-            <div className={styles.timerIdleRow}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={styles.timerIdleIcon} aria-hidden="true">
-                <circle cx="12" cy="13" r="8"/>
-                <polyline points="12 9 12 13 15 15"/>
-                <line x1="9" y1="3" x2="15" y2="3"/>
-              </svg>
-              <div className={styles.timerIdleChips}>
-                {TIMER_PRESETS.map(mins => (
-                  <button
-                    key={mins}
-                    className={styles.timerIdleChip}
-                    onClick={() => loadTimer(mins)}
-                    aria-label={`Set ${mins} minute timer`}
-                  >
-                    {mins}m
-                  </button>
-                ))}
-              </div>
-              <button
-                className={`${styles.timerCustomToggle} ${customOpen ? styles.timerCustomToggleOpen : ''}`}
-                onClick={() => setCustomOpen(v => !v)}
-                aria-label="Set custom time"
-                aria-expanded={customOpen}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-              </button>
-            </div>
-
-            {/* Custom input — slides in under the idle row */}
-            {customOpen && (
-              <div className={styles.timerCustomRow}>
-                <div className={styles.timerCustomField}>
-                  <input
-                    type="number" min="0" max="99" inputMode="numeric"
-                    className={styles.timerCustomInput}
-                    value={customMins}
-                    onChange={e => setCustomMins(e.target.value)}
-                    placeholder="00"
-                    aria-label="Minutes"
-                    autoFocus
-                  />
-                  <span className={styles.timerCustomUnit}>m</span>
-                </div>
-                <span className={styles.timerCustomSep}>:</span>
-                <div className={styles.timerCustomField}>
-                  <input
-                    type="number" min="0" max="59" inputMode="numeric"
-                    className={styles.timerCustomInput}
-                    value={customSecs}
-                    onChange={e => setCustomSecs(e.target.value)}
-                    placeholder="00"
-                    aria-label="Seconds"
-                  />
-                  <span className={styles.timerCustomUnit}>s</span>
-                </div>
-                <button
-                  className={styles.timerCustomSet}
-                  onClick={setCustomTimer}
-                  disabled={!customMins && !customSecs}
-                >
-                  Set →
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {timerInitialSecs > 0 && (
-          <div className={styles.timerBannerProgress}>
-            <div className={styles.timerBannerProgressFill} style={{ width: `${timerProgressPct}%` }} />
-          </div>
-        )}
-      </div>
+      <TimerDock
+        timers={timers}
+        now={now}
+        currentStep={currentStep}
+        requestOpen={openLane}
+        onQuickStart={startQuickTimer}
+        onToggle={toggle}
+        onAdd={addTime}
+        onClear={clear}
+        onGoToStep={goToStep}
+      />
+      <p className="sr-only" aria-live="assertive">{timerAnnounce}</p>
 
       <div className={styles.scaler}>
         <span className={styles.scalerLabel}>Serves</span>
@@ -587,21 +378,36 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
 
           {stepTimers.length > 0 && (
             <div className={styles.stepTimers}>
-              {stepTimers.map(mins => (
-                <button
-                  key={mins}
-                  className={styles.stepTimerChip}
-                  onClick={() => loadTimer(mins)}
-                  aria-label={`Start a ${mins} minute timer`}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="13" r="8"/>
-                    <polyline points="12 9 12 13 15 15"/>
-                    <line x1="9" y1="3" x2="15" y2="3"/>
-                  </svg>
-                  Start {formatTimerLabel(mins)} timer
-                </button>
-              ))}
+              {stepTimers.map(mins => {
+                const linked = timers.find(t => !t.done && t.step === currentStep && t.sourceMins === mins)
+                if (linked) {
+                  const left = timeLeftMs(linked, now)
+                  return (
+                    <button
+                      key={mins}
+                      className={`${styles.stepTimerLinked} ${linked.lane === 'b' ? styles.laneB : ''}`}
+                      onClick={() => setOpenLane({ id: linked.id, nonce: Date.now() })}
+                      aria-label={`${linked.label} timer: ${formatClock(left)} left. Show timer options`}
+                    >
+                      <span className={styles.stepTimerRing}>
+                        <TimerRing fraction={left / linked.totalMs} size={32} r={13} stroke={3} />
+                      </span>
+                      <span><strong className={styles.stepTimerLeft}>{formatClock(left)}</strong> left on this step</span>
+                    </button>
+                  )
+                }
+                return (
+                  <button
+                    key={mins}
+                    className={styles.stepTimerChip}
+                    onClick={() => startStepTimer(mins)}
+                    aria-label={`Start a ${mins} minute timer`}
+                  >
+                    <ClockGlyph size={14} />
+                    Start {formatTimerLabel(mins)} timer
+                  </button>
+                )
+              })}
             </div>
           )}
 
@@ -663,14 +469,28 @@ export default function CookModePage({ demo = false }: { demo?: boolean }) {
                 key={i}
                 role="tab"
                 aria-selected={i === currentStep}
-                className={`${styles.dot} ${i === currentStep ? styles.dotActive : ''} ${i < currentStep ? styles.dotDone : ''}`}
+                className={[
+                  styles.dot, i === currentStep ? styles.dotActive : '', i < currentStep ? styles.dotDone : '',
+                  timers.some(t => !t.done && t.step === i) ? (timers.find(t => !t.done && t.step === i)!.lane === 'b' ? styles.dotTimerB : styles.dotTimerA) : '',
+                ].join(' ')}
                 onClick={() => goToStep(i)}
-                aria-label={`Go to step ${i + 1}`}
+                aria-label={`Go to step ${i + 1}${timers.some(t => !t.done && t.step === i) ? ' (timer running)' : ''}`}
               />
             ))}
           </div>
         </main>
       </div>
+
+      {replaceFor && (
+        <ReplaceTimerSheet
+          timers={timers}
+          now={now}
+          label={replaceFor.label}
+          minutes={replaceFor.minutes}
+          onReplace={tid => { replace(tid, replaceFor); setReplaceFor(null) }}
+          onCancel={() => setReplaceFor(null)}
+        />
+      )}
 
       {showCelebration && (
         <div className={styles.celebration} role="dialog" aria-modal="true" aria-label="Recipe complete">
