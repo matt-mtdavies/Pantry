@@ -269,6 +269,14 @@ YOUTUBE_API_KEY     Optional — YouTube Data API v3 key; lets imports read vide
 `new Audio().play()` after `await fetch()` is blocked by iOS user gesture chain.
 Solution: create and `.resume()` an `AudioContext` **synchronously** in the click handler before any `await`. See `src/pages/CookModePage.tsx`.
 
+### Cook mode timers (two lanes)
+Up to two timers run side by side (`useCookTimers` hook + `src/pages/cook/TimerDock.tsx`).
+- Counted from `endsAt` timestamps (not a per-second decrement), so iOS background throttling can't make them drift.
+  Kept in `sessionStorage` (`pantry_cook_timers:<recipeId>`) so leaving cook mode briefly doesn't lose them.
+- Lane A is sienna (`--lane-a`), lane B saffron (`--lane-b`); sage (`--lane-done`) only means done. Lanes never swap places.
+- Step timers are named from the verb that carries the time (`timerLabelFromStep`: "Chill sauce", "Cook · step 2").
+- A third timer opens `<ReplaceTimerSheet>` to choose which lane to replace. Lane B's chime is pitched lower.
+
 ### iOS share (single message)
 `navigator.share({ text, url })` sends two separate iMessage bubbles.
 Solution: embed URL in the text string: `navigator.share({ text: \`${text} ${url}\` })`.

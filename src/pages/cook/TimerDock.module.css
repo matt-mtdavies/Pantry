@@ -1,0 +1,334 @@
+/* Cook-mode timer bar. Lane colours come from .page in CookModePage.module.css:
+   --lane-a sienna (first timer), --lane-b saffron (second), --lane-done sage. */
+
+.dock {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid rgba(232,224,212,.12);
+}
+
+/* ── Idle: quick-set chips ───────────────────────────────────────────── */
+
+.idle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+
+.idleIcon {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  color: rgba(250,247,242,.35);
+  flex-shrink: 0;
+}
+
+.idleBody { flex: 1; min-width: 0; }
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+}
+
+.pickerChips {
+  display: flex;
+  gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.chip {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  color: rgba(250,247,242,.85);
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.chip:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.22);
+  color: #FAF7F2;
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  color: rgba(250,247,242,.6);
+  display: grid;
+  place-items: center;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.iconBtn:hover { background: rgba(255,255,255,.1); color: #FAF7F2; }
+.iconBtnOpen { border-color: rgba(var(--accent-rgb),.5); color: #FAF7F2; background: rgba(var(--accent-rgb),.2); }
+
+.customRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  animation: slideIn 200ms var(--ease-out) both;
+}
+
+.customField { display: flex; align-items: center; gap: 4px; }
+
+.customInput {
+  width: 54px;
+  height: 44px;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.14);
+  border-radius: var(--radius-md);
+  color: #FAF7F2;
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.customInput::-webkit-inner-spin-button,
+.customInput::-webkit-outer-spin-button { -webkit-appearance: none; }
+.customInput:focus { border-color: var(--lane-a); background: rgba(var(--accent-rgb),.1); }
+.customInput::placeholder { color: rgba(250,247,242,.3); }
+
+.customUnit { font-family: var(--font-ui); font-size: var(--text-xs); font-weight: 600; color: rgba(250,247,242,.72); }
+.customSep { font-size: var(--text-lg); font-weight: 700; color: rgba(250,247,242,.4); }
+
+.customSet {
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  background: var(--accent);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.customSet:hover:not(:disabled) { background: var(--accent-strong); }
+.customSet:disabled { opacity: .35; cursor: default; }
+
+/* ── Lanes ───────────────────────────────────────────────────────────── */
+
+.lanes {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: var(--sp-2);
+  max-width: 640px;
+}
+
+.lanesOne { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); }
+
+.lane {
+  --c: var(--lane-a);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  min-height: 58px;
+  padding: 6px 8px 6px 6px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--c) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 34%, transparent);
+  animation: laneIn 450ms var(--ease-out) both;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.laneB { --c: var(--lane-b); }
+.laneDone { --c: var(--lane-done); }
+.laneDone.lane { animation: donePulse 900ms ease-out 3; }
+.laneOpen { background: color-mix(in srgb, var(--c) 19%, transparent); }
+
+.ring {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-items: center;
+}
+
+.ringSvg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ringTrack { fill: none; stroke: rgba(250,247,242,.12); }
+.ringArc { fill: none; stroke: var(--c, var(--lane-a)); stroke-linecap: round; transition: stroke-dashoffset 250ms linear; }
+.laneLast .ringArc { animation: breathe 1s ease-in-out infinite; }
+.ringIcon { position: relative; display: grid; place-items: center; color: var(--c); }
+
+.laneBody {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.time {
+  font-family: var(--font-ui);
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: #FAF7F2;
+}
+
+.lanePaused .time { color: rgba(250,247,242,.55); }
+
+.label {
+  max-width: 100%;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: rgba(250,247,242,.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.labelStep { color: rgba(250,247,242,.72); }
+
+.ghost {
+  min-height: 58px;
+  border-radius: 18px;
+  border: 1.5px dashed rgba(250,247,242,.18);
+  color: rgba(250,247,242,.72);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.ghost:hover, .ghostOpen { border-color: rgba(250,247,242,.4); color: #FAF7F2; background: rgba(255,255,255,.03); }
+
+/* ── Tray (lane options / add a second timer) ────────────────────────── */
+
+.tray {
+  --c: var(--lane-a);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  max-width: 640px;
+  animation: slideIn 220ms var(--ease-out) both;
+}
+
+.tray .chip { flex: 0 0 auto; }
+.trayPicker { margin-top: var(--sp-2); max-width: 640px; animation: slideIn 220ms var(--ease-out) both; }
+
+.chipTint {
+  border-color: color-mix(in srgb, var(--c) 50%, transparent);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  color: #FAF7F2;
+}
+
+.chipEnd { margin-left: auto; }
+
+@keyframes laneIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes donePulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lane-done) 55%, transparent); }
+  100% { box-shadow: 0 0 0 12px transparent; }
+}
+@keyframes breathe { 50% { stroke-width: 4.5; } }
+
+@media (max-width: 360px) {
+  .lane { gap: 6px; padding-right: 6px; }
+  .time { font-size: 1.15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lane, .laneDone.lane, .tray, .trayPicker, .customRow, .laneLast .ringArc { animation: none; }
+}
+
+/* ── Replace sheet ───────────────────────────────────────────────────── */
+
+.sheetOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(10,8,6,.6);
+  animation: fadeIn 200ms ease both;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  padding: var(--sp-6) var(--sp-5) calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  background: #2A2520;
+  color: #FAF7F2;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  animation: rise 350ms var(--ease-out) both;
+}
+
+@media (min-width: 600px) {
+  .sheetOverlay { align-items: center; }
+  .sheet { border-radius: var(--radius-xl); }
+}
+
+.sheetTitle { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; margin-bottom: var(--sp-1); }
+.sheetText { font-family: var(--font-ui); font-size: var(--text-sm); color: rgba(250,247,242,.72); margin-bottom: var(--sp-4); }
+
+.pick {
+  --c: var(--lane-a);
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  margin-bottom: var(--sp-2);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--c) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: #FAF7F2;
+  text-align: left;
+}
+
+.pick:hover { background: color-mix(in srgb, var(--c) 22%, transparent); }
+.pickTime { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.sheetCancel {
+  width: 100%;
+  min-height: 48px;
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: rgba(250,247,242,.72);
+}
+
+.sheetCancel:hover { color: #FAF7F2; }
+
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(40px); } }
+@media (prefers-reduced-motion: reduce) { .sheetOverlay, .sheet { animation: none; } }

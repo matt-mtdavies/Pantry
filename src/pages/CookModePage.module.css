@@ -1,4 +1,9 @@
 .page {
+  /* Timer lanes (bright enough for rings/borders on the dark --ink page):
+     first timer sienna, second saffron; sage only ever means done. */
+  --lane-a: #D9824F;
+  --lane-b: #E2B65A;
+  --lane-done: #9DB08F;
   height: 100dvh;
   overflow: hidden;
   background-color: #1F1B16;
@@ -253,6 +258,33 @@
 
 .stepTimerChip:hover { background: rgba(var(--accent-rgb), .3); border-color: var(--accent); }
 
+/* Step's own timer is running: show its time left, in its lane colour. */
+.stepTimerLinked {
+  --c: var(--lane-a);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 48px;
+  padding: 0 var(--sp-4) 0 var(--sp-2);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: #FAF7F2;
+}
+
+.laneB { --c: var(--lane-b); }
+
+.stepTimerRing {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+
+.stepTimerLeft { font-weight: 700; font-variant-numeric: tabular-nums; }
+
 .ttsToggle {
   display: inline-flex;
   align-items: center;
@@ -288,359 +320,6 @@
   background: var(--accent-strong);
   border-color: var(--accent-strong);
 }
-
-/* ── Global timer banner ─────────────────────────────────────────────── */
-
-@keyframes dotPulse {
-  0%, 100% { transform: scale(1);    opacity: 1; }
-  50%       { transform: scale(0.6); opacity: 0.45; }
-}
-
-@keyframes colonBlink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.15; }
-}
-
-@keyframes timerDonePulse {
-  0%, 100% { transform: scale(1); }
-  40%       { transform: scale(1.008); }
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.timerBanner {
-  position: relative;
-  padding: var(--sp-3) var(--sp-4) 0;
-  border-bottom: 1px solid rgba(232,224,212,.12);
-  transition: background 400ms ease;
-}
-
-.timerBannerRunning { background: rgba(var(--accent-rgb),.04); }
-.timerBannerDone    { background: rgba(122,139,111,.05); animation: timerDonePulse 0.6s ease-out 3; }
-
-/* ── Active state (running / paused / done) ──────────────────────────── */
-
-.timerActiveRow {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  min-height: 44px;
-  padding-bottom: var(--sp-3);
-}
-
-.timerActiveLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex: 1;
-  min-width: 0;
-}
-
-.timerDot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: rgba(250,247,242,.15);
-  flex-shrink: 0;
-  transition: background 300ms ease;
-}
-
-.timerDotRunning {
-  background: var(--accent);
-  animation: dotPulse 1.5s ease-in-out infinite;
-}
-
-.timerDotPaused { background: rgba(250,247,242,.4); }
-
-.timerDotDone { background: var(--sage); }
-
-.timerActiveDisplay {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 5vw, 2rem);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  color: rgba(250,247,242,.25);
-  transition: color 300ms ease, text-shadow 300ms ease;
-}
-
-.timerBannerRunning .timerActiveDisplay {
-  color: #FAF7F2;
-  text-shadow: 0 0 28px rgba(var(--accent-rgb),.55), 0 0 60px rgba(var(--accent-rgb),.2);
-}
-
-.timerBannerPaused .timerActiveDisplay { color: rgba(250,247,242,.6); }
-
-.timerBannerDone .timerActiveDisplay {
-  color: var(--sage);
-  text-shadow: 0 0 28px rgba(122,139,111,.5);
-}
-
-.timerActiveColon { display: inline-block; }
-
-.timerBannerRunning .timerActiveColon { animation: colonBlink 1s ease-in-out infinite; }
-
-.timerActiveControls {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-shrink: 0;
-}
-
-.timerCtrlBtn {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-full);
-  background: rgba(255,255,255,.06);
-  color: rgba(250,247,242,.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,.07);
-  transition: background 150ms ease, color 150ms ease;
-}
-
-.timerCtrlBtn:hover { background: rgba(255,255,255,.12); color: #FAF7F2; }
-
-.timerCtrlBtnPrimary {
-  background: rgba(var(--accent-rgb),.15);
-  color: rgba(var(--accent-rgb),.7);
-  border-color: rgba(var(--accent-rgb),.2);
-}
-
-.timerBannerRunning .timerCtrlBtnPrimary,
-.timerBannerPaused  .timerCtrlBtnPrimary {
-  background: var(--accent);
-  color: #FFFFFF;
-  border-color: var(--accent);
-  box-shadow: 0 2px 10px rgba(var(--accent-rgb),.4);
-}
-
-.timerBannerRunning .timerCtrlBtnPrimary:hover,
-.timerBannerPaused  .timerCtrlBtnPrimary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
-
-.timerCtrlBtnDone {
-  background: rgba(122,139,111,.12);
-  color: rgba(122,139,111,.6);
-  border-color: rgba(122,139,111,.2);
-}
-
-.timerCtrlBtnDone:hover { background: rgba(122,139,111,.2); color: #FAF7F2; }
-
-.timerExpandBtn {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-full);
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.07);
-  color: rgba(250,247,242,.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 150ms ease;
-}
-
-.timerExpandBtn:hover { background: rgba(255,255,255,.1); color: rgba(250,247,242,.7); }
-
-.timerExpandBtnOpen {
-  background: rgba(var(--accent-rgb),.12);
-  border-color: rgba(var(--accent-rgb),.25);
-  color: var(--accent);
-}
-
-/* Add-time chips (active expanded) */
-
-.timerAddRow {
-  display: flex;
-  gap: var(--sp-2);
-  padding-bottom: var(--sp-3);
-  animation: slideDown 180ms ease;
-}
-
-.timerAddChip {
-  flex: 1;
-  height: 28px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255,255,255,.1);
-  background: rgba(255,255,255,.05);
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: rgba(250,247,242,.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 150ms ease;
-}
-
-.timerAddChip:hover {
-  background: rgba(var(--accent-rgb),.15);
-  border-color: rgba(var(--accent-rgb),.4);
-  color: #FAF7F2;
-}
-
-/* ── Idle state ───────────────────────────────────────────────────────── */
-
-.timerIdleRow {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-height: 44px;
-  padding-bottom: var(--sp-3);
-}
-
-.timerIdleIcon {
-  color: rgba(250,247,242,.18);
-  flex-shrink: 0;
-}
-
-.timerIdleChips {
-  display: flex;
-  gap: var(--sp-2);
-  flex: 1;
-}
-
-.timerIdleChip {
-  flex: 1;
-  height: 32px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: rgba(250,247,242,.72);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 150ms ease;
-}
-
-.timerIdleChip:hover {
-  background: rgba(var(--accent-rgb),.12);
-  border-color: rgba(var(--accent-rgb),.35);
-  color: #FAF7F2;
-}
-
-.timerCustomToggle {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.08);
-  color: rgba(250,247,242,.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 150ms ease;
-}
-
-.timerCustomToggle:hover { background: rgba(255,255,255,.1); color: rgba(250,247,242,.7); }
-
-.timerCustomToggleOpen {
-  background: rgba(var(--accent-rgb),.12);
-  border-color: rgba(var(--accent-rgb),.28);
-  color: var(--accent);
-}
-
-/* Custom time input */
-
-.timerCustomRow {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding-bottom: var(--sp-3);
-  animation: slideDown 180ms ease;
-}
-
-.timerCustomField {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.timerCustomInput {
-  width: 50px;
-  height: 40px;
-  background: rgba(255,255,255,.08);
-  border: 1.5px solid rgba(255,255,255,.12);
-  border-radius: var(--radius-md);
-  color: #FAF7F2;
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  -moz-appearance: textfield;
-  appearance: textfield;
-  transition: border-color 150ms ease, background 150ms ease;
-}
-
-.timerCustomInput::-webkit-inner-spin-button,
-.timerCustomInput::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-.timerCustomInput:focus { border-color: var(--accent); background: rgba(var(--accent-rgb),.08); }
-.timerCustomInput::placeholder { color: rgba(250,247,242,.2); }
-
-.timerCustomUnit {
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: rgba(250,247,242,.3);
-}
-
-.timerCustomSep {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: rgba(250,247,242,.2);
-}
-
-.timerCustomSet {
-  margin-left: auto;
-  padding: 0 var(--sp-4);
-  height: 40px;
-  background: var(--accent);
-  color: #FFFFFF;
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  border-radius: var(--radius-full);
-  white-space: nowrap;
-  transition: background 150ms ease, opacity 150ms ease;
-  box-shadow: 0 2px 10px rgba(var(--accent-rgb),.3);
-}
-
-.timerCustomSet:hover:not(:disabled) { background: var(--accent-strong); }
-.timerCustomSet:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
-
-/* Progress bar */
-
-.timerBannerProgress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: rgba(255,255,255,.04);
-}
-
-.timerBannerProgressFill {
-  height: 100%;
-  background: var(--accent);
-  transition: width 1s linear;
-}
-
-.timerBannerDone .timerBannerProgressFill { background: var(--sage); }
 
 .stepNav {
   display: flex;
@@ -716,6 +395,12 @@
 .dotDone {
   background: rgba(255,255,255,.4);
 }
+
+/* A step whose timer is running takes its lane's colour. */
+.dotTimerA { background: var(--lane-a); }
+.dotTimerB { background: var(--lane-b); }
+.dotActive.dotTimerA, .dotActive.dotTimerB { background: var(--accent); box-shadow: inset 0 0 0 2px var(--lane-b); }
+.dotActive.dotTimerA { box-shadow: inset 0 0 0 2px var(--lane-a); }
 
 .loadingWrap {
   margin: auto;
